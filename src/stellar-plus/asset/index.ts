@@ -1,0 +1,1 @@
+export { ClassicAssetHandler } from "./classic";
