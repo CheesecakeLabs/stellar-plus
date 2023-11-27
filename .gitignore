@@ -1,5 +1,7 @@
-./src/index.ts
+# local testing
+src/index.ts
 
+# old package.json
 package.old.json
 
 # Dependency directories
