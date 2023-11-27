@@ -4,17 +4,17 @@ stellar-plus is an all-in-one Javascript library for building and interacting wi
 
 It provides:
 
-- _Account_: Handlers to create, load and interact with stellar accounts, managing signatures and automatically integrating with Freighter wallet for web applications.
-- _Asset_: Classic token handlers following the standard token interface for triggering different asset capabilities as well as a suit of additional features for asset management and usage.
-- _Core_: Key engines for managing the different pipelines for building, submitting and processing both Classic and Soroban transactions. These engines can be extended into your own tooling or used out-of-the-box with minimal configuration.
-- _Contracts_: Default contract client implementations for selected dApp use cases.
-- RPC: Handlers for connecting and using different RPC solutions, including a ready=too-use integration with Validation Cloud's RPC API.
+- **Account**: Handlers to create, load and interact with stellar accounts, managing signatures and automatically integrating with Freighter wallet for web applications.
+- **Asset**: Classic token handlers following the standard token interface for triggering different asset capabilities as well as a suit of additional features for asset management and usage.
+- **Core**: Key engines for managing the different pipelines for building, submitting and processing both Classic and Soroban transactions. These engines can be extended into your own tooling or used out-of-the-box with minimal configuration.
+- **Contracts**: Default contract client implementations for selected dApp use cases.
+- **RPC**: Handlers for connecting and using different RPC solutions, including a ready=too-use integration with Validation Cloud's RPC API.
 
 # Quick start
 
 Using npm to include js-stellar-sdk in your own project:
 
-```
+```shell
 npm install --save stellar-plus
 ```
 
@@ -22,19 +22,19 @@ npm install --save stellar-plus
 
 Install it using npm:
 
-```
+```shell
 npm install --save stellar-plus
 ```
 
 require/import it in your JavaScript:
 
-```
-var StellarPlus = require('stellar-plus');
+```js
+var StellarPlus = require("stellar-plus");
 ```
 
 or
 
-```
+```js
 import { StellarPlus } from "stellar-plus";
 ```
 
