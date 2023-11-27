@@ -1,1 +1,43 @@
 # Stellar-Plus
+
+stellar-plus is an all-in-one Javascript library for building and interacting with the Stellar network. It bundles the main resources from the community into an easy-to-use set of tools and capabilities.
+
+It provides:
+
+- _Account_: Handlers to create, load and interact with stellar accounts, managing signatures and automatically integrating with Freighter wallet for web applications.
+- _Asset_: Classic token handlers following the standard token interface for triggering different asset capabilities as well as a suit of additional features for asset management and usage.
+- _Core_: Key engines for managing the different pipelines for building, submitting and processing both Classic and Soroban transactions. These engines can be extended into your own tooling or used out-of-the-box with minimal configuration.
+- _Contracts_: Default contract client implementations for selected dApp use cases.
+- RPC: Handlers for connecting and using different RPC solutions, including a ready=too-use integration with Validation Cloud's RPC API.
+
+# Quick start
+
+Using npm to include js-stellar-sdk in your own project:
+
+```
+npm install --save stellar-plus
+```
+
+# Install
+
+Install it using npm:
+
+```
+npm install --save stellar-plus
+```
+
+require/import it in your JavaScript:
+
+```
+var StellarPlus = require('stellar-plus');
+```
+
+or
+
+```
+import { StellarPlus } from "stellar-plus";
+```
+
+# Documentation
+
+Coming soon!
