@@ -1,0 +1,27 @@
+# Node and log files
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment files
+.env
+.env.*
+
+# Build directories
+src/
+tests/
+coverage/
+
+# Various IDEs and editors
+.idea/
+*.sublime-project
+*.sublime-workspace
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Optional: Exclude TypeScript source files if you only want to publish the compiled JS
+*.ts
+!*.d.ts  # Include TypeScript definition files
