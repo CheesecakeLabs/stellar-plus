@@ -112,6 +112,7 @@ export class ValidationCloudRpcHandler implements RpcHandler {
     tx: Transaction
   ): Promise<SorobanRpc.SendTransactionResponse> {
     const txXdr = tx.toXDR();
+    console.log("txXdr:", txXdr);
     const payload: RequestPayload = {
       jsonrpc: "2.0",
       id: this.id,

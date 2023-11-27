@@ -1,14 +1,19 @@
 {
   "name": "stellar-plus",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "./stellar-plus/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec ts-node src/index.ts"
+    "build": "ts-node build",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "stellar",
+    "soroban",
+    "blockchain",
+    "stellar-sdk"
+  ],
+  "author": "Fabricius (Fifo) Zatti - Cheesecake Labs <natamvo@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.10.0",

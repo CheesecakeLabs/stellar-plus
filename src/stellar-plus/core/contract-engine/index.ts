@@ -38,6 +38,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
       this.contractId
     );
     const simulated = await this.simulateTransaction(builtTx);
+
     const output = this.extractOutputFromSimulation(simulated, args.method);
     return output;
   }
