@@ -2,7 +2,7 @@
   "name": "stellar-plus",
   "version": "0.1.0",
   "description": "beta version of stellar-plus, an all-in-one sdk for the Stellar blockchain",
-  "main": "./stellar-plus/index.js",
+  "main": "./lib/index.js",
   "private": false,
   "scripts": {
     "build": "tsc",
@@ -14,7 +14,7 @@
     "blockchain",
     "stellar-sdk"
   ],
-  "author": "Fabricius (Fifo) Zatti - Cheesecake Labs <fazzatti@gmail.com>",
+  "author": "Fabricius (Fifo) Zatti - Cheesecake Labs",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.10.0",

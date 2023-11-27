@@ -1,8 +1,6 @@
 import {
   ClassicFeeBumpTransaction,
   ClassicTransaction,
-  Keypair,
-  Network,
   SorobanFeeBumpTransaction,
   SorobanKeypair,
   SorobanTransaction,
