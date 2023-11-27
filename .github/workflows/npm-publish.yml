@@ -19,6 +19,12 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: ls -l lib
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: lib
+          path: lib
+
 
   publish-npm:
     needs: build
@@ -29,6 +35,11 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: lib
+          path: lib
       - run: npm ci
       - run: npm publish
         env:
