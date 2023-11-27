@@ -1,8 +1,9 @@
 {
   "name": "stellar-plus",
   "version": "0.1.0",
-  "description": "",
+  "description": "beta version of stellar-plus, an all-in-one sdk for the Stellar blockchain",
   "main": "./stellar-plus/index.js",
+  "private": false,
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
