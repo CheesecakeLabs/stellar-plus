@@ -1,6 +1,5 @@
-# Welcome
 
-## Stellar-Plus
+# Stellar-Plus
 
 stellar-plus is an all-in-one Javascript library for building and interacting with the Stellar network. It bundles the main resources from the community into an easy-to-use set of tools and capabilities.
 
