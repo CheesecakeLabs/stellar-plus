@@ -4,7 +4,7 @@ import {
   FeeBumpHeader,
   TransactionInvocation,
 } from "./stellar-plus/core/types";
-
+import * as stellarSdk from "stellar-sdk";
 // ========================================
 // SETUP
 // ========================================
@@ -20,7 +20,7 @@ const assetIssuer = new StellarPlus.Account.DefaultAccountHandler({
 const asset = new StellarPlus.Asset.ClassicAssetHandler(
   "CAKE",
   assetIssuer.publicKey,
-  StellarPlus.constants.testnet,
+  StellarPlus.Constants.testnet,
   assetIssuer
 );
 
@@ -41,13 +41,14 @@ const invocationDetails: TransactionInvocation = {
   // },
 };
 
-const rpc = new StellarPlus.RPC.DefaultRpcHandler(
-  StellarPlus.constants.testnet
+const rpc = new StellarPlus.RPC.ValidationCloudRpcHandler(
+  StellarPlus.Constants.testnet,
+  "Knct5k6sgFn2w2gPvBTOdOc3u5sNnLW9dt6kSLSPrs8"
 );
 
-const codClient = new StellarPlus.contracts.CertificateOfDeposit(
+const codClient = new StellarPlus.Contracts.CertificateOfDeposit(
   "CCZUQBT62C3E7NRKQKMVKMS6SY5UNLGJINOLRGXMOU35WXC6RRBSMZGM",
-  StellarPlus.constants.testnet,
+  StellarPlus.Constants.testnet,
   rpc
 );
 
@@ -57,7 +58,7 @@ const codClient = new StellarPlus.contracts.CertificateOfDeposit(
 
 console.log("Creating users!");
 const users: AccountHandler[] = [];
-const network = StellarPlus.constants.testnet;
+const network = StellarPlus.Constants.testnet;
 users.push(new StellarPlus.Account.DefaultAccountHandler({ network }));
 users.push(new StellarPlus.Account.DefaultAccountHandler({ network }));
 // users.push(new StellarPlus.Account.DefaultAccountHandler({ network }));
@@ -97,20 +98,36 @@ users.forEach(async (user) => {
   });
 
   console.log("balance: ", await asset.balance({ id: user.getPublicKey() }));
-  await asset.transfer({
-    from: user.getPublicKey(),
-    to: "GBUBEUHZKWHCHLBXEQ5SUDPYGSGEDF5PLXFNR7SC6VSD7GQJORAZI3WZ",
-    amount: BigInt(123),
+
+  const pos = await codClient.getPosition({
+    address: user.getPublicKey(),
     ...userInvocationDetails,
   });
-  console.log(
-    "balance after transfer: ",
-    await asset.balance({ id: user.getPublicKey() })
-  );
+
+  console.log("cod position: ", pos);
+
+  // await asset.transfer({
+  //   from: user.getPublicKey(),
+  //   to: "GBUBEUHZKWHCHLBXEQ5SUDPYGSGEDF5PLXFNR7SC6VSD7GQJORAZI3WZ",
+  //   amount: BigInt(123),
+  //   ...userInvocationDetails,
+  // });
+  // console.log(
+  //   "balance after transfer: ",
+  //   await asset.balance({ id: user.getPublicKey() })
+  // );
   // console.log("Depositing to user: ", user.getPublicKey());
 
   // await codClient.deposit({
   //   amount: BigInt(3000),
+  //   address: user.getPublicKey(),
+  //   ...userInvocationDetails,
+  // });
+
+  // console.log("balance: ", await asset.balance({ id: user.getPublicKey() }));
+
+  // console.log("position: ");
+  // await codClient.getPosition({
   //   address: user.getPublicKey(),
   //   ...userInvocationDetails,
   // });
