@@ -4,7 +4,7 @@
   "description": "",
   "main": "./stellar-plus/index.js",
   "scripts": {
-    "build": "ts-node build",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -13,7 +13,7 @@
     "blockchain",
     "stellar-sdk"
   ],
-  "author": "Fabricius (Fifo) Zatti - Cheesecake Labs <natamvo@gmail.com>",
+  "author": "Fabricius (Fifo) Zatti - Cheesecake Labs <fazzatti@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.10.0",
