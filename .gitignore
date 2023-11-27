@@ -1,3 +1,9 @@
+# local testing
+src/index.ts
+
+# old package.json
+package.old.json
+
 # Dependency directories
 node_modules/
 

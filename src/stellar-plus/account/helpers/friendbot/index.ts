@@ -1,6 +1,6 @@
 import axios from "axios";
 import { AccountHelpers } from "..";
-import { Network } from "../../../types";
+import { Network, NetworksList } from "../../../types";
 import { Friendbot } from "./types";
 
 export class FriendbotClient implements Friendbot {
@@ -12,6 +12,8 @@ export class FriendbotClient implements Friendbot {
   }
 
   public async initialize(): Promise<void> {
+    this.requireTestNetwork();
+
     if (
       "publicKey" in this.parent &&
       this.parent.publicKey &&
@@ -34,7 +36,9 @@ export class FriendbotClient implements Friendbot {
     throw new Error("Account has no valid public key!");
   }
 
-  public async getTransactions(): Promise<any> {
-    throw new Error("Method not implemented.");
+  private requireTestNetwork(): void {
+    if (this.network.name === NetworksList.mainnet) {
+      throw new Error("Friendbot is not available in mainnet!");
+    }
   }
 }

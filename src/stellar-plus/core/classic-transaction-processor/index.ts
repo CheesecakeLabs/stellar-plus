@@ -91,12 +91,16 @@ export class TransactionProcessor {
     envelope: Transaction
   ): Promise<HorizonNamespace.SubmitTransactionResponse> {
     try {
+      // console.log("Submitting transaction: ", envelope.toXDR());
       const response = await this.horizonHandler.server.submitTransaction(
         envelope as ClassicTransaction
       );
       return response as HorizonNamespace.SubmitTransactionResponse;
     } catch (error) {
       console.log("Couldn't Submit the transaction: ");
+      const resultObject = (error as any)?.response?.data?.extras?.result_codes;
+
+      console.log(resultObject);
 
       throw new Error("Failed to submit transaction!");
     }
@@ -115,15 +119,6 @@ export class TransactionProcessor {
         "base64"
       );
 
-      console.log("Transaction failed! ");
-      console.log(
-        "Result: ==========================================================",
-        restulObject
-      );
-      console.log(
-        "Result Meta: ==========================================================",
-        resultMetaObject
-      );
       throw new Error("Transaction failed!");
     }
 

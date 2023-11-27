@@ -1,3 +1,4 @@
+import axios from "axios";
 import {
   SorobanDataBuilder,
   SorobanRpc,
@@ -42,14 +43,12 @@ export class ValidationCloudRpcHandler implements RpcHandler {
   private async fetch(payload: RequestPayload): Promise<any> {
     const requestUrl = this.baseUrl + this.apiKey;
     try {
-      const response = await fetch(requestUrl, {
-        method: "POST",
+      const response = await axios.post(requestUrl, payload, {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
       });
-      return await response.json();
+      return response.data;
     } catch (e) {
       console.log("Failed when invoking Validation Cloud API", e);
       throw e;
@@ -113,6 +112,7 @@ export class ValidationCloudRpcHandler implements RpcHandler {
     tx: Transaction
   ): Promise<SorobanRpc.SendTransactionResponse> {
     const txXdr = tx.toXDR();
+    console.log("txXdr:", txXdr);
     const payload: RequestPayload = {
       jsonrpc: "2.0",
       id: this.id,

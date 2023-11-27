@@ -38,6 +38,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
       this.contractId
     );
     const simulated = await this.simulateTransaction(builtTx);
+
     const output = this.extractOutputFromSimulation(simulated, args.method);
     return output;
   }
@@ -118,6 +119,3 @@ export class ContractEngine extends SorobanTransactionProcessor {
     return simulated.result as SorobanRpcNamespace.SimulateHostFunctionResult;
   }
 }
-
-// Fifo's Byte: In a stack of code, the best slice is hidden! 🍰👾
-// Committing this in 2023 - a timestamp in our digital recipe book. 🕒📚
