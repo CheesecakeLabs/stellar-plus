@@ -27,5 +27,7 @@ Thumbs.db
 !*.d.ts  # Include TypeScript definition files
 
 
-#github
+#root files
 .github/
+nodemon.json
+tsconfig.json
