@@ -25,3 +25,7 @@ Thumbs.db
 # Optional: Exclude TypeScript source files if you only want to publish the compiled JS
 *.ts
 !*.d.ts  # Include TypeScript definition files
+
+
+#github
+.github/
