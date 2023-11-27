@@ -36,7 +36,6 @@ export type TransactionXdr = string;
 //
 // Networks
 //
-
 export type Network = {
   name: NetworksList;
   networkPassphrase: string;
@@ -48,8 +47,8 @@ export type Network = {
 export enum NetworksList {
   testnet = "testnet",
   futurenet = "futurenet",
-  // mainnet = "mainnet",
-  // custom = "custom",
+  mainnet = "mainnet",
+  custom = "custom",
 }
 
 //

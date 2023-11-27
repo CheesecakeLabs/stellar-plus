@@ -16,7 +16,6 @@ import {
   Contract,
   TransactionBuilder,
   SorobanRpc as SorobanRpcNamespace,
-  Soroban as SorobanNamespace,
 } from "soroban-client";
 import { FeeBumpHeader } from "../types";
 

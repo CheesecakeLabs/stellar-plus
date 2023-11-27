@@ -17,5 +17,12 @@ networksConfig.testnet = {
   horizonUrl: "https://horizon-testnet.stellar.org",
 };
 
+// networksConfig.mainnet = {
+//   name: NetworksList.mainnet,
+//   networkPassphrase: "Public Global Stellar Network ; September 2015",
+//   rpcUrl: "https://soroban.stellar.org:443",
+//   horizonUrl: "https://horizon.stellar.org",
+// };
+
 export const testnet: Network = networksConfig.testnet;
 export const futurenet: Network = networksConfig.futurenet;
