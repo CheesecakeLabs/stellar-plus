@@ -17,10 +17,11 @@ export type TokenInterfaceManagement = {
     authorize: boolean;
   } & TransactionInvocation) => Promise<void>;
 
-  mint: ({}: {
-    to: string;
-    amount: i128;
-  } & TransactionInvocation) => Promise<HorizonNamespace.SubmitTransactionResponse>;
+  mint: (
+    to: string,
+    amount: i128,
+    txInvocation: TransactionInvocation
+  ) => Promise<HorizonNamespace.SubmitTransactionResponse>;
 
   clawback: ({}: {
     from: Address;
@@ -36,13 +37,14 @@ export type TokenInterfaceUser = {
     amount: i128,
     live_until_ledger: u32
   ) => Promise<void>;
-  balance: ({}: { id: string }) => Promise<number>;
+  balance: (id: string) => Promise<number>;
   spendable_balance: (id: Address) => Promise<i128>;
-  transfer: ({}: {
-    from: string;
-    to: string;
-    amount: i128;
-  } & TransactionInvocation) => Promise<void>;
+  transfer: (
+    from: string,
+    to: string,
+    amount: i128,
+    txInvocation: TransactionInvocation
+  ) => Promise<void>;
   transfer_from: (
     spender: Address,
     from: Address,

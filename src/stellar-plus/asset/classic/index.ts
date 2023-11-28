@@ -1,7 +1,8 @@
 import { AccountHandler } from "../../account/account-handler/types";
 import { TransactionProcessor } from "../../core/classic-transaction-processor";
+import { TransactionSubmitter } from "../../core/transaction-submitter/classic/types";
 import { TransactionInvocation } from "../../core/types";
-import { Address, Network, i128 } from "../../types";
+import { Network, i128 } from "../../types";
 import { AssetTypes } from "../types";
 import { ClassicAssetHandler as IClassicAssetHandler } from "./types";
 import {
@@ -28,9 +29,10 @@ export class ClassicAssetHandler
     code: string,
     issuerPublicKey: string,
     network: Network,
-    issuerAccount: AccountHandler
+    issuerAccount: AccountHandler,
+    transactionSubmitter?: TransactionSubmitter
   ) {
-    super(network);
+    super(network, transactionSubmitter);
     this.code = code;
     this.issuerPublicKey = issuerPublicKey;
     this.type =
@@ -70,7 +72,7 @@ export class ClassicAssetHandler
   // name from the asset issuer's toml file.
   //
   public async name(): Promise<any> {
-    throw new Error("Method not implemented.");
+    return this.code;
   }
 
   public async allowance(): Promise<any> {
@@ -81,9 +83,7 @@ export class ClassicAssetHandler
     throw new Error("Method not implemented.");
   }
 
-  public async balance(args: { id: string }): Promise<number> {
-    const { id } = args;
-
+  public async balance(id: string): Promise<number> {
     const sourceAccount = await this.horizonHandler.loadAccount(id);
     const balanceLine = sourceAccount.balances.filter(
       (balanceLine: HorizonNamespace.BalanceLine) => {
@@ -121,16 +121,17 @@ export class ClassicAssetHandler
   //
   //
   public async transfer(
-    args: { from: string; to: string; amount: i128 } & TransactionInvocation
+    from: string,
+    to: string,
+    amount: i128,
+    txInvocation: TransactionInvocation
   ): Promise<void> {
-    const { from, to, amount, signers, header, feeBump } = args;
+    const { envelope, updatedTxInvocation } =
+      await this.transactionSubmitter.createEnvelope(txInvocation);
 
-    const sourceAccount = await this.horizonHandler.loadAccount(header.source);
+    const { header, signers, feeBump } = updatedTxInvocation;
 
-    const tx = new TransactionBuilder(sourceAccount, {
-      fee: header.fee,
-      networkPassphrase: this.network.networkPassphrase,
-    })
+    const tx = envelope
       .addOperation(
         Operation.payment({
           destination: to,
@@ -142,6 +143,7 @@ export class ClassicAssetHandler
       .setTimeout(header.timeout)
       .build();
 
+    this.verifySigners([from], signers);
     return await this.processTransaction(tx, signers, feeBump);
   }
 
@@ -178,18 +180,17 @@ export class ClassicAssetHandler
   // process as new circulating supply.
   //
   public async mint(
-    args: { to: string; amount: i128 } & TransactionInvocation
+    to: string,
+    amount: i128,
+    txInvocation: TransactionInvocation
   ): Promise<HorizonNamespace.SubmitTransactionResponse> {
     this.requireIssuerAccount(); // Enforces the issuer account to be set.
 
-    const { to, amount, signers, header, feeBump } = args;
+    const { envelope, updatedTxInvocation } =
+      await this.transactionSubmitter.createEnvelope(txInvocation);
+    const { header, signers, feeBump } = updatedTxInvocation;
 
-    const sourceAccount = await this.horizonHandler.loadAccount(header.source);
-
-    const tx = new TransactionBuilder(sourceAccount, {
-      fee: header.fee,
-      networkPassphrase: this.network.networkPassphrase,
-    })
+    const tx = envelope
       .addOperation(
         Operation.payment({
           destination: to,
@@ -202,6 +203,8 @@ export class ClassicAssetHandler
       .build();
 
     const signersWithIssuer = [...signers, this.issuerAccount!];
+
+    this.verifySigners([this.asset.issuer], signersWithIssuer);
 
     return await this.processTransaction(tx, signersWithIssuer, feeBump);
   }
@@ -226,18 +229,18 @@ export class ClassicAssetHandler
   //
   //
   public async addTrustlineAndMint(
-    args: { to: string; amount: number } & TransactionInvocation
+    to: string,
+    amount: number,
+    txInvocation: TransactionInvocation
   ): Promise<HorizonNamespace.SubmitTransactionResponse> {
     this.requireIssuerAccount(); // Enforces the issuer account to be set.
 
-    const { to, amount, signers, header, feeBump } = args;
+    const { envelope, updatedTxInvocation } =
+      await this.transactionSubmitter.createEnvelope(txInvocation);
 
-    const sourceAccount = await this.horizonHandler.loadAccount(header.source);
+    const { header, signers, feeBump } = updatedTxInvocation;
 
-    const tx = new TransactionBuilder(sourceAccount, {
-      fee: header.fee,
-      networkPassphrase: this.network.networkPassphrase,
-    })
+    const tx = envelope
       .addOperation(
         Operation.changeTrust({
           source: to,
@@ -256,6 +259,7 @@ export class ClassicAssetHandler
       .build();
 
     const signersWithIssuer = [...signers, this.issuerAccount!];
+    this.verifySigners([to, this.asset.issuer], signersWithIssuer);
 
     return await this.processTransaction(tx, signersWithIssuer, feeBump);
   }

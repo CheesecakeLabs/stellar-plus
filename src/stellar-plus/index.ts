@@ -13,3 +13,13 @@ export const Contracts = {
 };
 
 export * as RPC from "./rpc";
+
+import { DefaultTransactionSubmitter } from "./core/transaction-submitter/classic/default";
+import { ChannelAccountsTransactionSubmitter } from "./core/transaction-submitter/classic/channel-accounts-submitter";
+
+export const Core = {
+  DefaultTransactionSubmitter,
+  ChannelAccountsTransactionSubmitter,
+};
+
+export { Opex } from "./opex";
