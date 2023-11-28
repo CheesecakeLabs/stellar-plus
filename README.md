@@ -41,4 +41,4 @@ import { StellarPlus } from "stellar-plus";
 
 ## Documentation
 
-Coming soon!
+For the full documentation, refer to our [Gitbook Documentation](https://cheesecake-labs.gitbook.io/stellar-plus/).
