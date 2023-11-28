@@ -72,7 +72,6 @@ export class Opex extends TransactionProcessor implements AccountHandler {
         );
 
       signers.push(channel);
-      channels.push(channel);
     }
 
     const tx = envelope.setTimeout(this.defaultHeader.timeout).build();

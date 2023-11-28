@@ -38,7 +38,11 @@ export class ChannelAccountsTransactionSubmitter
     } else {
       const channel = this.freeChannels.pop() as DefaultAccountHandler;
       this.lockedChannels.push(channel);
-      console.log("Allocated channel: ", channel.publicKey);
+      console.log(
+        "%cAllocated channel: %c" + channel.publicKey,
+        "color: yellow;",
+        "color: inherit;"
+      );
       return channel;
     }
   }
@@ -65,7 +69,7 @@ export class ChannelAccountsTransactionSubmitter
       txInvocation.feeBump = this.feeBump;
     }
 
-    console.log("Waiting for Channel!");
+    // console.log("Waiting for Channel!");
     const channel = await this.allocateChannel();
 
     const sourceAccount = await this.horizonHandler.loadAccount(
@@ -87,24 +91,35 @@ export class ChannelAccountsTransactionSubmitter
   ): Promise<HorizonNamespace.SubmitTransactionResponse> {
     const innerEnvelope = (envelope as FeeBumpTransaction).innerTransaction;
     const allocatedChannel = innerEnvelope.source;
-    console.log("Submitting channel: ", allocatedChannel);
+    console.log(
+      "%cSubmitting channel: %c" + allocatedChannel,
+      "color: blue;",
+      "color: inherit;"
+    );
     // console.log("Submitting transaction: ", envelope.toXDR());
     try {
-      console.log("Submitting transaction: ", envelope.toXDR());
       const response = await this.horizonHandler.server.submitTransaction(
         envelope as ClassicTransaction
       );
-      console.log("delaocating channel: ", allocatedChannel);
+      console.log(
+        "%cDeallocating channel: %c" + allocatedChannel,
+        "color: lightcoral;",
+        "color: inherit;"
+      );
       this.releaseChannel(allocatedChannel);
       return response as HorizonNamespace.SubmitTransactionResponse;
     } catch (error) {
-      console.log("delaocating channel: ", allocatedChannel);
+      console.log(
+        "%cDeallocating channel: %c" + allocatedChannel,
+        "color: lightcoral;",
+        "color: inherit;"
+      );
       this.releaseChannel(allocatedChannel);
-      console.log("Failed Tx: ", envelope.fee);
-      console.log("Couldn't Submit the transaction: ");
+      console.log("Couldn't Submit the transaction: ", envelope.toXDR());
+      console.log("Error: ", error);
       const resultObject = (error as any)?.response?.data?.extras?.result_codes;
 
-      console.log(resultObject);
+      console.log("RESULTOBJECT!!", resultObject);
 
       throw new Error("Failed to submit transaction!");
     }
