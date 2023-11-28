@@ -90,7 +90,7 @@ export class ChannelAccountsTransactionSubmitter
     console.log("Submitting channel: ", allocatedChannel);
     // console.log("Submitting transaction: ", envelope.toXDR());
     try {
-      //   console.log("Submitting transaction: ", envelope.toXDR());
+      console.log("Submitting transaction: ", envelope.toXDR());
       const response = await this.horizonHandler.server.submitTransaction(
         envelope as ClassicTransaction
       );
