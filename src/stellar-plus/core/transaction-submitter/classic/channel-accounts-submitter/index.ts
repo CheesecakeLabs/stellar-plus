@@ -38,11 +38,7 @@ export class ChannelAccountsTransactionSubmitter
     } else {
       const channel = this.freeChannels.pop() as DefaultAccountHandler;
       this.lockedChannels.push(channel);
-      console.log(
-        "%cAllocated channel: %c" + channel.publicKey,
-        "color: yellow;",
-        "color: inherit;"
-      );
+
       return channel;
     }
   }
@@ -91,29 +87,16 @@ export class ChannelAccountsTransactionSubmitter
   ): Promise<HorizonNamespace.SubmitTransactionResponse> {
     const innerEnvelope = (envelope as FeeBumpTransaction).innerTransaction;
     const allocatedChannel = innerEnvelope.source;
-    console.log(
-      "%cSubmitting channel: %c" + allocatedChannel,
-      "color: blue;",
-      "color: inherit;"
-    );
-    // console.log("Submitting transaction: ", envelope.toXDR());
+
+    //console.log("Submitting transaction: ", envelope.toXDR());
     try {
       const response = await this.horizonHandler.server.submitTransaction(
         envelope as ClassicTransaction
       );
-      console.log(
-        "%cDeallocating channel: %c" + allocatedChannel,
-        "color: lightcoral;",
-        "color: inherit;"
-      );
+
       this.releaseChannel(allocatedChannel);
       return response as HorizonNamespace.SubmitTransactionResponse;
     } catch (error) {
-      console.log(
-        "%cDeallocating channel: %c" + allocatedChannel,
-        "color: lightcoral;",
-        "color: inherit;"
-      );
       this.releaseChannel(allocatedChannel);
       console.log("Couldn't Submit the transaction: ", envelope.toXDR());
       console.log("Error: ", error);

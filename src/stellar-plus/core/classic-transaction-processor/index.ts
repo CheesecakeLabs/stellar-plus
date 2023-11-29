@@ -3,6 +3,7 @@ import {
   TransactionBuilder,
   Transaction as ClassicTransaction,
   Horizon as HorizonNamespace,
+  xdr as xdrNamespace,
 } from "stellar-sdk";
 import * as SorobanClient from "soroban-client";
 import {
@@ -13,7 +14,7 @@ import {
   TransactionXdr,
 } from "../../types";
 import { AccountHandler } from "../../account/account-handler/types";
-import { FeeBumpHeader } from "../types";
+import { FeeBumpHeader, TransactionInvocation } from "../types";
 import { HorizonHandlerClient } from "../../horizon";
 import { TransactionSubmitter } from "../transaction-submitter/classic/types";
 import { DefaultTransactionSubmitter } from "../transaction-submitter/classic/default";
@@ -103,41 +104,27 @@ export class TransactionProcessor {
       }
     });
   }
-  // protected async submitTransaction(
-  //   envelope: Transaction
-  // ): Promise<HorizonNamespace.SubmitTransactionResponse> {
-  //   try {
-  //     // console.log("Submitting transaction: ", envelope.toXDR());
-  //     const response = await this.horizonHandler.server.submitTransaction(
-  //       envelope as ClassicTransaction
-  //     );
-  //     return response as HorizonNamespace.SubmitTransactionResponse;
-  //   } catch (error) {
-  //     console.log("Couldn't Submit the transaction: ");
-  //     const resultObject = (error as any)?.response?.data?.extras?.result_codes;
 
-  //     console.log(resultObject);
+  protected async buildCustomTransaction(
+    operations: xdrNamespace.Operation[],
+    txInvocation: TransactionInvocation
+  ): Promise<{
+    builtTx: ClassicTransaction;
+    updatedTxInvocation: TransactionInvocation;
+  }> {
+    const { envelope, updatedTxInvocation } =
+      await this.transactionSubmitter.createEnvelope(txInvocation);
 
-  //     throw new Error("Failed to submit transaction!");
-  //   }
-  // }
+    const { header } = updatedTxInvocation;
 
-  // protected postProcessTransaction(
-  //   response: HorizonNamespace.SubmitTransactionResponse
-  // ): any {
-  //   if (!response.successful) {
-  //     const restulObject = xdrNamespace.TransactionResult.fromXDR(
-  //       response.result_xdr,
-  //       "base64"
-  //     );
-  //     const resultMetaObject = xdrNamespace.TransactionResultMeta.fromXDR(
-  //       response.result_meta_xdr,
-  //       "base64"
-  //     );
+    let tx: TransactionBuilder = envelope;
 
-  //     throw new Error("Transaction failed!");
-  //   }
+    for (const operation of operations) {
+      tx = envelope.addOperation(operation);
+    }
 
-  //   return response;
-  // }
+    const builtTx = tx.setTimeout(header.timeout).build();
+
+    return { builtTx, updatedTxInvocation };
+  }
 }
