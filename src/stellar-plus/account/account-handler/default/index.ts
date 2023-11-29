@@ -15,7 +15,7 @@ export class DefaultAccountHandlerClient
   extends AccountBaseClient
   implements DefaultAccountHandler
 {
-  private secretKey: string;
+  public secretKey: string;
 
   constructor(payload: DefaultAccountHandlerPayload) {
     const { secretKey } = payload;

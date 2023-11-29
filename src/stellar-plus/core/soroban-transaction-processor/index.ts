@@ -3,6 +3,7 @@ import { RpcHandler } from "../../rpc/types";
 import { SorobanHandlerClient } from "../../soroban";
 import { SorobanHandler } from "../../soroban/types";
 import {
+  Address,
   FeeBumpTransaction,
   Network,
   SorobanFeeBumpTransaction,
@@ -16,8 +17,11 @@ import {
   Contract,
   TransactionBuilder,
   SorobanRpc as SorobanRpcNamespace,
+  Address as SorobanAddress,
+  Operation,
 } from "soroban-client";
 import { FeeBumpHeader } from "../types";
+import { DefaultAccountHandler } from "../../account";
 
 export class SorobanTransactionProcessor extends TransactionProcessor {
   private sorobanHandler: SorobanHandler;
@@ -35,6 +39,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     contractId: string
   ): Promise<SorobanTransaction> {
     const { method, methodArgs, header } = args;
+
     const encodedArgs = spec.funcArgsToScVals(method, methodArgs);
 
     try {
@@ -42,6 +47,9 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         header.source
       );
       const contract = new Contract(contractId);
+      const contractCall = contract.call(method, ...encodedArgs);
+
+      console.log("contractCall", contractCall.sourceAccount());
 
       const txEnvelope = new TransactionBuilder(sourceAccount, {
         fee: header.fee,
@@ -83,6 +91,9 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     tx: SorobanTransaction | SorobanFeeBumpTransaction
   ): Promise<SorobanRpcNamespace.SendTransactionResponse> {
     try {
+      // tx.signatures. = tx.signatures.slice(0, tx.signatures.length - 1);
+      // console.log("auth", tx.toEnvelope().v1().tx().operations()[0]);
+      console.log("Submitting transaction: ", tx.toXDR());
       const response = await this.rpcHandler.submitTransaction(tx);
       return response;
     } catch (error) {
@@ -123,8 +134,9 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     if (response.status === "ERROR") {
       console.log(
         "Soroban transaction submission failed!: ",
-        response.errorResult
+        response.errorResult?.toXDR("raw").toString("base64")
       );
+
       throw new Error("Soroban transaction submission failed!");
     }
 
@@ -172,6 +184,16 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       SorobanRpcNamespace.GetTransactionStatus.SUCCESS
     ) {
       return updatedTransaction as SorobanRpcNamespace.GetSuccessfulTransactionResponse;
+    }
+
+    if (
+      updatedTransaction.status ===
+      SorobanRpcNamespace.GetTransactionStatus.FAILED
+    ) {
+      const failedTransaction =
+        updatedTransaction as SorobanRpcNamespace.GetFailedTransactionResponse;
+      // console.log("Details!: ", JSON.stringify(failedTransaction));
+      throw new Error("Transaction execution failed!");
     }
 
     throw new Error("Transaction execution not found!");

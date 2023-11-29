@@ -18,8 +18,10 @@ import { DefaultTransactionSubmitter } from "./core/transaction-submitter/classi
 import { ChannelAccountsTransactionSubmitter } from "./core/transaction-submitter/classic/channel-accounts-submitter";
 
 export const Core = {
-  DefaultTransactionSubmitter,
-  ChannelAccountsTransactionSubmitter,
+  Classic: {
+    DefaultTransactionSubmitter,
+    ChannelAccountsTransactionSubmitter,
+  },
 };
 
 export { Opex } from "./opex";
