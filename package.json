@@ -1,6 +1,8 @@
 {
   "name": "stellar-plus",
-  "version": "0.1.11",
+
+  "version": "0.2.0",
+
   "description": "beta version of stellar-plus, an all-in-one sdk for the Stellar blockchain",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -10,6 +12,7 @@
   "private": false,
   "scripts": {
     "build": "tsc",
+    "dev": "nodemon --exec ts-node src/index_test.ts",
     "test": "echo \"No test specified yet\" && exit 0"
   },
   "keywords": [

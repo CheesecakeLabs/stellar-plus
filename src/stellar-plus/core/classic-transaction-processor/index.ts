@@ -14,15 +14,21 @@ import {
   TransactionXdr,
 } from "../../types";
 import { AccountHandler } from "../../account/account-handler/types";
-import { FeeBumpHeader } from "../types";
+import { FeeBumpHeader, TransactionInvocation } from "../types";
 import { HorizonHandlerClient } from "../../horizon";
+import { TransactionSubmitter } from "../transaction-submitter/classic/types";
+import { DefaultTransactionSubmitter } from "../transaction-submitter/classic/default";
 
 export class TransactionProcessor {
   protected horizonHandler: HorizonHandler;
   protected network: Network;
-  constructor(network: Network) {
+  protected transactionSubmitter: TransactionSubmitter;
+
+  constructor(network: Network, transactionSubmitter?: TransactionSubmitter) {
     this.network = network;
     this.horizonHandler = new HorizonHandlerClient(network);
+    this.transactionSubmitter =
+      transactionSubmitter || new DefaultTransactionSubmitter(network);
   }
 
   protected async signEnvelope(
@@ -80,48 +86,45 @@ export class TransactionProcessor {
           signedInnerTransaction,
           this.network.networkPassphrase
         );
-    const horizonResponse = (await this.submitTransaction(
+    const horizonResponse = (await this.transactionSubmitter.submit(
       finalEnvelope
     )) as HorizonNamespace.SubmitTransactionResponse;
-    const processedTransaction = this.postProcessTransaction(horizonResponse);
+    const processedTransaction =
+      this.transactionSubmitter.postProcessTransaction(horizonResponse);
     return processedTransaction;
   }
 
-  protected async submitTransaction(
-    envelope: Transaction
-  ): Promise<HorizonNamespace.SubmitTransactionResponse> {
-    try {
-      // console.log("Submitting transaction: ", envelope.toXDR());
-      const response = await this.horizonHandler.server.submitTransaction(
-        envelope as ClassicTransaction
-      );
-      return response as HorizonNamespace.SubmitTransactionResponse;
-    } catch (error) {
-      console.log("Couldn't Submit the transaction: ");
-      const resultObject = (error as any)?.response?.data?.extras?.result_codes;
-
-      console.log(resultObject);
-
-      throw new Error("Failed to submit transaction!");
-    }
+  protected verifySigners(
+    publicKeys: string[],
+    signers: AccountHandler[]
+  ): void {
+    publicKeys.forEach((publicKey) => {
+      if (!signers.find((signer) => signer.publicKey === publicKey)) {
+        throw new Error(`Missing signer for public key: ${publicKey}`);
+      }
+    });
   }
 
-  protected postProcessTransaction(
-    response: HorizonNamespace.SubmitTransactionResponse
-  ): any {
-    if (!response.successful) {
-      const restulObject = xdrNamespace.TransactionResult.fromXDR(
-        response.result_xdr,
-        "base64"
-      );
-      const resultMetaObject = xdrNamespace.TransactionResultMeta.fromXDR(
-        response.result_meta_xdr,
-        "base64"
-      );
+  protected async buildCustomTransaction(
+    operations: xdrNamespace.Operation[],
+    txInvocation: TransactionInvocation
+  ): Promise<{
+    builtTx: ClassicTransaction;
+    updatedTxInvocation: TransactionInvocation;
+  }> {
+    const { envelope, updatedTxInvocation } =
+      await this.transactionSubmitter.createEnvelope(txInvocation);
 
-      throw new Error("Transaction failed!");
+    const { header } = updatedTxInvocation;
+
+    let tx: TransactionBuilder = envelope;
+
+    for (const operation of operations) {
+      tx = envelope.addOperation(operation);
     }
 
-    return response;
+    const builtTx = tx.setTimeout(header.timeout).build();
+
+    return { builtTx, updatedTxInvocation };
   }
 }
