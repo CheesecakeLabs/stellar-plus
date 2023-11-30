@@ -16,12 +16,12 @@ export * as RPC from "./rpc";
 
 import { DefaultTransactionSubmitter } from "./core/transaction-submitter/classic/default";
 import { ChannelAccountsTransactionSubmitter } from "./core/transaction-submitter/classic/channel-accounts-submitter";
+import { ChannelAccounts as ChannelAccountsHandler } from "./channel-accounts";
 
 export const Core = {
   Classic: {
     DefaultTransactionSubmitter,
     ChannelAccountsTransactionSubmitter,
+    ChannelAccountsHandler,
   },
 };
-
-export { Opex } from "./opex";

@@ -74,7 +74,7 @@ export class TransactionProcessor {
     ) as FeeBumpTransaction;
   }
 
-  protected async processTransaction(
+  public async processTransaction(
     envelope: Transaction,
     signers: AccountHandler[],
     feeBump?: FeeBumpHeader
@@ -105,7 +105,7 @@ export class TransactionProcessor {
     });
   }
 
-  protected async buildCustomTransaction(
+  public async buildCustomTransaction(
     operations: xdrNamespace.Operation[],
     txInvocation: TransactionInvocation
   ): Promise<{
