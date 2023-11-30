@@ -30,19 +30,15 @@ export class ChannelAccounts {
         Operation.beginSponsoringFutureReserves({
           sponsoredId: channel.publicKey,
         })
-      );
-      operations.push(
+      ),
         Operation.createAccount({
           source: sponsor.getPublicKey(),
           destination: channel.publicKey,
           startingBalance: "0",
-        })
-      );
-      operations.push(
+        }),
         Operation.endSponsoringFutureReserves({
           source: channel.publicKey,
-        })
-      );
+        });
     }
 
     const verifiedTxInvocation = this.verifyTxInvocationWithSponsor(
@@ -61,7 +57,6 @@ export class ChannelAccounts {
         verifiedTxInvocation
       );
 
-    // console.log("TxInvocation: ", updatedTxInvocation);
     await txProcessor.processTransaction(builtTx, updatedTxInvocation.signers);
 
     return channels;
