@@ -302,7 +302,7 @@ const run = async () => {
   await Promise.all(payments);
   const finalTime = Date.now();
   const time = finalTime - initialTime;
-  console.log("Total Time: ", time);
+  console.log("Total Time(ms): ", time);
   console.log(
     "User Account Balance: ",
     await cakeToken.balance(userAccount.getPublicKey())
