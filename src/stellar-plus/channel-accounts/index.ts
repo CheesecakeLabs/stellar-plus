@@ -29,8 +29,7 @@ export class ChannelAccounts {
       operations.push(
         Operation.beginSponsoringFutureReserves({
           sponsoredId: channel.publicKey,
-        })
-      ),
+        }),
         Operation.createAccount({
           source: sponsor.getPublicKey(),
           destination: channel.publicKey,
@@ -38,7 +37,8 @@ export class ChannelAccounts {
         }),
         Operation.endSponsoringFutureReserves({
           source: channel.publicKey,
-        });
+        })
+      );
     }
 
     const verifiedTxInvocation = this.verifyTxInvocationWithSponsor(
