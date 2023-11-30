@@ -3,9 +3,10 @@
 * [Welcome](README.md)
 * [Quick Start](quick-start.md)
 
-## 🎓 Basic Tutorials
+## 🎓 Tutorials
 
-* [Issuing your first asset](basic-tutorials/issuing-your-first-asset.md)
+* [Issuing your first asset](tutorials/issuing-your-first-asset.md)
+* [Bulk Payments](tutorials/bulk-payments.md)
 
 ## 📄 Reference
 

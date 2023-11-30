@@ -1,2 +1,0 @@
-# Issuing your first asset
-
