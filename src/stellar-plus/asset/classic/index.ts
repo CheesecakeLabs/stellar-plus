@@ -5,12 +5,8 @@ import { TransactionInvocation } from "../../core/types";
 import { Network, i128 } from "../../types";
 import { AssetTypes } from "../types";
 import { ClassicAssetHandler as IClassicAssetHandler } from "./types";
-import {
-  Horizon as HorizonNamespace,
-  TransactionBuilder,
-  Operation,
-  Asset as StellarAsset,
-} from "stellar-sdk";
+import { Horizon as HorizonNamespace, TransactionBuilder } from "stellar-sdk";
+import { Operation, Asset as StellarAsset } from "stellar-base";
 
 export class ClassicAssetHandler
   extends TransactionProcessor
@@ -29,7 +25,7 @@ export class ClassicAssetHandler
     code: string,
     issuerPublicKey: string,
     network: Network,
-    issuerAccount: AccountHandler,
+    issuerAccount?: AccountHandler,
     transactionSubmitter?: TransactionSubmitter
   ) {
     super(network, transactionSubmitter);

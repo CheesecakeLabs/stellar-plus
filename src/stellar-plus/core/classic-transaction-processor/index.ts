@@ -2,9 +2,8 @@ import { HorizonHandler } from "../../horizon/types";
 import {
   TransactionBuilder,
   Transaction as ClassicTransaction,
-  Horizon as HorizonNamespace,
   xdr as xdrNamespace,
-} from "stellar-sdk";
+} from "stellar-base";
 import * as SorobanClient from "soroban-client";
 import {
   FeeBumpTransaction,
@@ -13,6 +12,7 @@ import {
   Transaction,
   TransactionXdr,
 } from "../../types";
+import { Horizon as HorizonNamespace } from "stellar-sdk";
 import { AccountHandler } from "../../account/account-handler/types";
 import { FeeBumpHeader, TransactionInvocation } from "../types";
 import { HorizonHandlerClient } from "../../horizon";

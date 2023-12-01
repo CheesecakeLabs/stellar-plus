@@ -5,6 +5,7 @@ import { FeeBumpHeader, TransactionInvocation } from "../../../types";
 import {
   Horizon as HorizonNamespace,
   Transaction as ClassicTransaction,
+  TransactionBuilder as ClassicTxBuild,
   xdr as xdrNamespace,
 } from "stellar-sdk";
 import { TransactionSubmitter as TransactionSubmitter } from "../types";
@@ -88,18 +89,24 @@ export class ChannelAccountsTransactionSubmitter
     const innerEnvelope = (envelope as FeeBumpTransaction).innerTransaction;
     const allocatedChannel = innerEnvelope.source;
 
+    // stellar-base vs stellar-sdk conversion
+    const envelopeXdr = envelope.toXDR();
+    const classicEnvelope = ClassicTxBuild.fromXDR(
+      envelopeXdr,
+      this.network.networkPassphrase
+    ) as ClassicTransaction;
+
     // console.log("Submitting transaction: ", envelope.toXDR());
     try {
       const response = await this.horizonHandler.server.submitTransaction(
-        envelope as ClassicTransaction
+        classicEnvelope
       );
 
       this.releaseChannel(allocatedChannel);
       return response as HorizonNamespace.SubmitTransactionResponse;
     } catch (error) {
       this.releaseChannel(allocatedChannel);
-      console.log("Couldn't Submit the transaction: ", envelope.toXDR());
-      console.log("Error: ", error);
+
       const resultObject = (error as any)?.response?.data?.extras?.result_codes;
 
       console.log("RESULTOBJECT!!", resultObject);

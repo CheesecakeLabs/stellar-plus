@@ -9,8 +9,9 @@ import {
   Transaction as ClassicTransaction,
   FeeBumpTransaction as ClassicFeeBumpTransaction,
   Keypair as ClassicKeypair,
-  Server as HorizonServer,
-} from "stellar-sdk";
+} from "stellar-base";
+
+import { Server as HorizonServer } from "stellar-sdk";
 
 //
 // Groups together core transactions from both libraries

@@ -25,7 +25,7 @@ export class CertificateOfDepositClient
 
     rpcHandler?: RpcHandler
   ) {
-    super(network, rpcHandler, spec as ContractSpec, contractId);
+    super(network, spec as ContractSpec, contractId, rpcHandler);
     this.methods = Methods;
   }
 

@@ -1,6 +1,6 @@
 import { TransactionBuilder } from "stellar-base";
 import { HorizonHandler } from "../../../..";
-import { Network, Transaction } from "../../../../types";
+import { Network, SorobanTransaction, Transaction } from "../../../../types";
 import {
   EnvelopeHeader,
   FeeBumpHeader,
@@ -8,8 +8,9 @@ import {
 } from "../../../types";
 import {
   Horizon as HorizonNamespace,
-  Transaction as ClassicTransaction,
   xdr as xdrNamespace,
+  Transaction as ClassicTransaction,
+  TransactionBuilder as ClassicTxBuild,
 } from "stellar-sdk";
 import { TransactionSubmitter as TransactionSubmitter } from "../types";
 
@@ -47,9 +48,15 @@ export class DefaultTransactionSubmitter implements TransactionSubmitter {
     envelope: Transaction
   ): Promise<HorizonNamespace.SubmitTransactionResponse> {
     try {
-      // console.log("Submitting transaction: ", envelope.toXDR());
+      // stellar-base vs stellar-sdk conversion
+      const envelopeXdr = envelope.toXDR();
+      const classicEnvelope = ClassicTxBuild.fromXDR(
+        envelopeXdr,
+        this.network.networkPassphrase
+      ) as ClassicTransaction;
+
       const response = await this.horizonHandler.server.submitTransaction(
-        envelope as ClassicTransaction
+        classicEnvelope
       );
       return response as HorizonNamespace.SubmitTransactionResponse;
     } catch (error) {
