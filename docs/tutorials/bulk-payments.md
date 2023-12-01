@@ -17,7 +17,7 @@ In this tutorial, we'll demonstrate how to execute bulk payments on the Stellar 
 
 ### Step 1: Initializing the Accounts
 
-The first step in our bulk payments example is to initialize the operational expenditure ([opex.md](../reference/opex.md "mention")) account. This account plays a crucial role in managing the operations of our bulk payment process.
+The first step in our bulk payments example is to initialize an account to cover the operational expenditure, here, we're naming it the opex account. This account plays a crucial role in managing the operations of our bulk payment process.
 
 ```typescript
 const network = StellarPlus.Constants.testnet;
@@ -26,15 +26,13 @@ console.log("Initializing opex account");
 const opexAccount = new StellarPlus.Account.DefaultAccountHandler({
   network,
 });
-await opexAccount.friendbot?.initialize();
+await opex.friendbot?.initialize();
 
-const opex = new StellarPlus.Opex(network, opexAccount);
 ```
 
 #### Explanation:
 
 * **Opex Account Initialization**: Create and initialize the underlying opex account using StellarPlus tools. The `friendbot` function is utilized to fund this account on the testnet.
-* **Setting Up Opex**: Instantiate an `Opex` object with the network and the initialized opex account, preparing it for operational tasks.
 
 This step establishes the primary account required for handling the core setup of our bulk payments process.
 
@@ -45,11 +43,11 @@ After initializing the opex account, the next step involves setting up the trans
 ```typescript
 const defaultFeeBump = {
   header: {
-    source: opexAccount.getPublicKey(),
+    source: opex.getPublicKey(),
     fee: "10000",
     timeout: 30,
   },
-  signers: [opexAccount],
+  signers: [opex],
 };
 
 const transactionSubmitter =
@@ -59,13 +57,20 @@ const transactionSubmitter =
   );
 
 await transactionSubmitter.registerChannels(
-  await opex.initializeNewChannels(10)
+  await StellarPlus.Core.Classic.ChannelAccountsHandler.initializeNewChannels(
+    {
+      numberOfChannels: 15,
+      sponsor: opex,
+      network,
+      txInvocation: defaultFeeBump,
+    }
+  )
 );
 ```
 
 #### Explanation:
 
-* **Default Fee Bump Configuration**: Configure the default settings for transaction fees, source account, and timeout. Here by defining a default Fee Bump and providing it directly to the transaction submitter, we ensure that all transactions triggered through this submitter will be wrapped with this fee bump configuration in case none is explicitly provided at the invocation.\
+* **Default Fee Bump Configuration**: Configure the default settings for transaction fees, source account, and timeout. Here, by defining a default Fee Bump and providing it directly to the transaction submitter, we ensure that all transactions triggered through this submitter will be wrapped with this fee bump configuration in case none is explicitly provided at the invocation.\
   \
   This allows us to ensure that when performing our subsequent transactions with this submitter, all fee costs will be redirected and covered by our central opex account.
 * **Transaction Submitter**: Create a `ChannelAccountsTransactionSubmitter` instance. This component is responsible for efficiently managing and submitting transactions to the Stellar network. It implements the concept of Channel Accounts and ensures a high throughput to the network with minimal required configuration.
@@ -73,7 +78,7 @@ await transactionSubmitter.registerChannels(
   \
   These channel accounts are created with a special configuration so they are sponsored by our opex account, this ensures we don't have to send lumens to any of those, and all operational costs to instantiate and use these accounts are covered by the opex account.\
   \
-  When we provide these accounts to the transactionSubmitter, they are registered to be used as channel accounts for all subsequent transactions triggered by this submitter.
+  When we provide these accounts to the transactionSubmitter, they are registered, to be used as channel accounts for all subsequent transactions triggered by this submitter.
 
 This step is critical for ensuring that the bulk payment process is efficient and scalable, leveraging Stellar's capabilities for handling multiple simultaneous transactions.
 
@@ -136,7 +141,7 @@ await cakeToken.addTrustlineAndMint(userAccount.getPublicKey(), 100, {
 * **Setting Up Transaction Configuration**: Define the transaction invocation configuration, including the source account (user account), fee, and timeout settings.
 * **Adding Trustline and Minting**: Add a trustline for the 'CAKE' asset to the user account and mint an initial amount of the asset. This step is crucial to enable the user account to hold and transact in the newly created asset. \
   \
-  It is also important to note that to authorize the creation of the asset trustline, the transaction needs to be authorized by the user account so, we include the userAccount as signer in this transaction invocation to include its signature to the transaction.
+  It is also important to note that to authorize the creation of the asset trustline, the transaction needs to be authorized by the user account so, we include the userAccount as a signer in this transaction invocation to include its signature to the transaction.
 
 This step finalizes the asset creation process and prepares the user account to receive and hold the asset, setting the stage for executing the bulk payments.
 
@@ -221,20 +226,18 @@ const run = async () => {
   const network = StellarPlus.Constants.testnet;
 
   console.log("Initializing opex account");
-  const opexAccount = new StellarPlus.Account.DefaultAccountHandler({
+  const opex= new StellarPlus.Account.DefaultAccountHandler({
     network,
   });
-  await opexAccount.friendbot?.initialize();
-
-  const opex = new StellarPlus.Opex(network, opexAccount);
+  await opex.friendbot?.initialize();
 
   const defaultFeeBump = {
     header: {
-      source: opexAccount.getPublicKey(),
+      source: opex.getPublicKey(),
       fee: "10000",
       timeout: 30,
     },
-    signers: [opexAccount],
+    signers: [opex],
   };
 
   const transactionSubmitter =
@@ -243,8 +246,16 @@ const run = async () => {
       defaultFeeBump
     );
   console.log("Initializing Channel Accounts");
-  await transactionSubmitter.registerChannels(
-    await opex.initializeNewChannels(10)
+
+ await transactionSubmitter.registerChannels(
+    await StellarPlus.Core.Classic.ChannelAccountsHandler.initializeNewChannels(
+      {
+        numberOfChannels: 15,
+        sponsor: opex,
+        network,
+        txInvocation: defaultFeeBump,
+      }
+    )
   );
 
   console.log("Initializing issuer account");
