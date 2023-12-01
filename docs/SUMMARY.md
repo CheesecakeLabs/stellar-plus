@@ -26,7 +26,6 @@
   * [Default Transaction Submitter](reference/core/default-transaction-submitter.md)
   * [Channel Accounts Transaction Submitter](reference/core/channel-accounts-transaction-submitter.md)
 * [Horizon Handler](reference/horizon-handler.md)
-* [Opex](reference/opex.md)
 * [RPC](reference/rpc/README.md)
   * [Default RPC Handler](reference/rpc/default-rpc-handler.md)
   * [Validation Cloud RPC Handler](reference/rpc/validation-cloud-rpc-handler.md)
