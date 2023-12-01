@@ -25,6 +25,7 @@
 * [Core](reference/core/README.md)
   * [Default Transaction Submitter](reference/core/default-transaction-submitter.md)
   * [Channel Accounts Transaction Submitter](reference/core/channel-accounts-transaction-submitter.md)
+  * [Transaction Processor](reference/core/transaction-processor.md)
 * [Horizon Handler](reference/horizon-handler.md)
 * [RPC](reference/rpc/README.md)
   * [Default RPC Handler](reference/rpc/default-rpc-handler.md)
