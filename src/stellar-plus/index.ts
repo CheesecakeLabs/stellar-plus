@@ -7,21 +7,28 @@ export { SorobanHandlerClient as SorobanHandler } from "./soroban";
 
 export { ContractEngine } from "./core/contract-engine";
 
+export { Core } from "./core";
 import { CertificateOfDepositClient } from "./soroban/contracts/certificate-of-deposit";
 export const Contracts = {
   CertificateOfDeposit: CertificateOfDepositClient,
 };
 
-export * as RPC from "./rpc";
-
-import { DefaultTransactionSubmitter } from "./core/transaction-submitter/classic/default";
-import { ChannelAccountsTransactionSubmitter } from "./core/transaction-submitter/classic/channel-accounts-submitter";
 import { ChannelAccounts as ChannelAccountsHandler } from "./channel-accounts";
 
-export const Core = {
-  Classic: {
-    DefaultTransactionSubmitter,
-    ChannelAccountsTransactionSubmitter,
-    ChannelAccountsHandler,
-  },
+export const Utils = {
+  ChannelAccountsHandler,
 };
+
+export * as RPC from "./rpc";
+
+// import { DefaultTransactionSubmitter } from "./core/transaction-submitter/classic/default";
+// import { ChannelAccountsTransactionSubmitter } from "./core/transaction-submitter/classic/channel-accounts-submitter";
+// import { ChannelAccounts as ChannelAccountsHandler } from "./channel-accounts";
+
+// export const Core = {
+//   Classic: {
+//     DefaultTransactionSubmitter,
+//     ChannelAccountsTransactionSubmitter,
+//     ChannelAccountsHandler,
+//   },
+// };

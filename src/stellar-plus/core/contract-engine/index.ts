@@ -4,15 +4,17 @@ import {
   SorobanRpc as SorobanRpcNamespace,
 } from "soroban-client";
 import { SorobanInvokeArgs, SorobanSimulateArgs } from "./types";
+import { RpcHandler } from "../../rpc/types";
+import { Network } from "../../types";
 
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec;
   private contractId: string;
   constructor(
-    network: any,
-    rpcHandler: any,
+    network: Network,
     spec: ContractSpec,
-    contractId: string
+    contractId: string,
+    rpcHandler?: RpcHandler
   ) {
     super(network, rpcHandler);
     this.spec = spec;

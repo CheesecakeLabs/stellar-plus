@@ -1,7 +1,8 @@
 import { DefaultAccountHandler } from "../account";
 import { AccountHandler } from "../account/account-handler/types";
 import { TransactionProcessor } from "../core/classic-transaction-processor";
-import { xdr as ClassicXdrNamespace, Operation } from "stellar-sdk";
+
+import { Operation, xdr as ClassicXdrNamespace } from "stellar-base";
 import { Network } from "../types";
 import { TransactionInvocation } from "../core/types";
 

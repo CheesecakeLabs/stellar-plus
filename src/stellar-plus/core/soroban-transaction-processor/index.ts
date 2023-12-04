@@ -22,15 +22,16 @@ import {
 } from "soroban-client";
 import { FeeBumpHeader } from "../types";
 import { DefaultAccountHandler } from "../../account";
+import { DefaultRpcHandler } from "../../rpc";
 
 export class SorobanTransactionProcessor extends TransactionProcessor {
   private sorobanHandler: SorobanHandler;
   private rpcHandler: RpcHandler;
 
-  constructor(network: Network, rpcHandler: RpcHandler) {
+  constructor(network: Network, rpcHandler?: RpcHandler) {
     super(network);
     this.sorobanHandler = new SorobanHandlerClient(network);
-    this.rpcHandler = rpcHandler;
+    this.rpcHandler = rpcHandler || new DefaultRpcHandler(network);
   }
 
   protected async buildTransaction(
