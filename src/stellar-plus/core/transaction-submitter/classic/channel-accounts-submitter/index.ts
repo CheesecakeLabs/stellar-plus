@@ -140,4 +140,8 @@ export class ChannelAccountsTransactionSubmitter
       }, 1000);
     });
   }
+
+  public getChannels(): DefaultAccountHandler[] {
+    return [...this.freeChannels, ...this.lockedChannels];
+  }
 }
