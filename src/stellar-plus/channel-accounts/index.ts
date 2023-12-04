@@ -7,7 +7,7 @@ import { Network } from "../types";
 import { TransactionInvocation } from "../core/types";
 
 export class ChannelAccounts {
-  public static async initializeNewChannels(args: {
+  public static async openChannels(args: {
     numberOfChannels: number;
     sponsor: AccountHandler;
     network: Network;
@@ -66,6 +66,45 @@ export class ChannelAccounts {
     await txProcessor.processTransaction(builtTx, updatedTxInvocation.signers);
 
     return channels;
+  }
+
+  public static async closeChannels(
+    channels: DefaultAccountHandler[],
+    sponsor: DefaultAccountHandler,
+    network: Network,
+    txInvocation: TransactionInvocation
+  ): Promise<void> {
+    const txProcessor = new TransactionProcessor(network);
+    const operations: ClassicXdrNamespace.Operation[] = [];
+
+    for (let i = 0; i < channels.length; i++) {
+      const channel = channels[i];
+
+      operations.push(
+        Operation.accountMerge({
+          source: channel.publicKey,
+          destination: sponsor.getPublicKey(),
+        })
+      );
+    }
+    const verifiedTxInvocation = this.verifyTxInvocationWithSponsor(
+      txInvocation,
+      sponsor
+    );
+
+    verifiedTxInvocation.signers = [
+      ...verifiedTxInvocation.signers,
+      ...channels,
+    ];
+
+    const { builtTx, updatedTxInvocation } =
+      await txProcessor.buildCustomTransaction(
+        operations,
+        verifiedTxInvocation
+      );
+
+    // console.log("TxInvocation: ", updatedTxInvocation);
+    await txProcessor.processTransaction(builtTx, updatedTxInvocation.signers);
   }
 
   private static verifyTxInvocationWithSponsor(
