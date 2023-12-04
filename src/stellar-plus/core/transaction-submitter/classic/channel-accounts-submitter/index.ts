@@ -88,7 +88,6 @@ export class ChannelAccountsTransactionSubmitter
     const innerEnvelope = (envelope as FeeBumpTransaction).innerTransaction;
     const allocatedChannel = innerEnvelope.source;
 
-    //console.log("Submitting transaction: ", envelope.toXDR());
     try {
       const response = await this.horizonHandler.server.submitTransaction(
         envelope as ClassicTransaction
