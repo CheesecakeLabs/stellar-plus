@@ -96,7 +96,6 @@ export class ChannelAccountsTransactionSubmitter
       this.network.networkPassphrase
     ) as ClassicTransaction;
 
-    // console.log("Submitting transaction: ", envelope.toXDR());
     try {
       const response = await this.horizonHandler.server.submitTransaction(
         classicEnvelope
