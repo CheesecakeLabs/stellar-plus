@@ -1,71 +1,66 @@
-import { DefaultAccountHandler } from "../account";
-import { AccountHandler } from "../account/account-handler/types";
-import { TransactionProcessor } from "../core/classic-transaction-processor";
+import { xdr as ClassicXdrNamespace, Operation } from 'stellar-base'
 
-import { Operation, xdr as ClassicXdrNamespace } from "stellar-base";
-import { Network } from "../types";
-import { TransactionInvocation } from "../core/types";
+import { DefaultAccountHandlerClient as DefaultAccountHandler } from '@account/account-handler/default'
+import { AccountHandler } from '@account/account-handler/types'
+import { TransactionProcessor } from '@core/classic-transaction-processor'
+import { TransactionInvocation } from '@core/types'
+import { Network } from '@stellar-plus/types'
 
 export class ChannelAccounts {
   public static async openChannels(args: {
-    numberOfChannels: number;
-    sponsor: AccountHandler;
-    network: Network;
-    txInvocation: TransactionInvocation;
+    numberOfChannels: number
+    sponsor: AccountHandler
+    network: Network
+    txInvocation: TransactionInvocation
   }): Promise<DefaultAccountHandler[]> {
-    const { numberOfChannels, sponsor, network, txInvocation } = args;
+    const { numberOfChannels, sponsor, network, txInvocation } = args
 
-    const txProcessor = new TransactionProcessor(network);
+    const txProcessor = new TransactionProcessor(network)
 
     if (numberOfChannels <= 0 || numberOfChannels > 15) {
-      throw new Error("Invalid number of channels! Must be between 1 and 15!");
+      throw new Error('Invalid number of channels! Must be between 1 and 15!')
     }
-    const channels: DefaultAccountHandler[] = [];
-    const operations: ClassicXdrNamespace.Operation[] = [];
+    const channels: DefaultAccountHandler[] = []
+    const operations: ClassicXdrNamespace.Operation[] = []
 
     for (let i = 0; i < numberOfChannels; i++) {
-      const channel = new DefaultAccountHandler({ network });
-      channels.push(channel);
+      const channel = new DefaultAccountHandler({ network })
+      channels.push(channel)
 
       operations.push(
         Operation.beginSponsoringFutureReserves({
           sponsoredId: channel.publicKey,
         })
-      );
+      )
       operations.push(
         Operation.createAccount({
           source: sponsor.getPublicKey(),
           destination: channel.publicKey,
-          startingBalance: "0",
+          startingBalance: '0',
         })
-      );
+      )
       operations.push(
         Operation.endSponsoringFutureReserves({
           source: channel.publicKey,
         })
-      );
+      )
     }
 
-    const verifiedTxInvocation = this.verifyTxInvocationWithSponsor(
-      txInvocation,
-      sponsor
-    );
+    const verifiedSourceTxInvocation: TransactionInvocation = {
+      ...(this.verifyTxInvocationWithSponsor(txInvocation, sponsor) as TransactionInvocation),
+    }
 
-    verifiedTxInvocation.signers = [
-      ...verifiedTxInvocation.signers,
-      ...channels,
-    ];
+    verifiedSourceTxInvocation.signers.push(...channels)
 
-    const { builtTx, updatedTxInvocation } =
-      await txProcessor.buildCustomTransaction(
-        operations,
-        verifiedTxInvocation
-      );
+    const { builtTx, updatedTxInvocation } = await txProcessor.buildCustomTransaction(
+      operations,
+      verifiedSourceTxInvocation
+    )
 
     // console.log("TxInvocation: ", updatedTxInvocation);
-    await txProcessor.processTransaction(builtTx, updatedTxInvocation.signers);
+    await txProcessor.processTransaction(builtTx, updatedTxInvocation.signers)
 
-    return channels;
+    return channels
   }
 
   public static async closeChannels(
@@ -74,37 +69,27 @@ export class ChannelAccounts {
     network: Network,
     txInvocation: TransactionInvocation
   ): Promise<void> {
-    const txProcessor = new TransactionProcessor(network);
-    const operations: ClassicXdrNamespace.Operation[] = [];
+    const txProcessor = new TransactionProcessor(network)
+    const operations: ClassicXdrNamespace.Operation[] = []
 
     for (let i = 0; i < channels.length; i++) {
-      const channel = channels[i];
+      const channel = channels[i]
 
       operations.push(
         Operation.accountMerge({
           source: channel.publicKey,
           destination: sponsor.getPublicKey(),
         })
-      );
+      )
     }
-    const verifiedTxInvocation = this.verifyTxInvocationWithSponsor(
-      txInvocation,
-      sponsor
-    );
+    const verifiedTxInvocation = this.verifyTxInvocationWithSponsor(txInvocation, sponsor)
 
-    verifiedTxInvocation.signers = [
-      ...verifiedTxInvocation.signers,
-      ...channels,
-    ];
+    verifiedTxInvocation.signers = [...verifiedTxInvocation.signers, ...channels]
 
-    const { builtTx, updatedTxInvocation } =
-      await txProcessor.buildCustomTransaction(
-        operations,
-        verifiedTxInvocation
-      );
+    const { builtTx, updatedTxInvocation } = await txProcessor.buildCustomTransaction(operations, verifiedTxInvocation)
 
     // console.log("TxInvocation: ", updatedTxInvocation);
-    await txProcessor.processTransaction(builtTx, updatedTxInvocation.signers);
+    await txProcessor.processTransaction(builtTx, updatedTxInvocation.signers)
   }
 
   private static verifyTxInvocationWithSponsor(
@@ -115,8 +100,8 @@ export class ChannelAccounts {
       ...txInvocation,
       signers:
         txInvocation.header.source === sponsor.getPublicKey()
-          ? txInvocation.signers
+          ? [...txInvocation.signers]
           : [...txInvocation.signers, sponsor],
-    };
+    }
   }
 }

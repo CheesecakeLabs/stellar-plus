@@ -1,9 +1,9 @@
-import { Transaction, TransactionXdr } from "../../types";
-import { AccountBase } from "../base/types";
-import { AccountHelpersPayload } from "../helpers/types";
+import { AccountBase } from '@account/base/types'
+import { AccountHelpersPayload } from '@account/helpers/types'
+import { Transaction, TransactionXdr } from '@stellar-plus/types'
 
 export type AccountHandler = AccountBase & {
-  sign(tx: Transaction): Promise<TransactionXdr> | TransactionXdr;
-};
+  sign(tx: Transaction): Promise<TransactionXdr> | TransactionXdr
+}
 
-export type AccountHandlerPayload = AccountHelpersPayload & {};
+export type AccountHandlerPayload = AccountHelpersPayload

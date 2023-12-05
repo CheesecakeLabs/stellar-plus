@@ -1,25 +1,25 @@
-export * as Constants from "./constants";
-export * as Account from "./account";
-export * as Asset from "./asset";
+import { ChannelAccounts as ChannelAccountsHandler } from '@channel-accounts/index'
+import { CertificateOfDepositClient } from '@soroban/contracts/certificate-of-deposit'
 
-export { HorizonHandlerClient as HorizonHandler } from "./horizon";
-export { SorobanHandlerClient as SorobanHandler } from "./soroban";
+export * as Account from '@account/index'
+export * as Asset from '@asset/index'
+export * as Constants from './constants'
+export { HorizonHandlerClient as HorizonHandler } from '@horizon/index'
+export { SorobanHandlerClient as SorobanHandler } from '@soroban/index'
 
-export { ContractEngine } from "./core/contract-engine";
+export { ContractEngine } from '@core/contract-engine'
 
-export { Core } from "./core";
-import { CertificateOfDepositClient } from "./soroban/contracts/certificate-of-deposit";
+export { Core } from '@core/index'
+
 export const Contracts = {
   CertificateOfDeposit: CertificateOfDepositClient,
-};
-
-import { ChannelAccounts as ChannelAccountsHandler } from "./channel-accounts";
+}
 
 export const Utils = {
   ChannelAccountsHandler,
-};
+}
 
-export * as RPC from "./rpc";
+export * as RPC from '@rpc/index'
 
 // import { DefaultTransactionSubmitter } from "./core/transaction-submitter/classic/default";
 // import { ChannelAccountsTransactionSubmitter } from "./core/transaction-submitter/classic/channel-accounts-submitter";

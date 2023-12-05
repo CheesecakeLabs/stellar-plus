@@ -1,49 +1,49 @@
-import { TransactionInvocation } from "../../../core/types";
-import { Address, i128, u64 } from "../../../types";
+import { TransactionInvocation } from '@core/types'
+import { i128, u64 } from '@stellar-plus/types'
 
 export enum methods {
-  get_position = "get_position",
+  get_position = 'get_position',
 }
 
 export type CertificateOfDepositContract = {
-  deposit({}: DepositArgs): Promise<void>;
-  withdraw({}: WithdrawArgs): Promise<void>;
-  getEstimatedYield({}: GetEstimatedYieldArgs): Promise<number>;
-  getPosition({}: GetPositionArgs): Promise<number>;
-  getEstimatedPrematureWithdraw({}: GetEstimatedPrematureWithdrawArgs): Promise<number>;
-  getTimeLeft({}: GetTimeLeftArgs): Promise<number>;
+  deposit(args: DepositArgs): Promise<void>
+  withdraw(args: WithdrawArgs): Promise<void>
+  getEstimatedYield(args: GetEstimatedYieldArgs): Promise<number>
+  getPosition(args: GetPositionArgs): Promise<number>
+  getEstimatedPrematureWithdraw(args: GetEstimatedPrematureWithdrawArgs): Promise<number>
+  getTimeLeft(args: GetTimeLeftArgs): Promise<number>
   // extendContractValidity(): Promise<void>;
-};
+}
 
 export type DepositArgs = TransactionInvocation & {
-  amount: bigint;
-  address: string;
-};
+  amount: bigint
+  address: string
+}
 
 export type WithdrawArgs = TransactionInvocation & {
-  address: string;
-  acceptPrematureWithdraw: boolean;
-};
+  address: string
+  acceptPrematureWithdraw: boolean
+}
 export type GetEstimatedYieldArgs = TransactionInvocation & {
-  address: string;
-};
+  address: string
+}
 
 export type GetPositionArgs = TransactionInvocation & {
-  address: string;
-};
+  address: string
+}
 
 export type GetEstimatedPrematureWithdrawArgs = TransactionInvocation & {
-  address: string;
-};
+  address: string
+}
 
 export type GetTimeLeftArgs = TransactionInvocation & {
-  address: string;
-};
+  address: string
+}
 
 export type DepositData = {
-  amount: i128;
-  timestamp: u64;
-};
+  amount: i128
+  timestamp: u64
+}
 
 // export type DataKey =
 //   | { tag: "Admin"; values: void }

@@ -1,6 +1,5 @@
-import { SorobanRpcServer } from "../types";
-import { AccountResponse } from "stellar-sdk";
+import { SorobanRpcServer } from '@stellar-plus/types'
 
 export type SorobanHandler = {
-  server: SorobanRpcServer;
-};
+  server: SorobanRpcServer
+}

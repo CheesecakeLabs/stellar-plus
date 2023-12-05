@@ -1,41 +1,38 @@
 import {
-  getPublicKey,
-  signTransaction,
-  setAllowed,
-  isConnected,
-  isAllowed,
   getNetworkDetails,
-} from "@stellar/freighter-api";
-import { Network, Transaction } from "../../../types";
-import { AccountBaseClient } from "../../base";
+  getPublicKey,
+  isAllowed,
+  isConnected,
+  setAllowed,
+  signTransaction,
+} from '@stellar/freighter-api'
 
 import {
-  FreighterAccountHandler,
   FreighterAccHandlerPayload,
+  FreighterAccountHandler,
   FreighterCallback,
-} from "./types";
+} from '@account/account-handler/freighter/types'
+import { AccountBaseClient } from '@account/base'
+import { Network, Transaction } from '@stellar-plus/types'
 
-export class FreighterAccountHandlerClient
-  extends AccountBaseClient
-  implements FreighterAccountHandler
-{
-  private network: Network;
+export class FreighterAccountHandlerClient extends AccountBaseClient implements FreighterAccountHandler {
+  private network: Network
 
   constructor(payload: FreighterAccHandlerPayload) {
-    const { network } = payload;
-    const publicKey = "";
-    super({ ...payload, publicKey });
+    const { network } = payload as { network: Network }
+    const publicKey = ''
+    super({ ...payload, publicKey })
 
-    this.network = network;
-    this.publicKey = "";
+    this.network = network
+    this.publicKey = ''
   }
 
   public getPublicKey(): string {
-    if (this.publicKey === "") {
-      this.connect();
+    if (this.publicKey === '') {
+      this.connect()
     }
 
-    return this.publicKey;
+    return this.publicKey
   }
 
   //
@@ -44,14 +41,14 @@ export class FreighterAccountHandlerClient
   // public key if successful
   //
   public async connect(onPublicKeyReceived?: FreighterCallback): Promise<void> {
-    await this.loadPublicKey(onPublicKeyReceived, true);
+    await this.loadPublicKey(onPublicKeyReceived, true)
   }
 
   //
   // Disconnect from Freighter
   //
   public disconnect(): void {
-    this.publicKey = "";
+    this.publicKey = ''
   }
 
   //
@@ -60,24 +57,19 @@ export class FreighterAccountHandlerClient
   // is true, it will perform all necessary verification to
   // connect to Freighter and trigger the connection
   //
-  public async loadPublicKey(
-    onPublicKeyReceived?: FreighterCallback,
-    enforceConnection?: boolean
-  ): Promise<void> {
-    const isFreighterConnected = await this.isFreighterConnected(
-      enforceConnection,
-      onPublicKeyReceived
-    );
+  public async loadPublicKey(onPublicKeyReceived?: FreighterCallback, enforceConnection?: boolean): Promise<void> {
+    const isFreighterConnected = await this.isFreighterConnected(enforceConnection, onPublicKeyReceived)
 
     if (isFreighterConnected) {
       try {
-        const publicKey = await getPublicKey();
-        this.publicKey = publicKey;
+        const publicKey = await getPublicKey()
+        this.publicKey = publicKey
         if (onPublicKeyReceived) {
-          onPublicKeyReceived(publicKey);
+          onPublicKeyReceived(publicKey)
         }
       } catch (error) {
-        console.log("Couldn't retrieve public key from Freighter! ", error);
+        // console.log("Couldn't retrieve public key from Freighter! ", error)
+        throw new Error("Couldn't retrieve public key from Freighter! ")
       }
     }
   }
@@ -88,24 +80,24 @@ export class FreighterAccountHandlerClient
   // Freighter to sign with that account.
   //
   public async sign(tx: Transaction): Promise<string> {
-    const isFreighterConnected = await this.isFreighterConnected(true);
+    const isFreighterConnected = await this.isFreighterConnected(true)
 
     if (isFreighterConnected) {
       try {
-        const txXDR = tx.toXDR();
+        const txXDR = tx.toXDR()
 
         const signedTx = await signTransaction(txXDR, {
           networkPassphrase: this.network.networkPassphrase,
           accountToSign: this.publicKey,
-        });
-        return signedTx;
+        })
+        return signedTx
       } catch (error) {
-        console.log("Couldn't sign transaction with Freighter! ", error);
-        throw error;
+        // console.log("Couldn't sign transaction with Freighter! ", error)
+        throw new Error("Couldn't sign transaction with Freighter! ")
       }
     } else {
-      this.connect();
-      throw new Error("Freighter not connected");
+      this.connect()
+      throw new Error('Freighter not connected')
     }
   }
 
@@ -114,62 +106,55 @@ export class FreighterAccountHandlerClient
   // If enforceConnection is true, it will trigger the connection
   // and call the callback with the public key if successful.
   //
-  public async isFreighterConnected(
-    enforceConnection?: boolean,
-    callback?: FreighterCallback
-  ) {
-    const isFreighterInstalled = await this.isFreighterInstalled();
+  public async isFreighterConnected(enforceConnection?: boolean, callback?: FreighterCallback): Promise<boolean> {
+    const isFreighterInstalled = await this.isFreighterInstalled()
 
     if (!isFreighterInstalled) {
-      return false;
+      return false
     }
 
     //
     // REVIEW: Documentation isn't clear, could be that
     // we don't need both isAllowed and setAllowed
     //
-    const isApplicationAllowed = await this.isApplicationAuthorized();
+    const isApplicationAllowed = await this.isApplicationAuthorized()
     if (!isApplicationAllowed) {
       if (enforceConnection) {
-        setAllowed().then((res) => {
+        setAllowed().then(() => {
           if (callback) {
-            this.loadPublicKey(callback);
+            this.loadPublicKey(callback)
           }
-        });
+        })
       }
-      return false;
+      return false
     }
 
-    const isNetworkCorrect = await this.isNetworkCorrect();
+    const isNetworkCorrect = await this.isNetworkCorrect()
     if (!isNetworkCorrect) {
-      return false;
+      return false
     }
-    return true;
+    return true
   }
 
   //
   // Verify is Freighter extension is installed
   //
-  public async isFreighterInstalled() {
-    const isFreighterConnected = await isConnected();
+  public async isFreighterInstalled(): Promise<boolean> {
+    const isFreighterConnected = await isConnected()
 
-    if (!isFreighterConnected) {
-      console.log("Ops, seems like you don't have Freighter extension yet!");
-      return false;
-    }
-    return true;
+    return isFreighterConnected
   }
 
   //
   // Verify if the application is authorized to connect to Freighter
   //
 
-  public async isApplicationAuthorized() {
-    const isApplicationAllowed = await isAllowed();
+  public async isApplicationAuthorized(): Promise<boolean> {
+    const isApplicationAllowed = await isAllowed()
     if (!isApplicationAllowed) {
-      return false;
+      return false
     }
-    return true;
+    return true
   }
 
   //
@@ -177,15 +162,14 @@ export class FreighterAccountHandlerClient
   // is the same as the network selected on this
   // handler
   //
-  public async isNetworkCorrect() {
-    const networkDetails = await getNetworkDetails();
+  public async isNetworkCorrect(): Promise<boolean> {
+    const networkDetails = await getNetworkDetails()
 
     if (networkDetails.networkPassphrase !== this.network.networkPassphrase) {
-      console.log(
-        `You need to be in ${this.network.name} to connect to this application.`
-      );
-      return false;
+      // console.log(`You need to be in ${this.network.name} to connect to this application.`)
+      throw new Error(`You need to be in ${this.network.name} to connect to this application.`)
+      return false
     }
-    return true;
+    return true
   }
 }
