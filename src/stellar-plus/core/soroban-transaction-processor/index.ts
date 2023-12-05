@@ -70,6 +70,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
   protected async submitSorobanTransaction(
     tx: SorobanTransaction | SorobanFeeBumpTransaction
   ): Promise<SorobanRpcNamespace.SendTransactionResponse> {
+    console.log('Submitting transaction: ', tx.toXDR())
     try {
       const response = await this.rpcHandler.submitTransaction(tx)
       return response

@@ -21,7 +21,7 @@ export class ValidationCloudRpcHandler implements RpcHandler {
     this.apiKey = apiKey
     this.baseUrl =
       this.network.name === 'testnet'
-        ? 'https://testnet.stellar.validationcloud.io/v1/'
+        ? 'https://javelin.us-west-2.prd.validationcloud.io/v1/'
         : 'https://testnet.stellar.validationcloud.io/v1/' // no support to mainnet yet
 
     this.id = this.generateId()
@@ -61,9 +61,12 @@ export class ValidationCloudRpcHandler implements RpcHandler {
       },
     }
 
-    const response = await this.fetch(payload)
+    const response = (await this.fetch(payload)) as ApiResponse
+    const rawGetResponse = response.result as SorobanRpc.RawGetTransactionResponse
 
-    return response.result as SorobanRpc.GetTransactionResponse
+    const formattedResponse: SorobanRpc.GetTransactionResponse = rawGetResponse as SorobanRpc.GetTransactionResponse
+
+    return formattedResponse
   }
 
   public async simulateTransaction(tx: Transaction): Promise<SorobanRpc.SimulateTransactionResponse> {

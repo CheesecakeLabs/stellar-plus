@@ -1,4 +1,4 @@
-import { ContractSpec, SorobanRpc as SorobanRpcNamespace } from 'soroban-client'
+import { ContractSpec, SorobanRpc as SorobanRpcNamespace, xdr } from 'soroban-client'
 
 import { SorobanInvokeArgs, SorobanSimulateArgs } from '@core/contract-engine/types'
 import { SorobanTransactionProcessor } from '@core/soroban-transaction-processor'
@@ -66,6 +66,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     response: SorobanRpcNamespace.GetSuccessfulTransactionResponse,
     method: string
   ): Promise<unknown> {
+    console.log('Response: ', response)
     const invocationResultMetaXdr = response.resultMetaXdr
     const output = this.spec.funcResToNative(
       method,
