@@ -21,7 +21,7 @@ export class ValidationCloudRpcHandler implements RpcHandler {
     this.apiKey = apiKey
     this.baseUrl =
       this.network.name === 'testnet'
-        ? 'https://javelin.us-west-2.prd.validationcloud.io/v1/'
+        ? 'https://testnet.stellar.validationcloud.io/v1/'
         : 'https://testnet.stellar.validationcloud.io/v1/' // no support to mainnet yet
 
     this.id = this.generateId()

@@ -53,11 +53,11 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
     return 7
   }
 
-  //
-  // For now it is defauting to the asset
-  // code. Can be improved to get the actual
-  // name from the asset issuer's toml file.
-  //
+  /**
+   *
+   * @returns  The asset code.
+   * @todo Improve to get the actual name from the asset issuer's toml file.
+   */
   public async name(): Promise<string> {
     return this.code
   }
