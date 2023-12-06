@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { SorobanRpc, Transaction, assembleTransaction, parseRawSimulation } from 'soroban-client'
+import { SorobanRpc, Transaction, assembleTransaction, parseRawSimulation, xdr as SorobanXdr } from 'soroban-client'
 import { parseRawSendTransaction } from 'soroban-client/lib/parsers'
 
 import { RpcHandler } from '@rpc/types'
@@ -51,7 +51,14 @@ export class ValidationCloudRpcHandler implements RpcHandler {
       })
   }
 
-  public async getTransaction(txHash: string): Promise<SorobanRpc.GetTransactionResponse> {
+  public async getTransaction(
+    txHash: string
+  ): Promise<
+    | SorobanRpc.GetTransactionResponse
+    | SorobanRpc.GetFailedTransactionResponse
+    | SorobanRpc.GetMissingTransactionResponse
+    | SorobanRpc.GetSuccessfulTransactionResponse
+  > {
     const payload: RequestPayload = {
       jsonrpc: '2.0',
       id: this.generateId(),
@@ -64,9 +71,30 @@ export class ValidationCloudRpcHandler implements RpcHandler {
     const response = (await this.fetch(payload)) as ApiResponse
     const rawGetResponse = response.result as SorobanRpc.RawGetTransactionResponse
 
-    const formattedResponse: SorobanRpc.GetTransactionResponse = rawGetResponse as SorobanRpc.GetTransactionResponse
+    if (rawGetResponse.status === 'NOT_FOUND') {
+      return rawGetResponse as SorobanRpc.GetMissingTransactionResponse
+    }
 
-    return formattedResponse
+    if (rawGetResponse.status === 'FAILED') {
+      return rawGetResponse as SorobanRpc.GetFailedTransactionResponse
+    }
+
+    //
+    // Necessary to parse the inner values
+    // as we need because they're returned as
+    // raw xdr strings.
+    //
+    if (rawGetResponse.status === 'SUCCESS') {
+      return {
+        ...(rawGetResponse as unknown as SorobanRpc.GetSuccessfulTransactionResponse),
+        resultMetaXdr: SorobanXdr.TransactionMeta.fromXDR(
+          Buffer.from(rawGetResponse.resultMetaXdr as string, 'base64'),
+          'raw'
+        ),
+      } as unknown as SorobanRpc.GetSuccessfulTransactionResponse
+    }
+
+    return rawGetResponse as SorobanRpc.GetTransactionResponse
   }
 
   public async simulateTransaction(tx: Transaction): Promise<SorobanRpc.SimulateTransactionResponse> {

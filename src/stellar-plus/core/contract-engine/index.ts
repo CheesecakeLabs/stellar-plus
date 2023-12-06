@@ -66,7 +66,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     response: SorobanRpcNamespace.GetSuccessfulTransactionResponse,
     method: string
   ): Promise<unknown> {
-    console.log('Response: ', response)
+    // console.log('Response: ', response)
     const invocationResultMetaXdr = response.resultMetaXdr
     const output = this.spec.funcResToNative(
       method,
