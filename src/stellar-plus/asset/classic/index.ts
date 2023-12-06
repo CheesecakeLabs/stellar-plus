@@ -16,6 +16,18 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
   private issuerAccount?: AccountHandler
   private asset: StellarAsset
 
+  /**
+   *
+   * @param code
+   * @param issuerPublicKey
+   * @param network
+   * @param issuerAccount
+   * @param transactionSubmitter
+   *
+   * @description - The issuer account is optional. When provided, it'll enable management functions and be used to sign transactions as the issuer.
+   *
+   *
+   */
   constructor(
     code: string,
     issuerPublicKey: string,
@@ -38,17 +50,21 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
   //==========================================
   //
   //
-  // Refers to the code of the asset.
-  //
+
+  /**
+   *
+   * @returns The asset code.
+   */
   public async symbol(): Promise<string> {
     return this.code
   }
 
-  //
-  // Default for classic assets = 7.
-  // Can be improved to get the actual
-  // value from the asset issuer's toml file.
-  //
+  /**
+   *
+   * @returns The asset decimals.
+   * @description - Default for classic assets = 7.
+   * @todo Improve to get the actual value from the asset issuer's toml file.
+   */
   public async decimals(): Promise<number> {
     return 7
   }
@@ -62,14 +78,22 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
     return this.code
   }
 
+  /**
+   * @description - Not implemented in pure classic assets. Only available for Soroban assets.
+   */
   public async allowance(): Promise<bigint> {
-    throw new Error('Method not implemented.')
+    throw new Error('Method not implemented in Classic ssets.')
   }
 
   public async approve(): Promise<void> {
     throw new Error('Method not implemented.')
   }
 
+  /**
+   *
+   * @param id - The account id to check the balance for.
+   * @returns The balance of the asset for the given account.
+   */
   public async balance(id: string): Promise<number> {
     const sourceAccount = (await this.horizonHandler.loadAccount(id)) as AccountResponse
     const balanceLine = sourceAccount.balances.filter((balanceLine: HorizonNamespace.BalanceLine) => {
@@ -94,10 +118,19 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
     throw new Error('Method not implemented.')
   }
 
-  //
-  // Signers: - 'From' account
-  //
-  //
+  /**
+   *
+   * @param from - The account id to transfer the asset from.
+   * @param to - The account id to transfer the asset to.
+   * @param amount - The amount of the asset to transfer.
+   * @param txInvocation - The transaction invocation object. Must include the 'From' account as a signer to authorize this transaction.
+   *
+   * @requires - The 'from' account to be set as a signer in the transaction invocation.
+   *
+   * @returns void
+   *
+   * @description - Transfers the given amount of the asset from the 'from' account to the 'to' account.
+   */
   public async transfer(from: string, to: string, amount: i128, txInvocation: TransactionInvocation): Promise<void> {
     const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope(txInvocation)
 
@@ -137,6 +170,7 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
   // Management Methods - Require Admin / Issuer account
   //==========================================
   //
+  //
 
   public async set_admin(): Promise<void> {
     throw new Error('Method not implemented.')
@@ -148,11 +182,17 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
     throw new Error('Method not implemented.')
   }
 
-  //
-  // Performs a payment from the issuer account directly
-  // to the target account. The amount is minted in the
-  // process as new circulating supply.
-  //
+  /**
+   *
+   * @param to - The account id to mint the asset to.
+   * @param amount - The amount of the asset to mint.
+   * @param txInvocation - The transaction invocation object. The Issuer account will be automatically added as a signer.
+   *
+   * @description - Mints the given amount of the asset to the 'to' account.
+   * @requires - The issuer account to be set in the asset.
+   *
+   * @returns The response from the Horizon server.
+   */
   public async mint(
     to: string,
     amount: i128,
@@ -190,17 +230,21 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
   // Util Methods
   //==========================================
   //
+  //
 
-  //
-  // This transaction will add a trustline and mint tokens to target account.
-  // It automatically adds the issuer as a signer for the inner transaction.
-  //
-  //
-  // Signers: - 'To' account
-  //             Must include the account that will receive the tokens
-  //             because the operation to add the trustline requires approval.
-  //
-  //
+  /**
+   *
+   * @param to - The account id to mint the asset to.
+   * @param amount - The amount of the asset to mint.
+   * @param txInvocation - The transaction invocation object. The  The Issuer account will be automatically added as a signer.
+   *
+   * @requires - The issuer account to be set in the asset.
+   * @requires - The 'to' account to be set as a signer in the transaction invocation.
+   *
+   * @description - Mints the given amount of the asset to the 'to' account. The trustline is also set in process.
+   *
+   * @returns The response from the Horizon server.
+   */
   public async addTrustlineAndMint(
     to: string,
     amount: number,
@@ -240,6 +284,11 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
   // Internal Methods
   //==========================================
   //
+
+  /**
+   *
+   * @description - Enforces the issuer account to be set.
+   */
   private requireIssuerAccount(): void {
     if (!this.issuerAccount) {
       throw new Error('Issuer account not set!')
