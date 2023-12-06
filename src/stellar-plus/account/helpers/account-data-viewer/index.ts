@@ -18,7 +18,7 @@ export class AccountDataViewerClient implements AccountDataViewer {
 
   /**
    *
-   * @returns The account's balances.
+   * @returns {Horizon.BalanceLine[]} A list of the account's balances.
    * @description - The account's balances are retrieved from the Horizon server and provided in a list, including all assets.
    */
   public async getBalances(): Promise<

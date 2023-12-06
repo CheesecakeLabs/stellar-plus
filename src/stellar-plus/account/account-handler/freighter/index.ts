@@ -20,7 +20,10 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
 
   /**
    *
-   * @param payload - The payload for the Freighter account handler. Additional parameters may be provided to enable different helpers.
+   * @args payload - The payload for the Freighter account handler. Additional parameters may be provided to enable different helpers.
+   *
+   * @param {Network} payload.network The network to use.
+   *
    * @description - The Freighter account handler is used for handling and creating new accounts by integrating with the browser extension Freighter App.
    */
   constructor(payload: FreighterAccHandlerPayload) {
@@ -34,7 +37,7 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
 
   /**
    *
-   * @returns The public key of the account.
+   * @returns {string} The public key of the account.
    */
   public getPublicKey(): string {
     if (this.publicKey === '') {
@@ -46,8 +49,10 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
 
   /**
    *
-   * @param onPublicKeyReceived - The callback to be called with the public key if successful.
-   * @returns Promise<void>
+   * @param {function(string): void} onPublicKeyReceived - The callback to be called with the public key if successful.
+   *
+   * @returns {Promise<void>}
+   *
    * @description - Perform all necessary verification to connect to Freighter and trigger the connection, calling the callback with the public key if successful.
    */
   public async connect(onPublicKeyReceived?: FreighterCallback): Promise<void> {
@@ -55,7 +60,8 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
   }
 
   /**
-   *  @returns void
+   *  @returns {void}
+   *
    *  @description - Disconnect from Freighter.
    */
   public disconnect(): void {
@@ -64,9 +70,11 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
 
   /**
    *
-   * @param onPublicKeyReceived - The callback to be called with the public key if successful.
-   * @param enforceConnection - If true, it will perform all necessary verification to connect to Freighter and trigger the connection. Defaults to false.
-   * @returns Promise<void>
+   * @param {function(string):void} onPublicKeyReceived - The callback to be called with the public key if successful.
+   * @param {boolean} enforceConnection - If true, it will perform all necessary verification to connect to Freighter and trigger the connection. Defaults to false.
+   *
+   * @returns {Promise<void>}
+   *
    * @description - Get the public key from Freighter and call the callback with the public key if successful. When enforceConnection is true, it will perform all necessary verification to connect to Freighter and trigger the connection.
    *
    * */
@@ -89,10 +97,10 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
 
   /**
    *
-   * @param tx - The transaction to sign.
-   * @param signerPublicKey - The public key of the account to sign the transaction with. If not provided, it will use the public key of the account handler.
+   * @param {Transaction} tx - The transaction to sign.
    *
-   * @returns Promise<string>
+   * @returns {Promise<string>
+   * }
    * @description - Sign a transaction with Freighter and return the signed transaction. If signerpublicKey is provided, it will be used to specifically request Freighter to sign with that account.
    *
    */
@@ -120,10 +128,10 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
 
   /**
    *
-   * @param enforceConnection - If true, it will perform all necessary verification to connect to Freighter and trigger the connection. Defaults to false.
-   * @param callback - The callback to be called with the public key if successful.
+   * @param {boolean} enforceConnection - If true, it will perform all necessary verification to connect to Freighter and trigger the connection. Defaults to false.
+   * @param {function(string):void} callback - The callback to be called with the public key if successful.
    *
-   * @returns Promise<boolean>
+   * @returns {Promise<boolean>}
    *
    * @description - Perform all necessary verification to connect to Freighter. If enforceConnection is true, it will trigger the connection and call the callback with the public key if successful.
    *
@@ -160,7 +168,7 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
 
   /**
    *
-   * @returns Promise<boolean>
+   * @returns {Promise<boolean>}
    * @description - Verify is Freighter extension is installed
    */
   public async isFreighterInstalled(): Promise<boolean> {
@@ -171,7 +179,7 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
 
   /**
    *
-   * @returns Promise<boolean>
+   * @returns {Promise<boolean>}
    * @description - Verify if the application is authorized to connect to Freighter
    */
   public async isApplicationAuthorized(): Promise<boolean> {
@@ -184,7 +192,7 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
 
   /**
    *
-   * @returns Promise<boolean>
+   * @returns {Promise<boolean>}
    * @description - Verify if the network selected on Freighter is the same as the network selected on this handler
    */
   public async isNetworkCorrect(): Promise<boolean> {
