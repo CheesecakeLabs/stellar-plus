@@ -12,6 +12,11 @@ export class FriendbotClient implements Friendbot {
     this.parent = parent
   }
 
+  /**
+   *
+   * @returns void
+   * @description - Initialize the account with the friendbot and funds it with 10.000 XLM.
+   */
   public async initialize(): Promise<void> {
     this.requireTestNetwork()
 
@@ -21,7 +26,6 @@ export class FriendbotClient implements Friendbot {
 
         return
       } catch (error) {
-        // console.log('error', error)
         throw new Error('Failed to create account with friendbot!')
       }
     }

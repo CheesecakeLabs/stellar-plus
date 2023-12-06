@@ -16,6 +16,11 @@ export class AccountDataViewerClient implements AccountDataViewer {
     this.parent = parent
   }
 
+  /**
+   *
+   * @returns The account's balances.
+   * @description - The account's balances are retrieved from the Horizon server and provided in a list, including all assets.
+   */
   public async getBalances(): Promise<
     (
       | Horizon.BalanceLineNative
@@ -32,6 +37,9 @@ export class AccountDataViewerClient implements AccountDataViewer {
     throw new Error('Account has no valid public key!')
   }
 
+  /**
+   *
+   */
   public async getTransactions(): Promise<void> {
     throw new Error('Method not implemented.')
   }
