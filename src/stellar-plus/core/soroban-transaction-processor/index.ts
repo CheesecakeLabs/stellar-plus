@@ -17,11 +17,32 @@ import {
 export class SorobanTransactionProcessor extends TransactionProcessor {
   private rpcHandler: RpcHandler
 
+  /**
+   *
+   * @param {Network} network - The network to use.
+   * @param {RpcHandler=} rpcHandler - The rpc handler to use.
+   *
+   * @description - The Soroban transaction processor is used for handling Soroban transactions and submitting them to the network.
+   *
+   */
   constructor(network: Network, rpcHandler?: RpcHandler) {
     super(network)
     this.rpcHandler = rpcHandler || new DefaultRpcHandler(network)
   }
 
+  /**
+   * @args {SorobanSimulateArgs<object>} args - The arguments for the invocation.
+   * @param {string} args.method - The method to invoke as it is identified in the contract.
+   * @param {object} args.methodArgs - The arguments for the method invocation.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   *
+   * @arg {ContractSpec} spec - The contract specification.
+   * @arg {string} contractId - The contract id.
+   *
+   * @description - Builds a Soroban transaction envelope.
+   *
+   * @returns {Promise<SorobanTransaction>} The Soroban transaction envelope.
+   */
   protected async buildTransaction(
     args: SorobanSimulateArgs<object>,
     spec: ContractSpec,
@@ -48,6 +69,14 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     }
   }
 
+  /**
+   *
+   * @param {SorobanTransaction} tx - The transaction to simulate.
+   *
+   * @description - Simulates the given transaction.
+   *
+   * @returns {Promise<SorobanRpcNamespace.SimulateTransactionResponse>} The simulation response.
+   */
   protected async simulateTransaction(
     tx: SorobanTransaction
   ): Promise<SorobanRpcNamespace.SimulateTransactionResponse> {
@@ -58,6 +87,16 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       throw new Error('Failed to simulate transaction!')
     }
   }
+
+  /**
+   *
+   * @param {SorobanRpcNamespace.SimulateTransactionResponse} simulationResponse - The simulation response.
+   * @param {string} method - The method that was invoked.
+   *
+   * @description - Simulates the given transaction and assembles the output of the simulation for later submission.
+   *
+   * @returns {Promise<SorobanTransaction>} Transaction prepared for submission.
+   */
   protected async prepareTransaction(tx: SorobanTransaction): Promise<SorobanTransaction> {
     try {
       const response = await this.rpcHandler.prepareTransaction(tx)
@@ -68,6 +107,14 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     }
   }
 
+  /**
+   *
+   * @param {SorobanTransaction | SorobanFeeBumpTransaction} tx - The transaction to submit.
+   *
+   * @description - Submits the given transaction to the network.
+   *
+   * @returns {Promise<SorobanRpcNamespace.SendTransactionResponse>} The response from the Soroban server.
+   */
   protected async submitSorobanTransaction(
     tx: SorobanTransaction | SorobanFeeBumpTransaction
   ): Promise<SorobanRpcNamespace.SendTransactionResponse> {
@@ -80,6 +127,16 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     }
   }
 
+  /**
+   *
+   * @param {SorobanTransaction} envelope - The prepared transaction envelope to sign.
+   * @param {AccountHandler[]} signers - The signers to sign the transaction with.
+   * @param {FeeBumpHeader=} feeBump - The fee bump header to use.
+   *
+   * @description - Signs the given transaction envelope with the provided signers and submits it to the network.
+   *
+   * @returns {Promise<SorobanRpcNamespace.GetSuccessfulTransactionResponse>} The response from the Soroban server.
+   */
   protected async processSorobanTransaction(
     envelope: SorobanTransaction,
     signers: AccountHandler[],
@@ -96,11 +153,14 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     return processedTransaction
   }
 
-  //
-  // Soroban submissions might take a while to be processed.
-  // This method waits for the transaction until we get
-  // a final response from Soroban or until timeout is reached.
-  //
+  /**
+   *
+   * @param {SorobanRpcNamespace.SendTransactionResponse} response - The response from the Soroban server.
+   *
+   * @description - Processes the given Soroban transaction submission response.
+   *
+   * @returns {Promise<SorobanRpcNamespace.GetSuccessfulTransactionResponse>} The response from the Soroban server.
+   */
   protected async postProcessSorobanSubmission(
     response: SorobanRpcNamespace.SendTransactionResponse
   ): Promise<SorobanRpcNamespace.GetSuccessfulTransactionResponse> {
@@ -117,10 +177,19 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     throw new Error('Soroban transaction submission failed!')
   }
 
-  //
-  // Exoponential backoff to wait for Soroban transaction to be processed
-  // starts at 1 second and doubles each time until timeout is reached.
-  //
+  /**
+   *
+   * @param {string} transactionHash - The hash of the transaction to wait for.
+   * @param {number} secondsToWait - The number of seconds to wait before timing out. Defaults to 15 seconds.
+   *
+   *
+   * @description - Waits for the given transaction to be processed by the Soroban server.
+   * Soroban transactions are processed asynchronously, so this method will wait for the transaction to be processed.
+   * If the transaction is not processed within the given timeout, it will throw an error.
+   * If the transaction is processed, it will return the response from the Soroban server.
+   * If the transaction fails, it will throw an error.
+   * @returns {Promise<SorobanRpcNamespace.GetSuccessfulTransactionResponse>} The response from the Soroban server.
+   */
   protected async waitForSorobanTransaction(
     transactionHash: string,
     secondsToWait: number
@@ -158,6 +227,15 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     return response
   }
 
+  /**
+   *
+   * @param {SorobanTransaction} envelopeXdr - The inner transaction envelope to wrap.
+   * @param {FeeBumpHeader} feeBump - The fee bump header to use.
+   *
+   * @description - Wraps the given transaction envelope with the provided fee bump header.
+   *
+   * @returns {Promise<FeeBumpTransaction>} The wrapped transaction envelope.
+   */
   protected async wrapSorobanFeeBump(envelopeXdr: TransactionXdr, feeBump: FeeBumpHeader): Promise<FeeBumpTransaction> {
     const tx = TransactionBuilder.fromXDR(envelopeXdr, this.network.networkPassphrase) as SorobanTransaction
 
