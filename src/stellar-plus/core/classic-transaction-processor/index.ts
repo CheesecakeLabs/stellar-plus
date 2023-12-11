@@ -1,6 +1,6 @@
-import * as SorobanClient from 'soroban-client'
-import { Transaction as ClassicTransaction, TransactionBuilder, xdr as xdrNamespace } from 'stellar-base'
-import { Horizon as HorizonNamespace } from 'stellar-sdk'
+// import * as SorobanClient from 'soroban-client'
+// import { Transaction as ClassicTransaction, TransactionBuilder, xdr as xdrNamespace } from 'stellar-base'
+import { Horizon as HorizonNamespace, Transaction, TransactionBuilder, xdr as xdrNamespace } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from '@account/account-handler/types'
 import { DefaultTransactionSubmitter } from '@core/transaction-submitter/classic/default'
@@ -8,7 +8,7 @@ import { TransactionSubmitter } from '@core/transaction-submitter/classic/types'
 import { FeeBumpHeader, TransactionInvocation } from '@core/types'
 import { HorizonHandlerClient } from '@horizon/index'
 import { HorizonHandler } from '@horizon/types'
-import { FeeBumpTransaction, Network, Transaction, TransactionXdr } from '@stellar-plus/types'
+import { FeeBumpTransaction, Network, TransactionXdr } from '@stellar-plus/types'
 
 export class TransactionProcessor {
   protected horizonHandler: HorizonHandler
