@@ -1,5 +1,3 @@
-// import * as SorobanClient from 'soroban-client'
-// import { Transaction as ClassicTransaction, TransactionBuilder, xdr as xdrNamespace } from 'stellar-base'
 import { Horizon as HorizonNamespace, Transaction, TransactionBuilder, xdr as xdrNamespace } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from '@account/account-handler/types'
