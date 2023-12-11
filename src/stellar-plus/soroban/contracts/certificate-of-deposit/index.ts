@@ -18,6 +18,15 @@ import {
 export class CertificateOfDepositClient extends ContractEngine implements CertificateOfDepositContract {
   private methods: typeof Methods
 
+  /**
+   *
+   * @param {string} contractId - The contract ID of the deployed Certificate of Deposit to use.
+   * @param {Network} network - The network to use.
+   * @param {RpcHandler} rpcHandler - The RPC handler to use.
+   *
+   * @description - The certificate of deposit client is used for interacting with the certificate of deposit contract.
+   *
+   */
   constructor(
     contractId: string,
     network: Network,
@@ -28,6 +37,19 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
     this.methods = Methods
   }
 
+  /**
+   * @args {DepositArgs} args - The arguments to pass to the deposit method.
+   * @param {string} args.address - The address to deposit from.
+   * @param {number} args.amount - The amount to deposit.
+   * @param {string[]} args.signers - The signers to authorize this transaction.
+   * @param {EnvelopeHeader} args.header - The header to use for this transaction.
+   * @param {SorobanFeeBumpTransaction=} args.feeBump - The fee bump to use for this transaction. This is optional.
+   *
+   * @returns {void}
+   * @description - Performs a deposit to the certificate of deposit contract, opening a position.
+   *
+   *
+   */
   public async deposit(args: DepositArgs): Promise<void> {
     const amount = args.amount as i128
     const address = new Address(args.address)
@@ -41,6 +63,19 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
     })
   }
 
+  /**
+   * @args {WithdrawArgs} args - The arguments to pass to the withdraw method.
+   * @param {string} args.address - The address of the account withdrawing.
+   * @param {boolean} args.acceptPrematureWithdraw - Whether to accept premature withdraw or not. When true, the withdraw will be accepted even if the time left is greater than 0 and the contract penalty will be applied to the amount withdrawn. When false, the withdraw will only be accepted if the time left is 0.
+   * @param {string[]} args.signers - The signers to authorize this transaction.
+   * @param {EnvelopeHeader} args.header - The header to use for this transaction.
+   * @param {SorobanFeeBumpTransaction=} args.feeBump - The fee bump to use for this transaction. This is optional.
+   *
+   * @returns {void}
+   * @description - Performs a withdraw from the certificate of deposit contract, closing a position.
+   *
+   *
+   */
   public async withdraw(args: WithdrawArgs): Promise<void> {
     const address = new Address(args.address)
     const accept_premature_withdraw = args.acceptPrematureWithdraw as boolean
@@ -54,6 +89,13 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
     })
   }
 
+  /**
+   * @args {GetEstimatedYieldArgs} args - The arguments to pass to the getEstimatedYield method.
+   * @param {string} args.address - The address of the account to get the estimated yield for.
+   * @param {EnvelopeHeader} args.header - The header to use for this transaction.
+   * @returns {number} The estimated yield for the account.
+   * @description - Gets the current estimated yield accrued for the account's position so far.
+   */
   public async getEstimatedYield(args: GetEstimatedYieldArgs): Promise<number> {
     const address = new Address(args.address)
 
@@ -67,6 +109,13 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
     return Number(result)
   }
 
+  /**
+   * @args {GetPositionArgs} args - The arguments to pass to the getPosition method.
+   * @param {string} args.address - The address of the account to get the position for.
+   * @param {EnvelopeHeader} args.header - The header to use for this transaction.
+   * @returns {number} The position for the account. Includes the original deposit plus the accrued yield.
+   * @description - Gets the current open position for the account.
+   */
   public async getPosition(args: GetPositionArgs): Promise<number> {
     const address = new Address(args.address)
 
@@ -79,6 +128,13 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
     return Number(result)
   }
 
+  /**
+   * @args {GetEstimatedPrematureWithdrawArgs} args - The arguments to pass to the getEstimatedPrematureWithdraw method.
+   * @param {string} args.address - The address of the account to get the estimated premature withdraw for.
+   * @param {EnvelopeHeader} args.header - The header to use for this transaction.
+   * @returns {number} The estimated premature withdraw for the account.
+   * @description - Gets the current estimated premature withdraw for the account. This is the amount that will be received if the account withdraws prematurely, with the penalty applied.
+   */
   public async getEstimatedPrematureWithdraw(args: GetEstimatedPrematureWithdrawArgs): Promise<number> {
     const address = new Address(args.address)
 
@@ -92,6 +148,13 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
     return Number(result)
   }
 
+  /**
+   * @args {GetTimeLeftArgs} args - The arguments to pass to the getTimeLeft method.
+   * @param {string} args.address - The address of the account to get the time left for.
+   * @param {EnvelopeHeader} args.header - The header to use for this transaction.
+   * @returns {number} The time left for the account's position to reach the term.
+   * @description - Gets the current time left for the account. This is the time left until the account can withdraw without penalty.
+   */
   public async getTimeLeft(args: GetTimeLeftArgs): Promise<number> {
     const address = new Address(args.address)
 

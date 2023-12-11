@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { SorobanRpc, Transaction, assembleTransaction, parseRawSimulation, xdr as SorobanXdr } from 'soroban-client'
+import { SorobanRpc, xdr as SorobanXdr, Transaction, assembleTransaction, parseRawSimulation } from 'soroban-client'
 import { parseRawSendTransaction } from 'soroban-client/lib/parsers'
 
 import { RpcHandler } from '@rpc/types'
