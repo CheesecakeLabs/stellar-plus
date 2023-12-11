@@ -1,16 +1,9 @@
 import {
-  Address as SorobanAddress,
-  FeeBumpTransaction as SorobanFeeBumpTransaction,
-  Keypair as SorobanKeypair,
-  Server as SorobanRpcServer,
-  Transaction as SorobanTransaction,
-} from 'soroban-client'
-import {
   FeeBumpTransaction as ClassicFeeBumpTransaction,
   Keypair as ClassicKeypair,
   Transaction as ClassicTransaction,
 } from 'stellar-base'
-import { Server as HorizonServer } from 'stellar-sdk'
+import { SorobanRpc, Horizon } from '@stellar/stellar-sdk'
 
 //
 // Groups together core transactions from both libraries

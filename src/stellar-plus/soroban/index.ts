@@ -1,4 +1,4 @@
-import { Server } from 'soroban-client'
+import { SorobanRpc } from '@stellar/stellar-sdk'
 
 import { SorobanHandler } from '@soroban/types'
 import { Network, SorobanRpcServer } from '@stellar-plus/types'
@@ -15,6 +15,6 @@ export class SorobanHandlerClient implements SorobanHandler {
    */
   constructor(network: Network) {
     this.network = network
-    this.server = new Server(this.network.horizonUrl)
+    this.server = new SorobanRpc.Server(this.network.horizonUrl)
   }
 }

@@ -1,16 +1,8 @@
-import { Keypair as ClassicKeypair } from 'stellar-sdk'
+import { FeeBumpTransaction, Keypair, Transaction } from '@stellar/stellar-sdk'
 
 import { DefaultAccountHandler, DefaultAccountHandlerPayload } from '@account/account-handler/default/types'
 import { AccountBaseClient } from '@account/base'
-import {
-  ClassicFeeBumpTransaction,
-  ClassicTransaction,
-  SorobanFeeBumpTransaction,
-  SorobanKeypair,
-  SorobanTransaction,
-  Transaction,
-  TransactionXdr,
-} from '@stellar-plus/types'
+import { TransactionXdr } from '@stellar-plus/types'
 
 export class DefaultAccountHandlerClient extends AccountBaseClient implements DefaultAccountHandler {
   public secretKey: string
@@ -24,7 +16,7 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
    */
   constructor(payload: DefaultAccountHandlerPayload) {
     const secretKey = payload.secretKey as string
-    const keypair = secretKey ? ClassicKeypair.fromSecret(secretKey) : ClassicKeypair.random()
+    const keypair = secretKey ? Keypair.fromSecret(secretKey) : Keypair.random()
 
     const publicKey = keypair.publicKey()
     super({ ...payload, publicKey })
@@ -37,7 +29,7 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
    * @returns {string} The public key of the account.
    */
   public getPublicKey(): string {
-    return ClassicKeypair.fromSecret(this.secretKey).publicKey()
+    return Keypair.fromSecret(this.secretKey).publicKey()
   }
 
   /**
@@ -48,18 +40,9 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
    *
    * @returns {TransactionXdr} The signed transaction in xdr format.
    */
-  public sign(tx: Transaction): TransactionXdr {
-    if (tx instanceof SorobanTransaction || tx instanceof SorobanFeeBumpTransaction) {
-      const keypair = SorobanKeypair.fromSecret(this.secretKey)
-      tx.sign(keypair)
-      return tx.toXDR() as TransactionXdr
-    }
-    if (tx instanceof ClassicTransaction || tx instanceof ClassicFeeBumpTransaction) {
-      const keypair = ClassicKeypair.fromSecret(this.secretKey)
-      tx.sign(keypair)
-      return tx.toXDR() as TransactionXdr
-    }
-
-    throw new Error('Unsupported transaction type')
+  public sign(tx: Transaction | FeeBumpTransaction): TransactionXdr {
+    const keypair = Keypair.fromSecret(this.secretKey)
+    tx.sign(keypair)
+    return tx.toXDR() as TransactionXdr
   }
 }
