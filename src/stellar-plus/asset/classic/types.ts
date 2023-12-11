@@ -1,12 +1,9 @@
-import { AssetTypes, TokenInterface } from "../types";
+import { AssetTypes, TokenInterface } from '@asset/types'
 
 export type ClassicAsset = {
-  code: string;
-  issuerPublicKey: string;
-  type:
-    | AssetTypes.native
-    | AssetTypes.credit_alphanum4
-    | AssetTypes.credit_alphanum12;
-};
+  code: string
+  issuerPublicKey: string
+  type: AssetTypes.native | AssetTypes.credit_alphanum4 | AssetTypes.credit_alphanum12
+}
 
-export type ClassicAssetHandler = ClassicAsset & TokenInterface & {};
+export type ClassicAssetHandler = ClassicAsset & TokenInterface

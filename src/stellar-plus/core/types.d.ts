@@ -1,18 +1,18 @@
-import { AccountHandler } from "../account/account-handler/types";
+import { AccountHandler } from '@account/account-handler/types'
 
 export type TransactionInvocation = {
-  signers: AccountHandler[];
-  header: EnvelopeHeader;
-  feeBump?: FeeBumpHeader;
-};
+  signers: AccountHandler[]
+  header: EnvelopeHeader
+  feeBump?: FeeBumpHeader
+}
 
 export type EnvelopeHeader = {
-  fee: string;
-  source: string;
-  timeout: number;
-};
+  fee: string
+  source: string
+  timeout: number
+}
 
 export type FeeBumpHeader = {
-  signers: AccountHandler[];
-  header: EnvelopeHeader;
-};
+  signers: AccountHandler[]
+  header: EnvelopeHeader
+}

@@ -1,5 +1,5 @@
 # local testing
-src/index_test.ts
+src/index-test.ts
 
 # old package.json
 package.old.json

@@ -1,1 +1,1 @@
-export { ClassicAssetHandler } from "./classic";
+export { ClassicAssetHandler } from '@asset/classic/index'

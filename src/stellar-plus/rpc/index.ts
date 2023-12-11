@@ -1,2 +1,2 @@
-export * from "./default-handler";
-export * from "./validation-cloud-handler";
+export * from '@rpc/default-handler'
+export * from '@rpc/validation-cloud-handler'

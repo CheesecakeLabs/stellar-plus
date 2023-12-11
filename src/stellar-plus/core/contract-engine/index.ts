@@ -1,24 +1,17 @@
-import { SorobanTransactionProcessor } from "../soroban-transaction-processor";
-import {
-  ContractSpec,
-  SorobanRpc as SorobanRpcNamespace,
-} from "soroban-client";
-import { SorobanInvokeArgs, SorobanSimulateArgs } from "./types";
-import { RpcHandler } from "../../rpc/types";
-import { Network } from "../../types";
+import { ContractSpec, SorobanRpc as SorobanRpcNamespace } from 'soroban-client'
+
+import { SorobanInvokeArgs, SorobanSimulateArgs } from '@core/contract-engine/types'
+import { SorobanTransactionProcessor } from '@core/soroban-transaction-processor'
+import { RpcHandler } from '@rpc/types'
+import { Network } from '@stellar-plus/types'
 
 export class ContractEngine extends SorobanTransactionProcessor {
-  private spec: ContractSpec;
-  private contractId: string;
-  constructor(
-    network: Network,
-    spec: ContractSpec,
-    contractId: string,
-    rpcHandler?: RpcHandler
-  ) {
-    super(network, rpcHandler);
-    this.spec = spec;
-    this.contractId = contractId;
+  private spec: ContractSpec
+  private contractId: string
+  constructor(network: Network, spec: ContractSpec, contractId: string, rpcHandler?: RpcHandler) {
+    super(network, rpcHandler)
+    this.spec = spec
+    this.contractId = contractId
   }
 
   //
@@ -33,16 +26,12 @@ export class ContractEngine extends SorobanTransactionProcessor {
   // was to be submitted to the network to modify the state of the
   // contract in some way.
   //
-  protected async readFromContract(args: SorobanSimulateArgs<any>) {
-    const builtTx = await this.buildTransaction(
-      args,
-      this.spec,
-      this.contractId
-    );
-    const simulated = await this.simulateTransaction(builtTx);
+  protected async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
+    const builtTx = await this.buildTransaction(args, this.spec, this.contractId)
+    const simulated = await this.simulateTransaction(builtTx)
 
-    const output = this.extractOutputFromSimulation(simulated, args.method);
-    return output;
+    const output = this.extractOutputFromSimulation(simulated, args.method)
+    return output
   }
 
   //
@@ -52,72 +41,55 @@ export class ContractEngine extends SorobanTransactionProcessor {
   // network. It then extracts the output of the invocation from the
   // processed transaction.
   //
-  protected async invokeContract(args: SorobanInvokeArgs<any>) {
-    const builtTx = await this.buildTransaction(
-      args,
-      this.spec,
-      this.contractId
-    );
+  protected async invokeContract(args: SorobanInvokeArgs<object>): Promise<unknown> {
+    const builtTx = await this.buildTransaction(args, this.spec, this.contractId)
 
-    const prepared = await this.prepareTransaction(builtTx);
+    const prepared = await this.prepareTransaction(builtTx)
 
-    const submitted = await this.processSorobanTransaction(
-      prepared,
-      args.signers,
-      args.feeBump
-    );
+    const submitted = await this.processSorobanTransaction(prepared, args.signers, args.feeBump)
 
-    const output = this.extractOutputFromProcessedInvocation(
-      submitted,
-      args.method
-    );
+    const output = this.extractOutputFromProcessedInvocation(submitted, args.method)
 
-    return output;
+    return output
   }
 
   private async extractOutputFromSimulation(
     simulated: SorobanRpcNamespace.SimulateTransactionResponse,
     method: string
-  ) {
-    const simulationResult = this.verifySimulationResult(simulated);
-    const output = this.spec.funcResToNative(method, simulationResult.retval);
-    return output;
+  ): Promise<unknown> {
+    const simulationResult = this.verifySimulationResult(simulated)
+    const output = this.spec.funcResToNative(method, simulationResult.retval) as unknown
+    return output
   }
 
   private async extractOutputFromProcessedInvocation(
     response: SorobanRpcNamespace.GetSuccessfulTransactionResponse,
     method: string
-  ) {
-    const invocationResultMetaXdr = response.resultMetaXdr;
+  ): Promise<unknown> {
+    const invocationResultMetaXdr = response.resultMetaXdr
     const output = this.spec.funcResToNative(
       method,
-      invocationResultMetaXdr
-        .v3()
-        .sorobanMeta()
-        ?.returnValue()
-        .toXDR("base64") as string
-    );
-    return output;
+      invocationResultMetaXdr.v3().sorobanMeta()?.returnValue().toXDR('base64') as string
+    ) as unknown
+    return output
   }
 
   private verifySimulationResult(
     simulated: SorobanRpcNamespace.SimulateTransactionResponse
   ): SorobanRpcNamespace.SimulateHostFunctionResult {
     if (SorobanRpcNamespace.isSimulationError(simulated)) {
-      throw new Error("Transaction Simulation Failed!");
+      throw new Error('Transaction Simulation Failed!')
     }
     if (SorobanRpcNamespace.isSimulationRestore(simulated)) {
-      throw new Error(
-        "Transaction simulation indicates a restore is required!"
-      );
+      throw new Error('Transaction simulation indicates a restore is required!')
     }
     if (!SorobanRpcNamespace.isSimulationSuccess(simulated)) {
-      throw new Error("Transaction Simulation not successful!");
+      throw new Error('Transaction Simulation not successful!')
     }
     if (!simulated.result) {
-      throw new Error("No result in the simulation!");
+      throw new Error('No result in the simulation!')
     }
 
-    return simulated.result as SorobanRpcNamespace.SimulateHostFunctionResult;
+    return simulated.result as SorobanRpcNamespace.SimulateHostFunctionResult
   }
 }
