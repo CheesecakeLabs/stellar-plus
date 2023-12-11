@@ -1,5 +1,4 @@
-import { Operation, Asset as StellarAsset } from 'stellar-base'
-import { AccountResponse, Horizon as HorizonNamespace } from 'stellar-sdk'
+import { Horizon as HorizonNamespace, Operation, Asset as StellarAsset } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from '@account/account-handler/types'
 import { ClassicAssetHandler as IClassicAssetHandler } from '@asset/classic/types'
@@ -95,8 +94,8 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    * @returns {Promise<number>} The balance of the asset for the given account.
    */
   public async balance(id: string): Promise<number> {
-    const sourceAccount = (await this.horizonHandler.loadAccount(id)) as AccountResponse
-    const balanceLine = sourceAccount.balances.filter((balanceLine: HorizonNamespace.BalanceLine) => {
+    const sourceAccount = (await this.horizonHandler.loadAccount(id)) as HorizonNamespace.AccountResponse
+    const balanceLine = sourceAccount.balances.filter((balanceLine: HorizonNamespace.HorizonApi.BalanceLine) => {
       if (balanceLine.asset_type === this.type && balanceLine.asset_type === AssetTypes.native) {
         return true
       }
@@ -197,7 +196,7 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
     to: string,
     amount: i128,
     txInvocation: TransactionInvocation
-  ): Promise<HorizonNamespace.SubmitTransactionResponse> {
+  ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
     this.requireIssuerAccount() // Enforces the issuer account to be set.
 
     const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope(txInvocation)
@@ -249,7 +248,7 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
     to: string,
     amount: number,
     txInvocation: TransactionInvocation
-  ): Promise<HorizonNamespace.SubmitTransactionResponse> {
+  ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
     this.requireIssuerAccount() // Enforces the issuer account to be set.
 
     const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope(txInvocation)

@@ -1,5 +1,4 @@
-import { TransactionBuilder } from 'stellar-base'
-import { Horizon as HorizonNamespace } from 'stellar-sdk'
+import { Horizon as HorizonNamespace, TransactionBuilder } from '@stellar/stellar-sdk'
 
 import { TransactionInvocation } from '@core/types'
 import { Transaction } from '@stellar-plus/types'
@@ -9,8 +8,8 @@ export type TransactionSubmitter = {
     envelope: TransactionBuilder
     updatedTxInvocation: TransactionInvocation
   }>
-  submit(envelope: Transaction): Promise<HorizonNamespace.SubmitTransactionResponse>
+  submit(envelope: Transaction): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse>
   postProcessTransaction(
-    response: HorizonNamespace.SubmitTransactionResponse
-  ): HorizonNamespace.SubmitTransactionResponse
+    response: HorizonNamespace.HorizonApi.SubmitTransactionResponse
+  ): HorizonNamespace.HorizonApi.SubmitTransactionResponse
 }
