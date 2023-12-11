@@ -12,6 +12,11 @@ export class FriendbotClient implements Friendbot {
     this.parent = parent
   }
 
+  /**
+   *
+   * @returns {void}
+   * @description - Initialize the account with the friendbot and funds it with 10.000 XLM.
+   */
   public async initialize(): Promise<void> {
     this.requireTestNetwork()
 
@@ -21,7 +26,6 @@ export class FriendbotClient implements Friendbot {
 
         return
       } catch (error) {
-        // console.log('error', error)
         throw new Error('Failed to create account with friendbot!')
       }
     }
@@ -29,6 +33,10 @@ export class FriendbotClient implements Friendbot {
     throw new Error('Account has no valid public key!')
   }
 
+  /**
+   *
+   * @description - Throws an error if the network is not a test network.
+   */
   private requireTestNetwork(): void {
     if (this.network.name === NetworksList.mainnet) {
       throw new Error('Friendbot is not available in mainnet!')

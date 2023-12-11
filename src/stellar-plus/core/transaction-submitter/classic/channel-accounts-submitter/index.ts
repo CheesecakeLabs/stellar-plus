@@ -19,6 +19,16 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
   private network: Network
   private horizonHandler: HorizonHandler
 
+  /**
+   *
+   * @param {Network} network - The network to use.
+   * @param {FeeBumpHeader=} feeBump - The fee bump header to use for wrapping transactions. If not provided during the invocations, this default fee bump header will be used.
+   *
+   * @description - The channel accounts transaction submitter is used for submitting transactions using a pool of channel accounts.
+   *
+   * @see https://developers.stellar.org/docs/encyclopedia/channel-accounts for more information.
+   * @see ChannelAccountsHandler for a helper class for managing channel accounts.
+   */
   constructor(network: Network, feeBump?: FeeBumpHeader) {
     this.network = network
     this.feeBump = feeBump
@@ -27,6 +37,14 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
     this.lockedChannels = []
   }
 
+  /**
+   *
+   * @param {DefaultAccountHandler[]} channels - The channel accounts to register.
+   *
+   * @description - Registers the provided channel accounts to the pool.
+   *
+   * @see ChannelAccountsHandler for a helper class for managing channel accounts.
+   */
   public registerChannels(channels: DefaultAccountHandler[]): void {
     this.freeChannels = [...this.freeChannels, ...channels]
   }
@@ -53,6 +71,16 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
     this.freeChannels.push(channel)
   }
 
+  /**
+   *
+   * @param {TransactionInvocation} txInvocation - The transaction invocation settings to use when building the transaction envelope.
+   *
+   * @description - Creates a transaction envelope using the provided transaction invocation settings. This step will allocate a channel account to use for the transaction.
+   *
+   * @returns {{ envelope: TransactionBuilder, updatedTxInvocation: TransactionInvocation }} The transaction envelope and the updated transaction invocation.
+   *
+   * @see https://developers.stellar.org/docs/encyclopedia/channel-accounts for more information.
+   */
   public async createEnvelope(txInvocation: TransactionInvocation): Promise<{
     envelope: TransactionBuilder
     updatedTxInvocation: TransactionInvocation
@@ -77,6 +105,16 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
     return { envelope, updatedTxInvocation }
   }
 
+  //submit(envelope: Transaction, signers: AccountHandler[], feeBump?: FeeBumpHeader): Promise<HorizonNamespace.SubmitTransactionResponse>
+
+  /**
+   *
+   * @param {Transaction} envelope - The transaction to submit.
+   *
+   * @description - Submits the provided transaction to the network. This step will release the channel account used for the transaction.
+   *
+   * @returns {Promise<HorizonNamespace.SubmitTransactionResponse>} The response from the Horizon server.
+   */
   public async submit(envelope: Transaction): Promise<HorizonNamespace.SubmitTransactionResponse> {
     const innerEnvelope = (envelope as FeeBumpTransaction).innerTransaction
     const allocatedChannel = innerEnvelope.source
@@ -98,6 +136,15 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
     }
   }
 
+  /**
+   *
+   * @param { HorizonNamespace.SubmitTransactionResponse } response - The response from the Horizon server.
+   *
+   * @returns { HorizonNamespace.SubmitTransactionResponse } The response from the Horizon server.
+   *
+   * @description - Post processes the response from the Horizon server. This step will throw an error if the transaction failed.
+   * This function can be overriden to implement a custom post processing logic.
+   */
   public postProcessTransaction(
     response: HorizonNamespace.SubmitTransactionResponse
   ): HorizonNamespace.SubmitTransactionResponse {
@@ -110,6 +157,13 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
     return response
   }
 
+  /**
+   *
+   * @description - Waits for a channel to be available and then allocates it. This step will wait for 1 second before trying again.
+   * This function can be overriden to implement a custom waiting logic.
+   *
+   * @returns {Promise<DefaultAccountHandler>} The allocated channel account.
+   */
   private noChannelPipeline(): Promise<DefaultAccountHandler> {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -118,6 +172,12 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
     })
   }
 
+  /**
+   *
+   * @description - Returns the list of channels registered to the pool.
+   *
+   * @returns {DefaultAccountHandler[]} The list of channels registered to the pool.
+   */
   public getChannels(): DefaultAccountHandler[] {
     return [...this.freeChannels, ...this.lockedChannels]
   }

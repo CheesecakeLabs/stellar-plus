@@ -16,12 +16,28 @@ export class DefaultTransactionSubmitter implements TransactionSubmitter {
   private network: Network
   private horizonHandler: HorizonHandler
 
+  /**
+   *
+   * @param {Network} network - The network to use.
+   * @param {FeeBumpHeader=} feeBump - The fee bump header to use for wrapping transactions. If not provided during the invocations, this default fee bump header will be used.
+   *
+   * @description - The default transaction submitter is used for submitting transactions using a single account.
+   *
+   */
   constructor(network: Network, feeBump?: FeeBumpHeader) {
     this.network = network
     this.horizonHandler = new HorizonHandlerClient(network)
     this.feeBump = feeBump
   }
 
+  /**
+   *
+   * @param {TransactionInvocation} txInvocation - The transaction invocation to create the envelope for.
+   *
+   * @description - Creates the transaction envelope for the given transaction invocation.
+   *
+   * @returns {{envelope: TransactionBuilder, updatedTxInvocation: TransactionInvocation}} The transaction envelope and the updated transaction invocation.
+   */
   public async createEnvelope(txInvocation: TransactionInvocation): Promise<{
     envelope: TransactionBuilder
     updatedTxInvocation: TransactionInvocation
@@ -41,6 +57,14 @@ export class DefaultTransactionSubmitter implements TransactionSubmitter {
     return { envelope, updatedTxInvocation: txInvocation }
   }
 
+  /**
+   *
+   * @param {Transaction} envelope - The transaction envelope to submit.
+   *
+   * @description - Submits the given transaction envelope.
+   *
+   * @returns {Horizon.SubmitTransactionResponse} The transaction submission response.
+   */
   public async submit(envelope: Transaction): Promise<HorizonNamespace.SubmitTransactionResponse> {
     try {
       // stellar-base vs stellar-sdk conversion
@@ -57,6 +81,15 @@ export class DefaultTransactionSubmitter implements TransactionSubmitter {
     }
   }
 
+  /**
+   *
+   * @param {Horizon.SubmitTransactionResponse} response - The response from the Horizon server.
+   *
+   * @returns {Horizon.SubmitTransactionResponse} The response from the Horizon server.
+   *
+   * @description - Post processes the transaction response from the Horizon server.
+   * This method can be overridden to provide custom post processing.
+   */
   public postProcessTransaction(
     response: HorizonNamespace.SubmitTransactionResponse
   ): HorizonNamespace.SubmitTransactionResponse {
