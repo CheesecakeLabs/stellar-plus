@@ -1,15 +1,10 @@
-import { TransactionBuilder } from 'stellar-base'
-import {
-  Transaction as ClassicTransaction,
-  TransactionBuilder as ClassicTxBuild,
-  Horizon as HorizonNamespace,
-} from 'stellar-sdk'
+import { Horizon as HorizonNamespace, Transaction, TransactionBuilder } from '@stellar/stellar-sdk'
 
 import { TransactionSubmitter as TransactionSubmitter } from '@core/transaction-submitter/classic/types'
 import { FeeBumpHeader, TransactionInvocation } from '@core/types'
 import { HorizonHandlerClient } from '@horizon/index'
 import { HorizonHandler } from '@horizon/types'
-import { Network, Transaction } from '@stellar-plus/types'
+import { Network } from '@stellar-plus/types'
 
 export class DefaultTransactionSubmitter implements TransactionSubmitter {
   private feeBump?: FeeBumpHeader
@@ -65,14 +60,16 @@ export class DefaultTransactionSubmitter implements TransactionSubmitter {
    *
    * @returns {Horizon.SubmitTransactionResponse} The transaction submission response.
    */
-  public async submit(envelope: Transaction): Promise<HorizonNamespace.SubmitTransactionResponse> {
+  public async submit(envelope: Transaction): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
     try {
       // stellar-base vs stellar-sdk conversion
+      // TODO: Review post lib update to stellar-sdk v11
       const envelopeXdr = envelope.toXDR()
-      const classicEnvelope = ClassicTxBuild.fromXDR(envelopeXdr, this.network.networkPassphrase) as ClassicTransaction
+      const classicEnvelope = TransactionBuilder.fromXDR(envelopeXdr, this.network.networkPassphrase) as Transaction
 
-      const response = await this.horizonHandler.server.submitTransaction(classicEnvelope)
-      return response as HorizonNamespace.SubmitTransactionResponse
+      return (await this.horizonHandler.server.submitTransaction(
+        classicEnvelope
+      )) as HorizonNamespace.HorizonApi.SubmitTransactionResponse
     } catch (error) {
       // console.log("Couldn't Submit the transaction: ")
       // const resultObject = (error as any)?.response?.data?.extras?.result_codes
@@ -91,8 +88,8 @@ export class DefaultTransactionSubmitter implements TransactionSubmitter {
    * This method can be overridden to provide custom post processing.
    */
   public postProcessTransaction(
-    response: HorizonNamespace.SubmitTransactionResponse
-  ): HorizonNamespace.SubmitTransactionResponse {
+    response: HorizonNamespace.HorizonApi.SubmitTransactionResponse
+  ): HorizonNamespace.HorizonApi.SubmitTransactionResponse {
     if (!response.successful) {
       // const restulObject = xdrNamespace.TransactionResult.fromXDR(response.result_xdr, 'base64')
       // const resultMetaObject = xdrNamespace.TransactionResultMeta.fromXDR(response.result_meta_xdr, 'base64')

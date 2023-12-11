@@ -1,4 +1,4 @@
-import { xdr as ClassicXdrNamespace, Operation } from 'stellar-base'
+import { xdr as ClassicXdrNamespace, Operation } from '@stellar/stellar-sdk'
 
 import { DefaultAccountHandlerClient as DefaultAccountHandler } from '@account/account-handler/default'
 import { AccountHandler } from '@account/account-handler/types'

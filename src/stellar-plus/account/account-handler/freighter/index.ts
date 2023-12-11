@@ -6,6 +6,7 @@ import {
   setAllowed,
   signTransaction,
 } from '@stellar/freighter-api'
+import { Transaction } from '@stellar/stellar-sdk'
 
 import {
   FreighterAccHandlerPayload,
@@ -13,7 +14,7 @@ import {
   FreighterCallback,
 } from '@account/account-handler/freighter/types'
 import { AccountBaseClient } from '@account/base'
-import { Network, Transaction } from '@stellar-plus/types'
+import { Network } from '@stellar-plus/types'
 
 export class FreighterAccountHandlerClient extends AccountBaseClient implements FreighterAccountHandler {
   private network: Network

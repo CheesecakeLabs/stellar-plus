@@ -1,10 +1,9 @@
-import { ContractSpec, SorobanRpc as SorobanRpcNamespace, xdr } from 'soroban-client'
+import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction } from '@stellar/stellar-sdk'
 
 import { SorobanInvokeArgs, SorobanSimulateArgs } from '@core/contract-engine/types'
 import { SorobanTransactionProcessor } from '@core/soroban-transaction-processor'
 import { RpcHandler } from '@rpc/types'
 import { Network } from '@stellar-plus/types'
-import { EnvelopeHeader } from '@core/types'
 
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
@@ -78,7 +77,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
    * ```
    */
   protected async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
-    const builtTx = await this.buildTransaction(args, this.spec, this.contractId)
+    const builtTx = (await this.buildTransaction(args, this.spec, this.contractId)) as Transaction
     const simulated = await this.simulateTransaction(builtTx)
 
     const output = this.extractOutputFromSimulation(simulated, args.method)
@@ -120,7 +119,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const prepared = await this.prepareTransaction(builtTx)
 
-    const submitted = await this.processSorobanTransaction(prepared, args.signers, args.feeBump)
+    const submitted = (await this.processSorobanTransaction(
+      prepared,
+      args.signers,
+      args.feeBump
+    )) as SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
 
     const output = this.extractOutputFromProcessedInvocation(submitted, args.method)
 
@@ -128,7 +131,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 
   private async extractOutputFromSimulation(
-    simulated: SorobanRpcNamespace.SimulateTransactionResponse,
+    simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse,
     method: string
   ): Promise<unknown> {
     const simulationResult = this.verifySimulationResult(simulated)
@@ -137,7 +140,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 
   private async extractOutputFromProcessedInvocation(
-    response: SorobanRpcNamespace.GetSuccessfulTransactionResponse,
+    response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse,
     method: string
   ): Promise<unknown> {
     // console.log('Response: ', response)
@@ -150,21 +153,21 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 
   private verifySimulationResult(
-    simulated: SorobanRpcNamespace.SimulateTransactionResponse
-  ): SorobanRpcNamespace.SimulateHostFunctionResult {
-    if (SorobanRpcNamespace.isSimulationError(simulated)) {
+    simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse
+  ): SorobanRpcNamespace.Api.SimulateHostFunctionResult {
+    if (SorobanRpcNamespace.Api.isSimulationError(simulated)) {
       throw new Error('Transaction Simulation Failed!')
     }
-    if (SorobanRpcNamespace.isSimulationRestore(simulated)) {
+    if (SorobanRpcNamespace.Api.isSimulationRestore(simulated)) {
       throw new Error('Transaction simulation indicates a restore is required!')
     }
-    if (!SorobanRpcNamespace.isSimulationSuccess(simulated)) {
+    if (!SorobanRpcNamespace.Api.isSimulationSuccess(simulated)) {
       throw new Error('Transaction Simulation not successful!')
     }
     if (!simulated.result) {
       throw new Error('No result in the simulation!')
     }
 
-    return simulated.result as SorobanRpcNamespace.SimulateHostFunctionResult
+    return simulated.result as SorobanRpcNamespace.Api.SimulateHostFunctionResult
   }
 }

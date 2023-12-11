@@ -1,4 +1,4 @@
-import { Horizon } from 'stellar-sdk'
+import { Horizon } from '@stellar/stellar-sdk'
 
 import { AccountHelpers } from '@account/helpers'
 import { AccountDataViewer } from '@account/helpers/account-data-viewer/types'
@@ -23,10 +23,10 @@ export class AccountDataViewerClient implements AccountDataViewer {
    */
   public async getBalances(): Promise<
     (
-      | Horizon.BalanceLineNative
-      | Horizon.BalanceLineAsset<'credit_alphanum4'>
-      | Horizon.BalanceLineAsset<'credit_alphanum12'>
-      | Horizon.BalanceLineLiquidityPool
+      | Horizon.HorizonApi.BalanceLineNative
+      | Horizon.HorizonApi.BalanceLineAsset<'credit_alphanum4'>
+      | Horizon.HorizonApi.BalanceLineAsset<'credit_alphanum12'>
+      | Horizon.HorizonApi.BalanceLineLiquidityPool
     )[]
   > {
     if ('publicKey' in this.parent && this.parent.publicKey && this.parent.publicKey !== '') {

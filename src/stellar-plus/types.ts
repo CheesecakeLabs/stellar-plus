@@ -1,33 +1,4 @@
-import {
-  Address as SorobanAddress,
-  FeeBumpTransaction as SorobanFeeBumpTransaction,
-  Keypair as SorobanKeypair,
-  Server as SorobanRpcServer,
-  Transaction as SorobanTransaction,
-} from 'soroban-client'
-import {
-  FeeBumpTransaction as ClassicFeeBumpTransaction,
-  Keypair as ClassicKeypair,
-  Transaction as ClassicTransaction,
-} from 'stellar-base'
-import { Server as HorizonServer } from 'stellar-sdk'
-
-//
-// Groups together core transactions from both libraries
-//
-export { SorobanTransaction, SorobanFeeBumpTransaction }
-export { ClassicTransaction, ClassicFeeBumpTransaction }
-export type InnerTransaction = SorobanTransaction | ClassicTransaction
-
-//
-// Groups together fee bump transactions from both libraries
-//
-export type FeeBumpTransaction = SorobanFeeBumpTransaction | ClassicFeeBumpTransaction
-
-//
-// Bundles single type for Transactions
-//
-export type Transaction = InnerTransaction | FeeBumpTransaction
+import { Address as StellarAddress } from '@stellar/stellar-sdk'
 
 export type TransactionXdr = string
 
@@ -49,17 +20,6 @@ export enum NetworksList {
   custom = 'custom',
 }
 
-//
-// Combines keypair types from both libraries
-//
-export { SorobanKeypair, ClassicKeypair }
-export type Keypair = SorobanKeypair | ClassicKeypair
-
-//
-// Export server types from both libraries
-//
-export { SorobanRpcServer, HorizonServer }
-
 export type u32 = number
 export type i32 = number
 export type u64 = bigint
@@ -72,4 +32,4 @@ export type Option<T> = T | undefined
 export type Typepoint = bigint
 export type Duration = bigint
 
-export type Address = SorobanAddress | string
+export type Address = StellarAddress | string

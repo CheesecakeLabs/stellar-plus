@@ -1,16 +1,11 @@
-import { TransactionBuilder } from 'stellar-base'
-import {
-  Transaction as ClassicTransaction,
-  TransactionBuilder as ClassicTxBuild,
-  Horizon as HorizonNamespace,
-} from 'stellar-sdk'
+import { FeeBumpTransaction, Horizon as HorizonNamespace, Transaction, TransactionBuilder } from '@stellar/stellar-sdk'
 
 import { DefaultAccountHandler } from '@account/account-handler/default/types'
 import { TransactionSubmitter as TransactionSubmitter } from '@core/transaction-submitter/classic/types'
 import { FeeBumpHeader, TransactionInvocation } from '@core/types'
 import { HorizonHandlerClient } from '@horizon/index'
 import { HorizonHandler } from '@horizon/types'
-import { FeeBumpTransaction, Network, Transaction } from '@stellar-plus/types'
+import { Network } from '@stellar-plus/types'
 
 export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter {
   private feeBump?: FeeBumpHeader
@@ -115,19 +110,21 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
    *
    * @returns {Promise<HorizonNamespace.SubmitTransactionResponse>} The response from the Horizon server.
    */
-  public async submit(envelope: Transaction): Promise<HorizonNamespace.SubmitTransactionResponse> {
+  public async submit(
+    envelope: Transaction | FeeBumpTransaction
+  ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
     const innerEnvelope = (envelope as FeeBumpTransaction).innerTransaction
     const allocatedChannel = innerEnvelope.source
 
     // stellar-base vs stellar-sdk conversion
     const envelopeXdr = envelope.toXDR()
-    const classicEnvelope = ClassicTxBuild.fromXDR(envelopeXdr, this.network.networkPassphrase) as ClassicTransaction
+    const classicEnvelope = TransactionBuilder.fromXDR(envelopeXdr, this.network.networkPassphrase) as Transaction
 
     try {
       const response = await this.horizonHandler.server.submitTransaction(classicEnvelope)
 
       this.releaseChannel(allocatedChannel)
-      return response as HorizonNamespace.SubmitTransactionResponse
+      return response as HorizonNamespace.HorizonApi.SubmitTransactionResponse
     } catch (error) {
       this.releaseChannel(allocatedChannel)
       // const resultObject = (error as any)?.response?.data?.extras?.result_codes
@@ -146,8 +143,8 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
    * This function can be overriden to implement a custom post processing logic.
    */
   public postProcessTransaction(
-    response: HorizonNamespace.SubmitTransactionResponse
-  ): HorizonNamespace.SubmitTransactionResponse {
+    response: HorizonNamespace.HorizonApi.SubmitTransactionResponse
+  ): HorizonNamespace.HorizonApi.SubmitTransactionResponse {
     if (!response.successful) {
       // const restulObject = xdrNamespace.TransactionResult.fromXDR(response.result_xdr, 'base64')
       // const resultMetaObject = xdrNamespace.TransactionResultMeta.fromXDR(response.result_meta_xdr, 'base64')

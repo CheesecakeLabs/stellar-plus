@@ -1,4 +1,4 @@
-import { Horizon as HorizonNamespace } from 'stellar-sdk'
+import { Horizon as HorizonNamespace } from '@stellar/stellar-sdk'
 
 import { TransactionInvocation } from '@core/types'
 import { Address, i128, u32 } from '@stellar-plus/types'
@@ -26,7 +26,7 @@ export type TokenInterfaceManagement = {
     to: string,
     amount: i128,
     txInvocation: TransactionInvocation
-  ) => Promise<HorizonNamespace.SubmitTransactionResponse>
+  ) => Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse>
 
   clawback: (
     args: {

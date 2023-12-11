@@ -1,6 +1,10 @@
-import * as SorobanClient from 'soroban-client'
-import { Transaction as ClassicTransaction, TransactionBuilder, xdr as xdrNamespace } from 'stellar-base'
-import { Horizon as HorizonNamespace } from 'stellar-sdk'
+import {
+  FeeBumpTransaction,
+  Horizon as HorizonNamespace,
+  Transaction,
+  TransactionBuilder,
+  xdr as xdrNamespace,
+} from '@stellar/stellar-sdk'
 
 import { AccountHandler } from '@account/account-handler/types'
 import { DefaultTransactionSubmitter } from '@core/transaction-submitter/classic/default'
@@ -8,7 +12,7 @@ import { TransactionSubmitter } from '@core/transaction-submitter/classic/types'
 import { FeeBumpHeader, TransactionInvocation } from '@core/types'
 import { HorizonHandlerClient } from '@horizon/index'
 import { HorizonHandler } from '@horizon/types'
-import { FeeBumpTransaction, Network, Transaction, TransactionXdr } from '@stellar-plus/types'
+import { Network, TransactionXdr } from '@stellar-plus/types'
 
 export class TransactionProcessor {
   protected horizonHandler: HorizonHandler
@@ -35,10 +39,13 @@ export class TransactionProcessor {
    *
    * @returns {TransactionXdr} The signed transaction in xdr format.
    */
-  protected async signEnvelope(envelope: Transaction, signers: AccountHandler[]): Promise<TransactionXdr> {
+  protected async signEnvelope(
+    envelope: Transaction | FeeBumpTransaction,
+    signers: AccountHandler[]
+  ): Promise<TransactionXdr> {
     let signedXDR = envelope.toXDR()
     for (const signer of signers) {
-      signedXDR = await signer.sign(SorobanClient.TransactionBuilder.fromXDR(signedXDR, this.network.networkPassphrase))
+      signedXDR = await signer.sign(TransactionBuilder.fromXDR(signedXDR, this.network.networkPassphrase))
     }
     return signedXDR
   }
@@ -53,12 +60,16 @@ export class TransactionProcessor {
    * @returns {FeeBumpTransaction} The fee bump transaction.
    */
   protected async wrapFeeBump(envelopeXdr: TransactionXdr, feeBump: FeeBumpHeader): Promise<FeeBumpTransaction> {
-    const tx = TransactionBuilder.fromXDR(envelopeXdr, this.network.networkPassphrase) as ClassicTransaction
+    const innerTx = TransactionBuilder.fromXDR(envelopeXdr, this.network.networkPassphrase)
+
+    if (innerTx instanceof FeeBumpTransaction) {
+      throw new Error('Cannot wrap fee bump transaction with fee bump transaction')
+    }
 
     const feeBumpTx = TransactionBuilder.buildFeeBumpTransaction(
       feeBump.header.source,
       feeBump.header.fee,
-      tx,
+      innerTx,
       this.network.networkPassphrase
     )
 
@@ -81,17 +92,17 @@ export class TransactionProcessor {
     envelope: Transaction,
     signers: AccountHandler[],
     feeBump?: FeeBumpHeader
-  ): Promise<HorizonNamespace.SubmitTransactionResponse> {
+  ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
     const signedInnerTransaction = await this.signEnvelope(envelope, signers)
     const finalEnvelope = feeBump
       ? await this.wrapFeeBump(signedInnerTransaction, feeBump)
       : TransactionBuilder.fromXDR(signedInnerTransaction, this.network.networkPassphrase)
     const horizonResponse = (await this.transactionSubmitter.submit(
       finalEnvelope
-    )) as HorizonNamespace.SubmitTransactionResponse
+    )) as HorizonNamespace.HorizonApi.SubmitTransactionResponse
     const processedTransaction = this.transactionSubmitter.postProcessTransaction(
       horizonResponse
-    ) as HorizonNamespace.SubmitTransactionResponse
+    ) as HorizonNamespace.HorizonApi.SubmitTransactionResponse
     return processedTransaction
   }
 
@@ -125,7 +136,7 @@ export class TransactionProcessor {
     operations: xdrNamespace.Operation[],
     txInvocation: TransactionInvocation
   ): Promise<{
-    builtTx: ClassicTransaction
+    builtTx: Transaction
     updatedTxInvocation: TransactionInvocation
   }> {
     const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope(txInvocation)

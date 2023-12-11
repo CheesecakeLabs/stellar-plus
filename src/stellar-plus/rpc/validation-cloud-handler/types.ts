@@ -1,4 +1,4 @@
-import { SorobanRpc } from 'soroban-client'
+import { SorobanRpc } from '@stellar/stellar-sdk'
 
 export type RequestPayload = {
   jsonrpc: string
@@ -35,7 +35,7 @@ export type SimulateTransactionAPIResponse = ApiResponse & {
 export type SendTransactionAPIResponse = ApiResponse & {
   result: {
     hash: string // Hex-encoded transaction hash
-    status: SorobanRpc.SendTransactionStatus //Allowed values: PENDING | DUPLICATE | TRY_AGAIN_LATER | ERROR
+    status: SorobanRpc.Api.SendTransactionStatus //Allowed values: PENDING | DUPLICATE | TRY_AGAIN_LATER | ERROR
     latestLedger: number // Stringified number, latest ledger known to Soroban-RPC
     latestLedgerCloseTime: number // Unix timestamp string for ledger close time
     errorResultXdr?: string // Optional, base64 encoded TransactionResult XDR
