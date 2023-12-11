@@ -1,6 +1,6 @@
-import { Account, Horizon } from '@stellar/stellar-sdk'
+import { Horizon } from '@stellar/stellar-sdk'
 
 export type HorizonHandler = {
   server: Horizon.Server
-  loadAccount(accountId: string): Promise<Account>
+  loadAccount(accountId: string): Promise<Horizon.AccountResponse>
 }
