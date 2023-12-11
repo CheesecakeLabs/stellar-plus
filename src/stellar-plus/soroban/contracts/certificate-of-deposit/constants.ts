@@ -1,4 +1,4 @@
-import { ContractSpec } from 'soroban-client'
+import { ContractSpec } from '@stellar/stellar-sdk'
 export enum Methods {
   deposit = 'deposit',
   withdraw = 'withdraw',

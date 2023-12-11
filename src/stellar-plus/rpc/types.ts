@@ -1,10 +1,8 @@
-import { SorobanRpc } from 'soroban-client'
-
-import { SorobanFeeBumpTransaction, SorobanTransaction } from '@stellar-plus/types'
+import { FeeBumpTransaction, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 export type RpcHandler = {
-  getTransaction(txHash: string): Promise<SorobanRpc.GetTransactionResponse>
-  simulateTransaction(tx: SorobanTransaction): Promise<SorobanRpc.SimulateTransactionResponse>
-  prepareTransaction(tx: SorobanTransaction): Promise<SorobanTransaction>
-  submitTransaction(tx: SorobanTransaction | SorobanFeeBumpTransaction): Promise<SorobanRpc.SendTransactionResponse>
+  getTransaction(txHash: string): Promise<SorobanRpc.Api.GetTransactionResponse>
+  simulateTransaction(tx: Transaction): Promise<SorobanRpc.Api.SimulateTransactionResponse>
+  prepareTransaction(tx: Transaction): Promise<Transaction>
+  submitTransaction(tx: Transaction | FeeBumpTransaction): Promise<SorobanRpc.Api.SendTransactionResponse>
 }

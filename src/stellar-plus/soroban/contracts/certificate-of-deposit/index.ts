@@ -1,4 +1,4 @@
-import { Address, ContractSpec } from 'soroban-client'
+import { Address, ContractSpec } from '@stellar/stellar-sdk'
 
 import { ContractEngine } from '@core/contract-engine'
 import { RpcHandler } from '@rpc/types'

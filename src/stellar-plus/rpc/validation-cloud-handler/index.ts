@@ -1,6 +1,7 @@
+import { SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
 import axios from 'axios'
-import { SorobanRpc, xdr as SorobanXdr, Transaction, assembleTransaction, parseRawSimulation } from 'soroban-client'
-import { parseRawSendTransaction } from 'soroban-client/lib/parsers'
+// import { SorobanRpc, xdr as SorobanXdr, assembleTransaction, parseRawSimulation } from 'soroban-client'
+// import { parseRawSendTransaction } from 'soroban-client/lib/parsers'
 
 import { RpcHandler } from '@rpc/types'
 import {
@@ -71,10 +72,10 @@ export class ValidationCloudRpcHandler implements RpcHandler {
   public async getTransaction(
     txHash: string
   ): Promise<
-    | SorobanRpc.GetTransactionResponse
-    | SorobanRpc.GetFailedTransactionResponse
-    | SorobanRpc.GetMissingTransactionResponse
-    | SorobanRpc.GetSuccessfulTransactionResponse
+    | SorobanRpc.Api.GetTransactionResponse
+    | SorobanRpc.Api.GetFailedTransactionResponse
+    | SorobanRpc.Api.GetMissingTransactionResponse
+    | SorobanRpc.Api.GetSuccessfulTransactionResponse
   > {
     const payload: RequestPayload = {
       jsonrpc: '2.0',
@@ -86,14 +87,14 @@ export class ValidationCloudRpcHandler implements RpcHandler {
     }
 
     const response = (await this.fetch(payload)) as ApiResponse
-    const rawGetResponse = response.result as SorobanRpc.RawGetTransactionResponse
+    const rawGetResponse = response.result as SorobanRpc.Api.RawGetTransactionResponse
 
     if (rawGetResponse.status === 'NOT_FOUND') {
-      return rawGetResponse as SorobanRpc.GetMissingTransactionResponse
+      return rawGetResponse as SorobanRpc.Api.GetMissingTransactionResponse
     }
 
     if (rawGetResponse.status === 'FAILED') {
-      return rawGetResponse as SorobanRpc.GetFailedTransactionResponse
+      return rawGetResponse as unknown as SorobanRpc.Api.GetFailedTransactionResponse
     }
 
     //
@@ -103,15 +104,15 @@ export class ValidationCloudRpcHandler implements RpcHandler {
     //
     if (rawGetResponse.status === 'SUCCESS') {
       return {
-        ...(rawGetResponse as unknown as SorobanRpc.GetSuccessfulTransactionResponse),
-        resultMetaXdr: SorobanXdr.TransactionMeta.fromXDR(
+        ...(rawGetResponse as unknown as SorobanRpc.Api.GetSuccessfulTransactionResponse),
+        resultMetaXdr: xdr.TransactionMeta.fromXDR(
           Buffer.from(rawGetResponse.resultMetaXdr as string, 'base64'),
           'raw'
         ),
-      } as unknown as SorobanRpc.GetSuccessfulTransactionResponse
+      } as unknown as SorobanRpc.Api.GetSuccessfulTransactionResponse
     }
 
-    return rawGetResponse as SorobanRpc.GetTransactionResponse
+    return rawGetResponse as SorobanRpc.Api.GetTransactionResponse
   }
 
   /**
@@ -122,7 +123,7 @@ export class ValidationCloudRpcHandler implements RpcHandler {
    *
    * @description - Simulates the transaction on the Soroban server.
    */
-  public async simulateTransaction(tx: Transaction): Promise<SorobanRpc.SimulateTransactionResponse> {
+  public async simulateTransaction(tx: Transaction): Promise<SorobanRpc.Api.SimulateTransactionResponse> {
     const txXdr = tx.toXDR()
     const payload: RequestPayload = {
       jsonrpc: '2.0',
@@ -135,8 +136,8 @@ export class ValidationCloudRpcHandler implements RpcHandler {
 
     const response = (await this.fetch(payload)) as SimulateTransactionAPIResponse
 
-    const formattedResponse: SorobanRpc.SimulateTransactionResponse = parseRawSimulation(
-      response.result as SorobanRpc.RawSimulateTransactionResponse
+    const formattedResponse: SorobanRpc.Api.SimulateTransactionResponse = SorobanRpc.parseRawSimulation(
+      response.result as unknown as SorobanRpc.Api.RawSimulateTransactionResponse
     )
 
     return formattedResponse
@@ -151,8 +152,8 @@ export class ValidationCloudRpcHandler implements RpcHandler {
    * @description - Prepares the transaction on the Soroban server.
    */
   public async prepareTransaction(tx: Transaction): Promise<Transaction> {
-    const response = (await this.simulateTransaction(tx)) as SorobanRpc.SimulateTransactionResponse
-    const assembledTx = assembleTransaction(tx, this.network.networkPassphrase, response)
+    const response = (await this.simulateTransaction(tx)) as SorobanRpc.Api.SimulateTransactionResponse
+    const assembledTx = SorobanRpc.assembleTransaction(tx, response)
     return assembledTx.build()
   }
 
@@ -164,7 +165,7 @@ export class ValidationCloudRpcHandler implements RpcHandler {
    *
    * @description - Submits the transaction on the Soroban server.
    */
-  public async submitTransaction(tx: Transaction): Promise<SorobanRpc.SendTransactionResponse> {
+  public async submitTransaction(tx: Transaction): Promise<SorobanRpc.Api.SendTransactionResponse> {
     const txXdr = tx.toXDR()
     const payload: RequestPayload = {
       jsonrpc: '2.0',
@@ -177,9 +178,8 @@ export class ValidationCloudRpcHandler implements RpcHandler {
 
     const response = (await this.fetch(payload)) as SendTransactionAPIResponse
 
-    const formattedResponse: SorobanRpc.SendTransactionResponse = parseRawSendTransaction(
-      response.result as SorobanRpc.RawSendTransactionResponse
-    )
+    const formattedResponse: SorobanRpc.Api.SendTransactionResponse =
+      response.result as SorobanRpc.Api.RawSendTransactionResponse
 
     return formattedResponse
   }

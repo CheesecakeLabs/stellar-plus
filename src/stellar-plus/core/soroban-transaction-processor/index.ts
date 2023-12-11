@@ -1,4 +1,12 @@
-import { Contract, ContractSpec, SorobanRpc as SorobanRpcNamespace, TransactionBuilder } from 'soroban-client'
+import {
+  Contract,
+  ContractSpec,
+  FeeBumpTransaction,
+  SorobanRpc as SorobanRpcNamespace,
+  Account as StellarAccount,
+  Transaction,
+  TransactionBuilder,
+} from '@stellar/stellar-sdk'
 
 import { AccountHandler } from '@account/account-handler/types'
 import { TransactionProcessor } from '@core/classic-transaction-processor'
@@ -6,13 +14,7 @@ import { SorobanSimulateArgs } from '@core/contract-engine/types'
 import { FeeBumpHeader } from '@core/types'
 import { DefaultRpcHandler } from '@rpc/default-handler'
 import { RpcHandler } from '@rpc/types'
-import {
-  FeeBumpTransaction,
-  Network,
-  SorobanFeeBumpTransaction,
-  SorobanTransaction,
-  TransactionXdr,
-} from '@stellar-plus/types'
+import { Network, TransactionXdr } from '@stellar-plus/types'
 
 export class SorobanTransactionProcessor extends TransactionProcessor {
   private rpcHandler: RpcHandler
@@ -41,19 +43,19 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    *
    * @description - Builds a Soroban transaction envelope.
    *
-   * @returns {Promise<SorobanTransaction>} The Soroban transaction envelope.
+   * @returns {Promise<Transaction>} The Soroban transaction envelope.
    */
   protected async buildTransaction(
     args: SorobanSimulateArgs<object>,
     spec: ContractSpec,
     contractId: string
-  ): Promise<SorobanTransaction> {
+  ): Promise<Transaction> {
     const { method, methodArgs, header } = args
 
     const encodedArgs = spec.funcArgsToScVals(method, methodArgs)
 
     try {
-      const sourceAccount = await this.horizonHandler.loadAccount(header.source)
+      const sourceAccount = (await this.horizonHandler.loadAccount(header.source)) as StellarAccount
       const contract = new Contract(contractId)
       const txEnvelope = new TransactionBuilder(sourceAccount, {
         fee: header.fee,
@@ -71,15 +73,13 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
   /**
    *
-   * @param {SorobanTransaction} tx - The transaction to simulate.
+   * @param {Transaction} tx - The transaction to simulate.
    *
    * @description - Simulates the given transaction.
    *
    * @returns {Promise<SorobanRpcNamespace.SimulateTransactionResponse>} The simulation response.
    */
-  protected async simulateTransaction(
-    tx: SorobanTransaction
-  ): Promise<SorobanRpcNamespace.SimulateTransactionResponse> {
+  protected async simulateTransaction(tx: Transaction): Promise<SorobanRpcNamespace.Api.SimulateTransactionResponse> {
     try {
       const response = await this.rpcHandler.simulateTransaction(tx)
       return response
@@ -95,9 +95,9 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    *
    * @description - Simulates the given transaction and assembles the output of the simulation for later submission.
    *
-   * @returns {Promise<SorobanTransaction>} Transaction prepared for submission.
+   * @returns {Promise<Transaction>} Transaction prepared for submission.
    */
-  protected async prepareTransaction(tx: SorobanTransaction): Promise<SorobanTransaction> {
+  protected async prepareTransaction(tx: Transaction): Promise<Transaction> {
     try {
       const response = await this.rpcHandler.prepareTransaction(tx)
       return response
@@ -109,15 +109,15 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
   /**
    *
-   * @param {SorobanTransaction | SorobanFeeBumpTransaction} tx - The transaction to submit.
+   * @param {Transaction | FeeBumpTransaction} tx - The transaction to submit.
    *
    * @description - Submits the given transaction to the network.
    *
-   * @returns {Promise<SorobanRpcNamespace.SendTransactionResponse>} The response from the Soroban server.
+   * @returns {Promise<SorobanRpcNamespace.Api.SendTransactionResponse>} The response from the Soroban server.
    */
-  protected async submitSorobanTransaction(
-    tx: SorobanTransaction | SorobanFeeBumpTransaction
-  ): Promise<SorobanRpcNamespace.SendTransactionResponse> {
+  protected async submitTransaction(
+    tx: Transaction | FeeBumpTransaction
+  ): Promise<SorobanRpcNamespace.Api.SendTransactionResponse> {
     // console.log('Submitting transaction: ', tx.toXDR())
     try {
       const response = await this.rpcHandler.submitTransaction(tx)
@@ -129,7 +129,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
   /**
    *
-   * @param {SorobanTransaction} envelope - The prepared transaction envelope to sign.
+   * @param {Transaction} envelope - The prepared transaction envelope to sign.
    * @param {AccountHandler[]} signers - The signers to sign the transaction with.
    * @param {FeeBumpHeader=} feeBump - The fee bump header to use.
    *
@@ -138,18 +138,19 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    * @returns {Promise<SorobanRpcNamespace.GetSuccessfulTransactionResponse>} The response from the Soroban server.
    */
   protected async processSorobanTransaction(
-    envelope: SorobanTransaction,
+    envelope: Transaction,
     signers: AccountHandler[],
     feeBump?: FeeBumpHeader
-  ): Promise<SorobanRpcNamespace.GetSuccessfulTransactionResponse> {
+  ): Promise<SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse> {
     const signedInnerTransaction = await this.signEnvelope(envelope, signers)
 
     const finalEnvelope = feeBump
-      ? ((await this.wrapSorobanFeeBump(signedInnerTransaction, feeBump)) as SorobanFeeBumpTransaction)
-      : (TransactionBuilder.fromXDR(signedInnerTransaction, this.network.networkPassphrase) as SorobanTransaction)
+      ? ((await this.wrapSorobanFeeBump(signedInnerTransaction, feeBump)) as FeeBumpTransaction)
+      : (TransactionBuilder.fromXDR(signedInnerTransaction, this.network.networkPassphrase) as Transaction)
 
-    const rpcResponse = await this.submitSorobanTransaction(finalEnvelope)
-    const processedTransaction = this.postProcessSorobanSubmission(rpcResponse)
+    const rpcResponse = await this.submitTransaction(finalEnvelope)
+    const processedTransaction = await this.postProcessSorobanSubmission(rpcResponse)
+
     return processedTransaction
   }
 
@@ -162,8 +163,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    * @returns {Promise<SorobanRpcNamespace.GetSuccessfulTransactionResponse>} The response from the Soroban server.
    */
   protected async postProcessSorobanSubmission(
-    response: SorobanRpcNamespace.SendTransactionResponse
-  ): Promise<SorobanRpcNamespace.GetSuccessfulTransactionResponse> {
+    response: SorobanRpcNamespace.Api.SendTransactionResponse
+  ): Promise<SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse> {
     if (response.status === 'ERROR') {
       // console.log('Soroban transaction submission failed!: ', response.errorResult?.toXDR('raw').toString('base64'))
       throw new Error('Soroban transaction submission failed!')
@@ -171,7 +172,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
     if (response.status === 'PENDING' || response.status === 'TRY_AGAIN_LATER') {
       // console.log('Waiting for Transaction!: ')
-      return await this.waitForSorobanTransaction(response.hash, 15) // Arbitrary 15 seconds timeout
+      return await this.waitForTransaction(response.hash, 15) // Arbitrary 15 seconds timeout
     }
 
     throw new Error('Soroban transaction submission failed!')
@@ -190,27 +191,30 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    * If the transaction fails, it will throw an error.
    * @returns {Promise<SorobanRpcNamespace.GetSuccessfulTransactionResponse>} The response from the Soroban server.
    */
-  protected async waitForSorobanTransaction(
+  protected async waitForTransaction(
     transactionHash: string,
     secondsToWait: number
-  ): Promise<SorobanRpcNamespace.GetSuccessfulTransactionResponse> {
+  ): Promise<SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse> {
     const timeout = secondsToWait * 1000
     const waitUntil = Date.now() + timeout
     const initialWaitTime = 1000
     let waitTime = initialWaitTime
 
     let updatedTransaction = await this.rpcHandler.getTransaction(transactionHash)
-    while (Date.now() < waitUntil && updatedTransaction.status === SorobanRpcNamespace.GetTransactionStatus.NOT_FOUND) {
+    while (
+      Date.now() < waitUntil &&
+      updatedTransaction.status === SorobanRpcNamespace.Api.GetTransactionStatus.NOT_FOUND
+    ) {
       await new Promise((resolve) => setTimeout(resolve, waitTime))
       updatedTransaction = await this.rpcHandler.getTransaction(transactionHash)
       waitTime *= 2 // Exponential backoff
     }
 
-    if (updatedTransaction.status === SorobanRpcNamespace.GetTransactionStatus.SUCCESS) {
-      return updatedTransaction as SorobanRpcNamespace.GetSuccessfulTransactionResponse
+    if (updatedTransaction.status === SorobanRpcNamespace.Api.GetTransactionStatus.SUCCESS) {
+      return updatedTransaction as SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
     }
 
-    if (updatedTransaction.status === SorobanRpcNamespace.GetTransactionStatus.FAILED) {
+    if (updatedTransaction.status === SorobanRpcNamespace.Api.GetTransactionStatus.FAILED) {
       // const failedTransaction = updatedTransaction as SorobanRpcNamespace.GetFailedTransactionResponse
       // console.log("Details!: ", JSON.stringify(failedTransaction));
       throw new Error('Transaction execution failed!')
@@ -219,9 +223,9 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     throw new Error('Transaction execution not found!')
   }
 
-  protected postProcessSorobanTransaction(
-    response: SorobanRpcNamespace.GetSuccessfulTransactionResponse
-  ): SorobanRpcNamespace.GetSuccessfulTransactionResponse {
+  protected postProcessTransaction(
+    response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
+  ): SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse {
     //TODO: implement
 
     return response
@@ -229,7 +233,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
   /**
    *
-   * @param {SorobanTransaction} envelopeXdr - The inner transaction envelope to wrap.
+   * @param {Transaction} envelopeXdr - The inner transaction envelope to wrap.
    * @param {FeeBumpHeader} feeBump - The fee bump header to use.
    *
    * @description - Wraps the given transaction envelope with the provided fee bump header.
@@ -237,7 +241,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    * @returns {Promise<FeeBumpTransaction>} The wrapped transaction envelope.
    */
   protected async wrapSorobanFeeBump(envelopeXdr: TransactionXdr, feeBump: FeeBumpHeader): Promise<FeeBumpTransaction> {
-    const tx = TransactionBuilder.fromXDR(envelopeXdr, this.network.networkPassphrase) as SorobanTransaction
+    const tx = TransactionBuilder.fromXDR(envelopeXdr, this.network.networkPassphrase) as Transaction
 
     const feeBumpTx = TransactionBuilder.buildFeeBumpTransaction(
       feeBump.header.source,

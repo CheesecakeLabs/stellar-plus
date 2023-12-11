@@ -1,10 +1,10 @@
-import { Server, SorobanRpc } from 'soroban-client'
+import { FeeBumpTransaction, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import { RpcHandler } from '@rpc/types'
-import { Network, SorobanFeeBumpTransaction, SorobanTransaction } from '@stellar-plus/types'
+import { Network } from '@stellar-plus/types'
 
 export class DefaultRpcHandler implements RpcHandler {
-  private server: Server
+  private server: SorobanRpc.Server
   private network: Network
 
   /**
@@ -17,7 +17,7 @@ export class DefaultRpcHandler implements RpcHandler {
    */
   constructor(network: Network) {
     this.network = network
-    this.server = new Server(this.network.rpcUrl)
+    this.server = new SorobanRpc.Server(this.network.rpcUrl)
   }
 
   /**
@@ -28,48 +28,46 @@ export class DefaultRpcHandler implements RpcHandler {
    *
    * @description - Gets the transaction from the Soroban server.
    */
-  async getTransaction(txHash: string): Promise<SorobanRpc.GetTransactionResponse> {
+  async getTransaction(txHash: string): Promise<SorobanRpc.Api.GetTransactionResponse> {
     const response = await this.server.getTransaction(txHash)
     return response
   }
 
   /**
    *
-   * @param {SorobanTransaction} tx - The transaction to simulate.
+   * @param {Transaction} tx - The transaction to simulate.
    *
    * @returns {SorobanRpc.SimulateTransactionResponse} The transaction simulation response from the Soroban server.
    *
    * @description - Simulates the transaction on the Soroban server.
    */
-  async simulateTransaction(tx: SorobanTransaction): Promise<SorobanRpc.SimulateTransactionResponse> {
+  async simulateTransaction(tx: Transaction): Promise<SorobanRpc.Api.SimulateTransactionResponse> {
     const response = await this.server.simulateTransaction(tx)
     return response
   }
 
   /**
    *
-   * @param {SorobanTransaction} tx - The transaction to prepare.
+   * @param {Transaction} tx - The transaction to prepare.
    *
-   * @returns {SorobanTransaction} The prepared transaction.
+   * @returns {Transaction} The prepared transaction.
    *
    * @description - Prepares the transaction on the Soroban server.
    */
-  async prepareTransaction(tx: SorobanTransaction): Promise<SorobanTransaction> {
+  async prepareTransaction(tx: Transaction): Promise<Transaction> {
     const response = await this.server.prepareTransaction(tx)
-    return response as SorobanTransaction
+    return response as Transaction
   }
 
   /**
    *
-   * @param {SorobanTransaction | SorobanFeeBumpTransaction} tx - The transaction to submit.
+   * @param {Transaction | SorobanFeeBumpTransaction} tx - The transaction to submit.
    *
    * @returns {SorobanRpc.SendTransactionResponse} The transaction submission response from the Soroban server.
    *
    * @description - Submits the transaction on the Soroban server.
    */
-  async submitTransaction(
-    tx: SorobanTransaction | SorobanFeeBumpTransaction
-  ): Promise<SorobanRpc.SendTransactionResponse> {
+  async submitTransaction(tx: Transaction | FeeBumpTransaction): Promise<SorobanRpc.Api.SendTransactionResponse> {
     const response = await this.server.sendTransaction(tx)
     return response
   }
