@@ -120,7 +120,6 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
     const envelopeXdr = envelope.toXDR()
     const classicEnvelope = TransactionBuilder.fromXDR(envelopeXdr, this.network.networkPassphrase) as Transaction
 
-    // console.log('Submitting transaction: ', envelope.toXDR())
     try {
       const response = await this.horizonHandler.server.submitTransaction(classicEnvelope)
 
