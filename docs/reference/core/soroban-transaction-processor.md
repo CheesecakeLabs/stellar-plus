@@ -12,7 +12,7 @@ The `SorobanTransactionProcessor` extends the `TransactionProcessor` class to in
 
 #### buildTransaction
 
-* **Purpose**: Constructs a Soroban transaction based on smart contract invocation parameters.
+* **Purpose**: Construct a Soroban transaction based on smart contract invocation parameters.
 * **Parameters**:
   * `args`(SorobanSimulateArgs): Includes the method, arguments, and header for the transaction.
   * `spec`: Contract specification.
@@ -71,6 +71,30 @@ The `SorobanTransactionProcessor` extends the `TransactionProcessor` class to in
   * `envelopeXdr`: The XDR of the transaction to be fee-bumped.
   * `feeBump`: The fee bump header details.
 * **Returns**: A `FeeBumpTransaction`.
+
+#### uploadContractWasm
+
+* **Purpose**: Uploads a wasm file to the network and returns the wasm hash.
+* **Parameters**:
+  * `args`: `SorobanUploadArgs` containing:&#x20;
+    * `wasm`: Buffer of wasm file.&#x20;
+    * `header`: EnvelopeHeader.
+    * `signers`: AccountHandler\[].&#x20;
+    * `feeBump`: FeeBumpHeader, optional.
+* **Returns**: `Promise<string>` - The wasm hash of the uploaded file.
+
+#### deployContract
+
+* **Purpose**: Deploys a new instance of a contract to the Soroban server.
+* **Parameters**:
+  * `args`: `SorobanDeployArgs` containing:
+    * `wasmHash`: Wasm hash(string) of the contract to be deployed.
+    * `header`: EnvelopeHeader.
+    * `signers`: AccountHandler\[].&#x20;
+    * `feeBump`: FeeBumpHeader, optional.
+* **Returns**: `Promise<string>` - The contract ID of the deployed instance.
+
+These methods extend the `SorobanTransactionProcessor` capabilities, allowing for direct interaction with wasm files and contract deployment on the Soroban platform.
 
 ### Conclusion
 
