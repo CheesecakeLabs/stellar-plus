@@ -1,17 +1,22 @@
+import { randomBytes } from 'crypto'
+
 import {
+  Address,
   Contract,
   ContractSpec,
   FeeBumpTransaction,
   Operation,
+  OperationOptions,
   SorobanRpc as SorobanRpcNamespace,
   Account as StellarAccount,
   Transaction,
   TransactionBuilder,
+  xdr,
 } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from '@account/account-handler/types'
 import { TransactionProcessor } from '@core/classic-transaction-processor'
-import { SorobanSimulateArgs, SorobanUploadArgs } from '@core/soroban-transaction-processor/types'
+import { SorobanDeployArgs, SorobanSimulateArgs, SorobanUploadArgs } from '@core/soroban-transaction-processor/types'
 import { FeeBumpHeader } from '@core/types'
 import { DefaultRpcHandler } from '@rpc/default-handler'
 import { RpcHandler } from '@rpc/types'
@@ -293,6 +298,41 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     } catch (error) {
       // console.log('Error: ', error)
       throw new Error('Failed to upload contract!')
+    }
+  }
+
+  public async deployContract(args: SorobanDeployArgs): Promise<string> {
+    const { wasmHash, header, signers, feeBump } = args
+
+    const txInvocation = {
+      signers,
+      header,
+      feeBump,
+    }
+
+    const options: OperationOptions.CreateCustomContract = {
+      address: new Address(header.source),
+      wasmHash: Buffer.from(wasmHash, 'hex'),
+      salt: randomBytes(32),
+    }
+
+    const deployOperation = [Operation.createCustomContract(options)]
+
+    const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(deployOperation, txInvocation)
+
+    const prepared = await this.prepareTransaction(builtTx)
+
+    try {
+      const output = await this.processSorobanTransaction(
+        prepared,
+        updatedTxInvocation.signers,
+        updatedTxInvocation.feeBump
+      )
+
+      return Address.fromScAddress(output.returnValue?.address() as xdr.ScAddress).toString()
+    } catch (error) {
+      // console.log('Error: ', error)
+      throw new Error('Failed to deploy contract instance!')
     }
   }
 }

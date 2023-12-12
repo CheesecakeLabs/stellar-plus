@@ -18,3 +18,10 @@ export type SorobanUploadArgs = {
   signers: AccountHandler[]
   feeBump?: FeeBumpHeader
 }
+
+export type SorobanDeployArgs = {
+  wasmHash: string
+  header: EnvelopeHeader
+  signers: AccountHandler[]
+  feeBump?: FeeBumpHeader
+}
