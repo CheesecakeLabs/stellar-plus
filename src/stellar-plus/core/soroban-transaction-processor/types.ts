@@ -11,3 +11,10 @@ export type SorobanSimulateArgs<T> = {
   methodArgs: T
   header: EnvelopeHeader
 }
+
+export type SorobanUploadArgs = {
+  wasm: Buffer
+  header: EnvelopeHeader
+  signers: AccountHandler[]
+  feeBump?: FeeBumpHeader
+}

@@ -1,7 +1,7 @@
 import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction } from '@stellar/stellar-sdk'
 
-import { SorobanInvokeArgs, SorobanSimulateArgs } from '@core/contract-engine/types'
 import { SorobanTransactionProcessor } from '@core/soroban-transaction-processor'
+import { SorobanInvokeArgs, SorobanSimulateArgs } from '@core/soroban-transaction-processor/types'
 import { RpcHandler } from '@rpc/types'
 import { Network } from '@stellar-plus/types'
 

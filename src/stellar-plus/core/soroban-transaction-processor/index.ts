@@ -2,6 +2,7 @@ import {
   Contract,
   ContractSpec,
   FeeBumpTransaction,
+  Operation,
   SorobanRpc as SorobanRpcNamespace,
   Account as StellarAccount,
   Transaction,
@@ -10,7 +11,7 @@ import {
 
 import { AccountHandler } from '@account/account-handler/types'
 import { TransactionProcessor } from '@core/classic-transaction-processor'
-import { SorobanSimulateArgs } from '@core/contract-engine/types'
+import { SorobanSimulateArgs, SorobanUploadArgs } from '@core/soroban-transaction-processor/types'
 import { FeeBumpHeader } from '@core/types'
 import { DefaultRpcHandler } from '@rpc/default-handler'
 import { RpcHandler } from '@rpc/types'
@@ -253,5 +254,45 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     const signedFeeBumpXDR = await this.signEnvelope(feeBumpTx, feeBump.signers)
 
     return TransactionBuilder.fromXDR(signedFeeBumpXDR, this.network.networkPassphrase) as FeeBumpTransaction
+  }
+
+  /**
+   *
+   * @args {SorobanUploadArgs} args - The arguments for the invocation.
+   * @param {Buffer} args.wasm - The Buffer of the wasm file to upload.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   * @returns {Promise<string>} The wasm hash of the uploaded wasm.
+   *
+   * @description - Uploads a wasm file to the Soroban server and returns the wasm hash. This hash can be used to deploy new instances of the contract.
+   */
+  public async uploadContractWasm(args: SorobanUploadArgs): Promise<string> {
+    const { wasm, header, signers, feeBump } = args
+
+    const txInvocation = {
+      signers,
+      header,
+      feeBump,
+    }
+
+    const uploadOperation = [Operation.uploadContractWasm({ wasm })]
+
+    const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(uploadOperation, txInvocation)
+
+    const prepared = await this.prepareTransaction(builtTx)
+
+    try {
+      const output = await this.processSorobanTransaction(
+        prepared,
+        updatedTxInvocation.signers,
+        updatedTxInvocation.feeBump
+      )
+
+      return (output.returnValue?.value() as Buffer).toString('hex') as string
+    } catch (error) {
+      // console.log('Error: ', error)
+      throw new Error('Failed to upload contract!')
+    }
   }
 }
