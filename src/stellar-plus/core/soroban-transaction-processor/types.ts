@@ -1,3 +1,5 @@
+import { Asset as StellarAsset } from '@stellar/stellar-sdk'
+
 import { AccountHandler } from '@account/account-handler/types'
 import { EnvelopeHeader, FeeBumpHeader } from '@core/types'
 
@@ -21,6 +23,13 @@ export type SorobanUploadArgs = {
 
 export type SorobanDeployArgs = {
   wasmHash: string
+  header: EnvelopeHeader
+  signers: AccountHandler[]
+  feeBump?: FeeBumpHeader
+}
+
+export type WrapClassicAssetArgs = {
+  asset: StellarAsset
   header: EnvelopeHeader
   signers: AccountHandler[]
   feeBump?: FeeBumpHeader

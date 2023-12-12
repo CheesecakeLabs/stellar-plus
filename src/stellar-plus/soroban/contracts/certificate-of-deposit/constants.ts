@@ -7,6 +7,7 @@ export enum Methods {
   getEstimatedPrematureWithdraw = 'get_estimated_premature_withdraw',
   getTimeLeft = 'get_time_left',
   extendContractValidity = 'extend_contract_validity',
+  initialize = 'initialize',
 }
 
 export const spec = new ContractSpec([

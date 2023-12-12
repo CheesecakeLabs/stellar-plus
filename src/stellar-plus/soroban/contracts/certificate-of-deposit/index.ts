@@ -12,6 +12,7 @@ import {
   GetEstimatedYieldArgs,
   GetPositionArgs,
   GetTimeLeftArgs,
+  Initialize,
   WithdrawArgs,
 } from './types'
 
@@ -166,6 +167,28 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
     })) as u64
 
     return Number(result)
+  }
+
+  public async initialize(args: Initialize): Promise<void> {
+    const { term, compoundStep, yieldRate, minDeposit, penaltyRate } = args
+    const admin = new Address(args.admin)
+    const asset = new Address(args.asset)
+
+    await this.invokeContract({
+      method: this.methods.initialize,
+      methodArgs: {
+        admin,
+        asset,
+        term: term as u64,
+        compound_step: compoundStep as u64,
+        yield_rate: yieldRate as u64,
+        min_deposit: minDeposit as i128,
+        penalty_rate: penaltyRate as u64,
+      },
+      signers: args.signers,
+      header: args.header,
+      feeBump: args.feeBump,
+    })
   }
 
   // public async extendContractValidity(): Promise<void> {

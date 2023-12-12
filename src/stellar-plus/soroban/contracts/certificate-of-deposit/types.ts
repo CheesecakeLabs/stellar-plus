@@ -40,6 +40,16 @@ export type GetTimeLeftArgs = TransactionInvocation & {
   address: string
 }
 
+export type Initialize = TransactionInvocation & {
+  admin: string // Admin Address
+  asset: string // Asset Contract Id
+  term: bigint // Term in seconds
+  compoundStep: bigint // Compound Step in seconds
+  yieldRate: bigint // Yield Rate in percentage, 1% = 100. Example: 10% = 1000
+  minDeposit: bigint // Minimum Deposit in stroops (1 unit = 10^7 stroops)
+  penaltyRate: bigint // Penalty Rate in percentage, 1% = 100. Example: 10% = 1000
+}
+
 export type DepositData = {
   amount: i128
   timestamp: u64

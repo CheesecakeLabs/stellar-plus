@@ -16,7 +16,12 @@ import {
 
 import { AccountHandler } from '@account/account-handler/types'
 import { TransactionProcessor } from '@core/classic-transaction-processor'
-import { SorobanDeployArgs, SorobanSimulateArgs, SorobanUploadArgs } from '@core/soroban-transaction-processor/types'
+import {
+  SorobanDeployArgs,
+  SorobanSimulateArgs,
+  SorobanUploadArgs,
+  WrapClassicAssetArgs,
+} from '@core/soroban-transaction-processor/types'
 import { FeeBumpHeader } from '@core/types'
 import { DefaultRpcHandler } from '@rpc/default-handler'
 import { RpcHandler } from '@rpc/types'
@@ -301,6 +306,17 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     }
   }
 
+  /**
+   *
+   * @args {SorobanDeployArgs} args - The arguments for the invocation.
+   * @param {string} args.wasmHash - The wasm hash of the contract to deploy.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   * @returns {Promise<string>} The contract Id of the deployed contract instance.
+   *
+   * @description - Deploys a new instance of the contract to the Soroban server and returns the contract id of the deployed contract instance.
+   */
   public async deployContract(args: SorobanDeployArgs): Promise<string> {
     const { wasmHash, header, signers, feeBump } = args
 
@@ -333,6 +349,49 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     } catch (error) {
       // console.log('Error: ', error)
       throw new Error('Failed to deploy contract instance!')
+    }
+  }
+
+  /**
+   * @args {WrapClassicAssetArgs} args - The arguments for the invocation.
+   * @param {string} args.asset - The asset to wrap.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   * @returns {Promise<string>} The address of the wrapped asset contract.
+   * @description - Wraps a classic asset on the Stellar network and returns the address of the wrapped asset contract.
+   *
+   **/
+  public async wrapClassicAsset(args: WrapClassicAssetArgs): Promise<string> {
+    const { asset, header, signers, feeBump } = args
+
+    const txInvocation = {
+      signers,
+      header,
+      feeBump,
+    }
+
+    const options: OperationOptions.CreateStellarAssetContract = {
+      asset,
+    }
+
+    const wrapOperation = [Operation.createStellarAssetContract(options)]
+
+    const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(wrapOperation, txInvocation)
+
+    const prepared = await this.prepareTransaction(builtTx)
+
+    try {
+      const output = await this.processSorobanTransaction(
+        prepared,
+        updatedTxInvocation.signers,
+        updatedTxInvocation.feeBump
+      )
+
+      return Address.fromScAddress(output.returnValue?.address() as xdr.ScAddress).toString()
+    } catch (error) {
+      // console.log('Error: ', error)
+      throw new Error('Failed to wrap asset contract!')
     }
   }
 }
