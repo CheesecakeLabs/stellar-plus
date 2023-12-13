@@ -57,7 +57,7 @@ const transactionSubmitter =
   );
 
 await transactionSubmitter.registerChannels(
-  await StellarPlus.Core.Classic.ChannelAccountsHandler.initializeNewChannels(
+  await StellarPlus.Utils.ChannelAccountsHandler.openChannels(
     {
       numberOfChannels: 15,
       sponsor: opex,
@@ -248,7 +248,7 @@ const run = async () => {
   console.log("Initializing Channel Accounts");
 
  await transactionSubmitter.registerChannels(
-    await StellarPlus.Core.Classic.ChannelAccountsHandler.initializeNewChannels(
+    await StellarPlus.Utils.ChannelAccountsHandler.openChannels(
       {
         numberOfChannels: 15,
         sponsor: opex,
