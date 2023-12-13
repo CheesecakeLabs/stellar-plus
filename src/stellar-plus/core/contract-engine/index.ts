@@ -1,19 +1,22 @@
 import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction } from '@stellar/stellar-sdk'
 
-import { SorobanInvokeArgs, SorobanSimulateArgs } from '@core/contract-engine/types'
 import { SorobanTransactionProcessor } from '@core/soroban-transaction-processor'
-import { RpcHandler } from '@rpc/types'
-import { Network } from '@stellar-plus/types'
+import { SorobanInvokeArgs, SorobanSimulateArgs } from '@core/soroban-transaction-processor/types'
+import { TransactionInvocation } from '@core/types'
+
+import { ContractEngineConstructorArgs } from './types'
 
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
-  private contractId: string
+  private contractId?: string
+  private wasm?: Buffer
+  private wasmHash?: string
 
   /**
    *
    * @param {Network} network - The network to use.
    * @param {ContractSpec} spec - The contract specification.
-   * @param {string} contractId - The contract id.
+   * @param {string=} contractId - The contract id.
    * @param {RpcHandler=} rpcHandler - The rpc handler to use.
    *
    * @description - The contract engine is used for interacting with contracts on the network. This class can be extended to create a contract client, abstracting away the Soroban integration.
@@ -46,10 +49,12 @@ export class ContractEngine extends SorobanTransactionProcessor {
    * console.log(output) // 'myValue'
    * ```
    */
-  constructor(network: Network, spec: ContractSpec, contractId: string, rpcHandler?: RpcHandler) {
-    super(network, rpcHandler)
-    this.spec = spec
-    this.contractId = contractId
+  constructor(args: ContractEngineConstructorArgs) {
+    super(args.network, args.rpcHandler)
+    this.spec = args.spec
+    this.contractId = args.contractId
+    this.wasm = args.wasm
+    this.wasmHash = args.wasmHash
   }
 
   /**
@@ -77,7 +82,9 @@ export class ContractEngine extends SorobanTransactionProcessor {
    * ```
    */
   protected async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
-    const builtTx = (await this.buildTransaction(args, this.spec, this.contractId)) as Transaction
+    this.requireContractId()
+
+    const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
     const simulated = await this.simulateTransaction(builtTx)
 
     const output = this.extractOutputFromSimulation(simulated, args.method)
@@ -115,7 +122,9 @@ export class ContractEngine extends SorobanTransactionProcessor {
    * ```
    */
   protected async invokeContract(args: SorobanInvokeArgs<object>): Promise<unknown> {
-    const builtTx = await this.buildTransaction(args, this.spec, this.contractId)
+    this.requireContractId()
+
+    const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
 
     const prepared = await this.prepareTransaction(builtTx)
 
@@ -169,5 +178,67 @@ export class ContractEngine extends SorobanTransactionProcessor {
     }
 
     return simulated.result as SorobanRpcNamespace.Api.SimulateHostFunctionResult
+  }
+
+  //==========================================
+  // Meta Management Methods
+  //==========================================
+  //
+  //
+
+  /**
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object to use in this transaction.
+   *
+   * @description - Uploads the contract wasm to the network and stores the wasm hash in the contract engine.
+   *
+   * @requires - The wasm file buffer to be set in the contract engine.
+   *
+   * */
+  public async uploadWasm(txInvocation: TransactionInvocation): Promise<void> {
+    this.requireWasm()
+
+    const wasmHash = await this.uploadContractWasm({ wasm: this.wasm!, ...txInvocation }) // Wasm verified in requireWasm
+
+    this.wasmHash = wasmHash
+  }
+
+  /**
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object to use in this transaction.
+   *
+   * @description - Deploys a new instance of the contract to the network and stores the contract id in the contract engine.
+   *
+   * @requires - The wasm hash to be set in the contract engine.
+   *
+   * */
+  public async deploy(txInvocation: TransactionInvocation): Promise<void> {
+    this.requireWasmHash()
+
+    const contractId = await this.deployContract({ wasmHash: this.wasmHash!, ...txInvocation }) // Wasm hash verified in requireWasmHash
+
+    this.contractId = contractId
+  }
+
+  //==========================================
+  // Internal Methods
+  //==========================================
+  //
+  //
+
+  private requireContractId(): void {
+    if (!this.contractId) {
+      throw new Error('Contract id not set!')
+    }
+  }
+
+  private requireWasm(): void {
+    if (!this.wasm) {
+      throw new Error('Wasm not set!')
+    }
+  }
+
+  private requireWasmHash(): void {
+    if (!this.wasmHash) {
+      throw new Error('Wasm hash not set!')
+    }
   }
 }
