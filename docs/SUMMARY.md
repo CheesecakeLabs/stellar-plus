@@ -7,6 +7,7 @@
 
 * [Issuing your first asset](tutorials/issuing-your-first-asset.md)
 * [Bulk Payments](tutorials/bulk-payments.md)
+* [E2E Certificate of Deposit demo](tutorials/e2e-certificate-of-deposit-demo.md)
 
 ## 📄 Reference
 
@@ -18,6 +19,7 @@
     * [Friendbot](reference/account/helpers/friendbot.md)
 * [Asset](reference/asset/README.md)
   * [Classic Asset Handler](reference/asset/classic-asset-handler.md)
+  * [Stellar Asset Contract Handler](reference/asset/stellar-asset-contract-handler.md)
 * [Constants](reference/constants.md)
 * [Contracts](reference/contracts/README.md)
   * [Contract Engine](reference/contracts/contract-engine.md)
