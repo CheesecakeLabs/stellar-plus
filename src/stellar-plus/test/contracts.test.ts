@@ -91,11 +91,11 @@ describe('Test contracts handler', () => {
         const network = Constants.testnet
 
         const rpcHandler = new RPC.DefaultRpcHandler(network);
-        const codContract = new Contracts.CertificateOfDeposit(
-            contractId,
-            network,
-            rpcHandler
-        );
+        const codContract = new Contracts.CertificateOfDeposit({
+            network: network,
+            contractId: contractId,
+            rpcHandler: rpcHandler
+        });
         const user = new DefaultAccountHandler({
             secretKey: userSecret,
             network: Constants.testnet
@@ -144,10 +144,11 @@ describe('Test contracts handler', () => {
 
         const rpcHandler = new RPC.DefaultRpcHandler(network);
         const codContract = new Contracts.CertificateOfDeposit(
-            contractId,
-            network,
-            rpcHandler
-        );
+            {
+                network: network,
+                contractId: contractId,
+                rpcHandler: rpcHandler
+            });
         const user = new DefaultAccountHandler({
             secretKey: userSecret,
             network: Constants.testnet
@@ -188,11 +189,11 @@ describe('Test contracts handler', () => {
         const network = Constants.testnet
 
         const rpcHandler = new RPC.DefaultRpcHandler(network);
-        const codContract = new Contracts.CertificateOfDeposit(
-            contractId,
-            network,
-            rpcHandler
-        );
+        const codContract = new Contracts.CertificateOfDeposit({
+            network: network,
+            contractId: contractId,
+            rpcHandler: rpcHandler
+        });
         const user = new DefaultAccountHandler({
             secretKey: userSecret,
             network: Constants.testnet
@@ -231,11 +232,11 @@ describe('Test contracts handler', () => {
         const network = Constants.testnet
 
         const rpcHandler = new RPC.DefaultRpcHandler(network);
-        const codContract = new Contracts.CertificateOfDeposit(
-            contractId,
-            network,
-            rpcHandler
-        );
+        const codContract = new Contracts.CertificateOfDeposit({
+            network: network,
+            contractId: contractId,
+            rpcHandler: rpcHandler
+        });
         const user = new DefaultAccountHandler({
             secretKey: userSecret,
             network: Constants.testnet

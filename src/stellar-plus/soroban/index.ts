@@ -15,6 +15,6 @@ export class SorobanHandlerClient implements SorobanHandler {
    */
   constructor(network: Network) {
     this.network = network
-    this.server = new SorobanRpc.Server(this.network.horizonUrl)
+    this.server = new SorobanRpc.Server(this.network.rpcUrl)
   }
 }

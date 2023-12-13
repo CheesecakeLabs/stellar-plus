@@ -1,16 +1,27 @@
+import { randomBytes } from 'crypto'
+
 import {
+  Address,
   Contract,
   ContractSpec,
   FeeBumpTransaction,
+  Operation,
+  OperationOptions,
   SorobanRpc as SorobanRpcNamespace,
   Account as StellarAccount,
   Transaction,
   TransactionBuilder,
+  xdr,
 } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from '@account/account-handler/types'
 import { TransactionProcessor } from '@core/classic-transaction-processor'
-import { SorobanSimulateArgs } from '@core/contract-engine/types'
+import {
+  SorobanDeployArgs,
+  SorobanSimulateArgs,
+  SorobanUploadArgs,
+  WrapClassicAssetArgs,
+} from '@core/soroban-transaction-processor/types'
 import { FeeBumpHeader } from '@core/types'
 import { DefaultRpcHandler } from '@rpc/default-handler'
 import { RpcHandler } from '@rpc/types'
@@ -253,5 +264,137 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     const signedFeeBumpXDR = await this.signEnvelope(feeBumpTx, feeBump.signers)
 
     return TransactionBuilder.fromXDR(signedFeeBumpXDR, this.network.networkPassphrase) as FeeBumpTransaction
+  }
+
+  /**
+   *
+   * @args {SorobanUploadArgs} args - The arguments for the invocation.
+   * @param {Buffer} args.wasm - The Buffer of the wasm file to upload.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   * @returns {Promise<string>} The wasm hash of the uploaded wasm.
+   *
+   * @description - Uploads a wasm file to the Soroban server and returns the wasm hash. This hash can be used to deploy new instances of the contract.
+   */
+  protected async uploadContractWasm(args: SorobanUploadArgs): Promise<string> {
+    const { wasm, header, signers, feeBump } = args
+
+    const txInvocation = {
+      signers,
+      header,
+      feeBump,
+    }
+
+    const uploadOperation = [Operation.uploadContractWasm({ wasm })]
+
+    const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(uploadOperation, txInvocation)
+
+    const prepared = await this.prepareTransaction(builtTx)
+
+    try {
+      const output = await this.processSorobanTransaction(
+        prepared,
+        updatedTxInvocation.signers,
+        updatedTxInvocation.feeBump
+      )
+
+      // Not using the returnValue parameter because it may not be available depending on the rpcHandler.
+      return (output.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString('hex') as string
+    } catch (error) {
+      // console.log('Error: ', error)
+      throw new Error('Failed to upload contract!')
+    }
+  }
+
+  /**
+   *
+   * @args {SorobanDeployArgs} args - The arguments for the invocation.
+   * @param {string} args.wasmHash - The wasm hash of the contract to deploy.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   * @returns {Promise<string>} The contract Id of the deployed contract instance.
+   *
+   * @description - Deploys a new instance of the contract to the Soroban server and returns the contract id of the deployed contract instance.
+   */
+  protected async deployContract(args: SorobanDeployArgs): Promise<string> {
+    const { wasmHash, header, signers, feeBump } = args
+
+    const txInvocation = {
+      signers,
+      header,
+      feeBump,
+    }
+
+    const options: OperationOptions.CreateCustomContract = {
+      address: new Address(header.source),
+      wasmHash: Buffer.from(wasmHash, 'hex'),
+      salt: randomBytes(32),
+    }
+
+    const deployOperation = [Operation.createCustomContract(options)]
+
+    const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(deployOperation, txInvocation)
+
+    const prepared = await this.prepareTransaction(builtTx)
+
+    try {
+      const output = await this.processSorobanTransaction(
+        prepared,
+        updatedTxInvocation.signers,
+        updatedTxInvocation.feeBump
+      )
+      // Not using the returnValue parameter because it may not be available depending on the rpcHandler.
+      return Address.fromScAddress(
+        output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
+      ).toString() as string
+    } catch (error) {
+      // console.log('Error: ', error)
+      throw new Error('Failed to deploy contract instance!')
+    }
+  }
+
+  /**
+   * @args {WrapClassicAssetArgs} args - The arguments for the invocation.
+   * @param {string} args.asset - The asset to wrap.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   * @returns {Promise<string>} The address of the wrapped asset contract.
+   * @description - Wraps a classic asset on the Stellar network and returns the address of the wrapped asset contract.
+   *
+   **/
+  protected async wrapClassicAsset(args: WrapClassicAssetArgs): Promise<string> {
+    const { asset, header, signers, feeBump } = args
+
+    const txInvocation = {
+      signers,
+      header,
+      feeBump,
+    }
+
+    const options: OperationOptions.CreateStellarAssetContract = {
+      asset,
+    }
+
+    const wrapOperation = [Operation.createStellarAssetContract(options)]
+
+    const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(wrapOperation, txInvocation)
+
+    const prepared = await this.prepareTransaction(builtTx)
+
+    try {
+      const output = await this.processSorobanTransaction(
+        prepared,
+        updatedTxInvocation.signers,
+        updatedTxInvocation.feeBump
+      )
+
+      return Address.fromScAddress(output.returnValue?.address() as xdr.ScAddress).toString()
+    } catch (error) {
+      // console.log('Error: ', error)
+      throw new Error('Failed to wrap asset contract!')
+    }
   }
 }

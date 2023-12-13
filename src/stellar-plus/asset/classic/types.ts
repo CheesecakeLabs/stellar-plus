@@ -1,4 +1,7 @@
+import { AccountHandler } from '@account/account-handler/types'
 import { AssetTypes, TokenInterface } from '@asset/types'
+import { TransactionSubmitter } from '@core/transaction-submitter/classic/types'
+import { Network } from '@stellar-plus/types'
 
 export type ClassicAsset = {
   code: string
@@ -7,3 +10,11 @@ export type ClassicAsset = {
 }
 
 export type ClassicAssetHandler = ClassicAsset & TokenInterface
+
+export type ClassicAssetHandlerConstructorArgs = {
+  code: string
+  issuerPublicKey: string
+  network: Network
+  issuerAccount?: AccountHandler
+  transactionSubmitter?: TransactionSubmitter
+}

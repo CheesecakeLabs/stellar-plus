@@ -64,12 +64,12 @@ describe('Test classic asset handler', () => {
             secretKey: issuerSecret,
         });
 
-        const classicAssetHandler = new ClassicAssetHandler(
-            'CAKE',
-            issuerKey,
-            Constants.testnet,
-            mockIssuerAccount,
-        );
+        const classicAssetHandler = new ClassicAssetHandler({
+            code: 'CAKE',
+            issuerPublicKey: issuerKey,
+            network: Constants.testnet,
+            issuerAccount: mockIssuerAccount,
+        });
 
         const assetBalance = await classicAssetHandler.balance(issuerKey);
         expect(assetBalance).toEqual(3000000);
@@ -101,13 +101,13 @@ describe('Test classic asset handler', () => {
             signers: [],
         };
 
-        const cakeToken = new ClassicAssetHandler(
-            "CAKE",
-            assetIssuer.publicKey,
-            Constants.testnet,
-            assetIssuer,
-            mockTransactionSubmitter
-        );
+        const cakeToken = new ClassicAssetHandler({
+            code: 'CAKE',
+            issuerPublicKey: issuerKey,
+            network: Constants.testnet,
+            issuerAccount: assetIssuer,
+            transactionSubmitter: mockTransactionSubmitter
+        });
 
         const processTransaction = jest.spyOn(cakeToken, 'processTransaction').mockResolvedValue(<any>true)
 
@@ -148,11 +148,13 @@ describe('Test classic asset handler', () => {
         });
 
         const classicAssetHandler = new ClassicAssetHandler(
-            'CAKE',
-            issuerKey,
-            Constants.testnet,
-            assetIssuer,
-            mockTransactionSubmitter
+            {
+                code: 'CAKE',
+                issuerPublicKey: issuerKey,
+                network: Constants.testnet,
+                issuerAccount: assetIssuer,
+                transactionSubmitter: mockTransactionSubmitter
+            }
         );
         const txInvocation = mockTransactionInvocation(userOne.publicKey)
 
@@ -189,11 +191,13 @@ describe('Test classic asset handler', () => {
         };
 
         const cakeToken = new ClassicAssetHandler(
-            "CAKE",
-            assetIssuer.publicKey,
-            Constants.testnet,
-            assetIssuer,
-            mockTransactionSubmitter
+            {
+                code: 'CAKE',
+                issuerPublicKey: issuerKey,
+                network: Constants.testnet,
+                issuerAccount: assetIssuer,
+                transactionSubmitter: mockTransactionSubmitter
+            }
         );
 
         const processTransaction = jest.spyOn(cakeToken, 'processTransaction').mockResolvedValue(<any>true)
@@ -211,10 +215,12 @@ describe('Test classic asset handler', () => {
         });
 
         const classicAssetHandler = new ClassicAssetHandler(
-            'ABC',
-            'GBDMM7FQBVQPZFQPXVS3ZKK4UMELIWPBLG2BZQSWERD2KZR44WI6PTBQ',
-            Constants.testnet,
-            mockIssuerAccount,
+            {
+                code: 'ABC',
+                issuerPublicKey: "GBDMM7FQBVQPZFQPXVS3ZKK4UMELIWPBLG2BZQSWERD2KZR44WI6PTBQ",
+                network: Constants.testnet,
+                issuerAccount: mockIssuerAccount,
+            }
         );
 
         const symbol = await classicAssetHandler.symbol();
