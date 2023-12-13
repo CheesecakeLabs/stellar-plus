@@ -277,7 +277,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    *
    * @description - Uploads a wasm file to the Soroban server and returns the wasm hash. This hash can be used to deploy new instances of the contract.
    */
-  public async uploadContractWasm(args: SorobanUploadArgs): Promise<string> {
+  protected async uploadContractWasm(args: SorobanUploadArgs): Promise<string> {
     const { wasm, header, signers, feeBump } = args
 
     const txInvocation = {
@@ -299,7 +299,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.feeBump
       )
 
-      return (output.returnValue?.value() as Buffer).toString('hex') as string
+      // Not using the returnValue parameter because it may not be available depending on the rpcHandler.
+      return (output.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString('hex') as string
     } catch (error) {
       // console.log('Error: ', error)
       throw new Error('Failed to upload contract!')
@@ -317,7 +318,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    *
    * @description - Deploys a new instance of the contract to the Soroban server and returns the contract id of the deployed contract instance.
    */
-  public async deployContract(args: SorobanDeployArgs): Promise<string> {
+  protected async deployContract(args: SorobanDeployArgs): Promise<string> {
     const { wasmHash, header, signers, feeBump } = args
 
     const txInvocation = {
@@ -344,8 +345,10 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
-
-      return Address.fromScAddress(output.returnValue?.address() as xdr.ScAddress).toString()
+      // Not using the returnValue parameter because it may not be available depending on the rpcHandler.
+      return Address.fromScAddress(
+        output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
+      ).toString() as string
     } catch (error) {
       // console.log('Error: ', error)
       throw new Error('Failed to deploy contract instance!')
@@ -362,7 +365,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    * @description - Wraps a classic asset on the Stellar network and returns the address of the wrapped asset contract.
    *
    **/
-  public async wrapClassicAsset(args: WrapClassicAssetArgs): Promise<string> {
+  protected async wrapClassicAsset(args: WrapClassicAssetArgs): Promise<string> {
     const { asset, header, signers, feeBump } = args
 
     const txInvocation = {

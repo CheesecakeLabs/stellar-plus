@@ -1,12 +1,12 @@
 import { Address, ContractSpec } from '@stellar/stellar-sdk'
 
 import { ContractEngine } from '@core/contract-engine'
-import { RpcHandler } from '@rpc/types'
-import { Network, i128, u64 } from '@stellar-plus/types'
+import { i128, u32, u64 } from '@stellar-plus/types'
 
 import { Methods, spec } from './constants'
 import {
   CertificateOfDepositContract,
+  CertificateOfDepositContractConstructorArgs,
   DepositArgs,
   GetEstimatedPrematureWithdrawArgs,
   GetEstimatedYieldArgs,
@@ -28,13 +28,15 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
    * @description - The certificate of deposit client is used for interacting with the certificate of deposit contract.
    *
    */
-  constructor(
-    contractId: string,
-    network: Network,
-
-    rpcHandler?: RpcHandler
-  ) {
-    super(network, spec as ContractSpec, contractId, rpcHandler)
+  constructor(args: CertificateOfDepositContractConstructorArgs) {
+    super({
+      network: args.network,
+      spec: spec as ContractSpec,
+      contractId: args.contractId,
+      rpcHandler: args.rpcHandler,
+      wasm: args.wasm,
+      wasmHash: args.wasmHash,
+    })
     this.methods = Methods
   }
 
@@ -169,6 +171,26 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
     return Number(result)
   }
 
+  /**
+   *
+   * @param args  - The arguments to pass to the initialize method.
+   * @param {string} args.admin - The admin address to set for the contract.
+   * @param {string} args.asset - The asset contract ID to set for the contract.
+   * @param {number} args.term - The term in seconds to set for the contract.
+   * @param {number} args.compoundStep - The compound step in seconds to set for the contract.
+   * @param {number} args.yieldRate - The yield rate in percentage to set for the contract. 1% = 100. Example: 10% = 1000
+   * @param {number} args.minDeposit - The minimum deposit in stroops to set for the contract.
+   * @param {number} args.penaltyRate - The penalty rate in percentage to set for the contract. 1% = 100. Example: 10% = 1000. This is the penalty applied to the yield in the amount withdrawn if the account withdraws prematurely before the term is reached.
+   * @param {number} args.allowancePeriod - The expiration ledger to set for the contract. This is the final ledger for which the contract will be allowed to access to the funds of its admin to perform withdrawals.
+   * @param {string[]} args.signers - The signers to authorize this transaction.
+   * @param {EnvelopeHeader} args.header - The header to use for this transaction.
+   * @param {SorobanFeeBumpTransaction=} args.feeBump - The fee bump to use for this transaction. This is optional.
+   *
+   * @returns {void}
+   *
+   * @description - Initializes the contract's state.
+   *
+   */
   public async initialize(args: Initialize): Promise<void> {
     const { term, compoundStep, yieldRate, minDeposit, penaltyRate } = args
     const admin = new Address(args.admin)
@@ -184,6 +206,7 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
         yield_rate: yieldRate as u64,
         min_deposit: minDeposit as i128,
         penalty_rate: penaltyRate as u64,
+        allowance_period: args.allowancePeriod as u32,
       },
       signers: args.signers,
       header: args.header,
