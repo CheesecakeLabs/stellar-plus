@@ -67,7 +67,6 @@ export class ChannelAccounts {
     // console.log("TxInvocation: ", updatedTxInvocation);
     await txProcessor.processTransaction(builtTx, updatedTxInvocation.signers)
 
-
     return channels
   }
 
