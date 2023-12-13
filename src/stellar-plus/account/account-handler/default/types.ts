@@ -1,5 +1,6 @@
 import { AccountHandler, AccountHandlerPayload } from '@account/account-handler/types'
-import { Transaction, TransactionXdr } from '@stellar-plus/types'
+import { TransactionXdr } from '@stellar-plus/types'
+import { Transaction } from '@stellar/stellar-sdk'
 
 export type DefaultAccountHandler = AccountHandler & {
   sign(tx: Transaction): TransactionXdr

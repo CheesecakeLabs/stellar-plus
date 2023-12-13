@@ -134,7 +134,6 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
     const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope(txInvocation)
 
     const { header, signers, feeBump } = updatedTxInvocation
-
     const tx = envelope
       .addOperation(
         Operation.payment({
@@ -208,7 +207,7 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
           destination: to,
           asset: this.asset,
           amount: amount.toString(),
-          source: this.asset.issuer,
+          source: this.asset.getIssuer(),
         })
       )
       .setTimeout(header.timeout)
@@ -216,7 +215,7 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
 
     const signersWithIssuer = [...signers, this.issuerAccount!]
 
-    this.verifySigners([this.asset.issuer], signersWithIssuer)
+    this.verifySigners([this.asset.getIssuer()], signersWithIssuer)
 
     return await this.processTransaction(tx, signersWithIssuer, feeBump)
   }
@@ -267,14 +266,14 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
           destination: to,
           asset: this.asset,
           amount: amount.toString(),
-          source: this.asset.issuer,
+          source: this.asset.getIssuer(),
         })
       )
       .setTimeout(header.timeout)
       .build()
 
     const signersWithIssuer = [...signers, this.issuerAccount!]
-    this.verifySigners([to, this.asset.issuer], signersWithIssuer)
+    this.verifySigners([to, this.asset.getIssuer()], signersWithIssuer)
 
     return await this.processTransaction(tx, signersWithIssuer, feeBump)
   }
