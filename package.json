@@ -1,7 +1,7 @@
 {
   "name": "stellar-plus",
 
-  "version": "0.2.0",
+  "version": "0.3.1",
 
   "description": "beta version of stellar-plus, an all-in-one sdk for the Stellar blockchain",
   "main": "./lib/index.js",
