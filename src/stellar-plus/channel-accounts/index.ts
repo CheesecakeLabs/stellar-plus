@@ -38,7 +38,7 @@ export class ChannelAccounts {
       const channel = new DefaultAccountHandler({ network })
       channels.push(channel)
 
-      operations.push(
+     operations.push(
         Operation.beginSponsoringFutureReserves({
           sponsoredId: channel.publicKey,
         }),
@@ -66,6 +66,7 @@ export class ChannelAccounts {
 
     // console.log("TxInvocation: ", updatedTxInvocation);
     await txProcessor.processTransaction(builtTx, updatedTxInvocation.signers)
+
 
     return channels
   }
