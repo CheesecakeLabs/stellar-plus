@@ -1,4 +1,4 @@
-import { AccountHandler } from '@account/account-handler/types'
+import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 
 export type TransactionInvocation = {
   signers: AccountHandler[]

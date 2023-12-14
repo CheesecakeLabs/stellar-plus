@@ -1,10 +1,10 @@
 import { Horizon } from '@stellar/stellar-sdk'
 
-import { AccountHelpers } from '@account/helpers'
-import { AccountDataViewer } from '@account/helpers/account-data-viewer/types'
-import { HorizonHandlerClient } from '@horizon/index'
-import { HorizonHandler } from '@horizon/types'
-import { Network } from '@stellar-plus/types'
+import { AccountHelpers } from 'stellar-plus/account/helpers'
+import { AccountDataViewer } from 'stellar-plus/account/helpers/account-data-viewer/types'
+import { HorizonHandlerClient } from 'stellar-plus/horizon/index'
+import { HorizonHandler } from 'stellar-plus/horizon/types'
+import { Network } from 'stellar-plus/types'
 
 export class AccountDataViewerClient implements AccountDataViewer {
   private network: Network

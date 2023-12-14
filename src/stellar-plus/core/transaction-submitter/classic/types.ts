@@ -6,7 +6,7 @@ import {
   TransactionBuilder,
 } from '@stellar/stellar-sdk'
 
-import { TransactionInvocation } from '@core/types'
+import { TransactionInvocation } from 'stellar-plus/core/types'
 
 export type TransactionSubmitter = {
   createEnvelope(txInvocation: TransactionInvocation): Promise<{
