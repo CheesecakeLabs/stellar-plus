@@ -5,7 +5,6 @@ import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transacti
 import { SorobanInvokeArgs, SorobanSimulateArgs } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 
-
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
   private contractId?: string
