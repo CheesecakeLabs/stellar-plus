@@ -1,6 +1,6 @@
 {
   "name": "stellar-plus",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "beta version of stellar-plus, an all-in-one sdk for the Stellar blockchain",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -9,7 +9,7 @@
   ],
   "private": false,
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias -p tsconfig.json",
     "dev": "nodemon -e ts,js --exec ts-node -r tsconfig-paths/register ./src/index-test.ts",
     "test": "npx jest --config src/jest.config.ts",
     "coverage": "npx jest --config src/jest.config.ts --coverage",
@@ -40,6 +40,7 @@
     "nodemon": "^3.0.1",
     "prettier": "^3.1.0",
     "ts-node": "^10.9.1",
+    "tsc-alias": "^1.8.8",
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.6.2",
     "@types/jest": "^29.5.10",

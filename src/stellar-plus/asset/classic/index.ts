@@ -1,11 +1,14 @@
 import { Horizon as HorizonNamespace, Operation, Asset as StellarAsset } from '@stellar/stellar-sdk'
 
-import { AccountHandler } from '@account/account-handler/types'
-import { ClassicAssetHandlerConstructorArgs, ClassicAssetHandler as IClassicAssetHandler } from '@asset/classic/types'
-import { AssetTypes } from '@asset/types'
-import { TransactionProcessor } from '@core/classic-transaction-processor'
-import { TransactionInvocation } from '@core/types'
-import { i128 } from '@stellar-plus/types'
+import { AccountHandler } from 'stellar-plus/account/account-handler/types'
+import {
+  ClassicAssetHandlerConstructorArgs,
+  ClassicAssetHandler as IClassicAssetHandler,
+} from 'stellar-plus/asset/classic/types'
+import { AssetTypes } from 'stellar-plus/asset/types'
+import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
+import { TransactionInvocation } from 'stellar-plus/core/types'
+import { i128 } from 'stellar-plus/types'
 
 export class ClassicAssetHandler extends TransactionProcessor implements IClassicAssetHandler {
   public code: string

@@ -1,10 +1,10 @@
 import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction } from '@stellar/stellar-sdk'
 
-import { SorobanTransactionProcessor } from '@core/soroban-transaction-processor'
-import { SorobanInvokeArgs, SorobanSimulateArgs } from '@core/soroban-transaction-processor/types'
-import { TransactionInvocation } from '@core/types'
+import { ContractEngineConstructorArgs } from 'stellar-plus/core/contract-engine/types'
+import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
+import { SorobanInvokeArgs, SorobanSimulateArgs } from 'stellar-plus/core/soroban-transaction-processor/types'
+import { TransactionInvocation } from 'stellar-plus/core/types'
 
-import { ContractEngineConstructorArgs } from './types'
 
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec

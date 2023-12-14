@@ -1,10 +1,10 @@
 import { xdr as ClassicXdrNamespace, Operation } from '@stellar/stellar-sdk'
 
-import { DefaultAccountHandlerClient as DefaultAccountHandler } from '@account/account-handler/default'
-import { AccountHandler } from '@account/account-handler/types'
-import { TransactionProcessor } from '@core/classic-transaction-processor'
-import { TransactionInvocation } from '@core/types'
-import { Network } from '@stellar-plus/types'
+import { DefaultAccountHandlerClient as DefaultAccountHandler } from 'stellar-plus/account/account-handler/default'
+import { AccountHandler } from 'stellar-plus/account/account-handler/types'
+import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
+import { TransactionInvocation } from 'stellar-plus/core/types'
+import { Network } from 'stellar-plus/types'
 
 export class ChannelAccounts {
   /**

@@ -3,14 +3,14 @@ import axios from 'axios'
 // import { SorobanRpc, xdr as SorobanXdr, assembleTransaction, parseRawSimulation } from 'soroban-client'
 // import { parseRawSendTransaction } from 'soroban-client/lib/parsers'
 
-import { RpcHandler } from '@rpc/types'
+import { RpcHandler } from 'stellar-plus/rpc/types'
 import {
   ApiResponse,
   RequestPayload,
   SendTransactionAPIResponse,
   SimulateTransactionAPIResponse,
-} from '@rpc/validation-cloud-handler/types'
-import { Network } from '@stellar-plus/types'
+} from 'stellar-plus/rpc/validation-cloud-handler/types'
+import { Network } from 'stellar-plus/types'
 
 export class ValidationCloudRpcHandler implements RpcHandler {
   private apiKey: string

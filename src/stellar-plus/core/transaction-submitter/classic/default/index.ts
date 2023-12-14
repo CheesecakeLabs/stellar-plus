@@ -1,10 +1,10 @@
 import { Horizon as HorizonNamespace, Transaction, TransactionBuilder } from '@stellar/stellar-sdk'
 
-import { TransactionSubmitter as TransactionSubmitter } from '@core/transaction-submitter/classic/types'
-import { FeeBumpHeader, TransactionInvocation } from '@core/types'
-import { HorizonHandlerClient } from '@horizon/index'
-import { HorizonHandler } from '@horizon/types'
-import { Network } from '@stellar-plus/types'
+import { TransactionSubmitter as TransactionSubmitter } from 'stellar-plus/core/transaction-submitter/classic/types'
+import { FeeBumpHeader, TransactionInvocation } from 'stellar-plus/core/types'
+import { HorizonHandlerClient } from 'stellar-plus/horizon/index'
+import { HorizonHandler } from 'stellar-plus/horizon/types'
+import { Network } from 'stellar-plus/types'
 
 export class DefaultTransactionSubmitter implements TransactionSubmitter {
   private feeBump?: FeeBumpHeader

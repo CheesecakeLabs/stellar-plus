@@ -16,7 +16,7 @@ First, import the necessary components from the StellarPlus library and set the 
 
 {% code overflow="wrap" %}
 ```typescript
-import * as StellarPlus from "./stellar-plus";
+import { StellarPlus } from "stellar-plus";
 
 const network = StellarPlus.Constants.testnet;
 ```
@@ -39,12 +39,12 @@ await distributionAccount.friendbot?.initialize();
 Create an instance of your asset, specifying the asset code(here named 'CAKE '), issuing account's public key, network, and the issuer account handler.&#x20;
 
 ```typescript
-const cakeToken = new StellarPlus.Asset.ClassicAssetHandler(
-  "CAKE",
-  issuerAccount.getPublicKey(),
+const cakeToken = new StellarPlus.Asset.ClassicAssetHandler({
+  code: 'CAKE',
+  issuerPublicKey: issuerAccount.getPublicKey(),
   network,
   issuerAccount
-);
+});
 ```
 
 The issuer account handler is an optional parameter when instancing assets but in this use case, it is necessary because it enables the management functionalities of the asset that require the issuer's approval.
@@ -107,7 +107,7 @@ Below is the complete code snippet, encapsulating all the steps outlined in the 
 
 {% code lineNumbers="true" %}
 ```typescript
-import * as StellarPlus from "./stellar-plus";
+import { StellarPlus } from "stellar-plus";
 
 const run = async () => {
   const network = StellarPlus.Constants.testnet;
@@ -118,12 +118,12 @@ const run = async () => {
   const distributionAccount = new StellarPlus.Account.DefaultAccountHandler({network});
   await distributionAccount.friendbot?.initialize();
   
-  const cakeToken = new StellarPlus.Asset.ClassicAssetHandler(
-    "CAKE",
-    issuerAccount.getPublicKey(),
+  const cakeToken = new StellarPlus.Asset.ClassicAssetHandler({
+    code: 'CAKE',
+    issuerPublicKey: issuerAccount.getPublicKey(),
     network,
     issuerAccount
-  );
+  });
   
   const txInvocationConfig = {
     header: {

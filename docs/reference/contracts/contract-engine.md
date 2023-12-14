@@ -6,11 +6,21 @@ The `ContractEngine` class serves as a base for building clients that interact w
 
 * **Parameters**:
   * `network`: The network configuration for the Stellar blockchain.
-  * `rpcHandler`: The RPC handler for interacting with the Stellar network. When not provided, will connect directly to the RPC url set in the network configuration.
-  * `spec`: A `ContractSpec` object detailing the contract's specifications.
-  * `contractId`: A string representing the unique identifier of the deployed contract.
+  * `rpcHandler`: Optional. Interacts with the Stellar network; defaults to RPC URL in network config.
+  * `spec`: ContractSpec detailing contract specifications.
+  * `contractId`: Optional. Unique identifier of the deployed contract.
+  * `wasm`: Optional. Buffer of the loaded wasm file with compiled contract code.
+  * `wasmHash`: Optional. Hash of the deployed wasm code.
 
-## Methods
+{% hint style="info" %}
+You can initialize a contract engine or child client contract in different ways. Since the contract id, wasm and wasm hash are all optional, choose whichever initialization is best for your use case.\
+\
+When executing the methods, a validation will take place to throw an error in case a requirement is not met.\
+\
+E.g. Attempting to deploy a contract instance without having a wasmHash. It would've been necessary to either initiate the instance with this argument or, to have performed a <mark style="color:blue;">`uploadWasm`</mark> so that the wasm hash would've been updated in the instance.
+{% endhint %}
+
+## Core Methods
 
 ### readFromContract
 
@@ -30,6 +40,37 @@ The `ContractEngine` class serves as a base for building clients that interact w
   * `signers`: Array of `AccountHandler` objects for authorizing the transaction.
   * `feeBump`: Optional `FeeBumpHeader` for fee bumping.
 * **Returns**: The output of the contract invocation after the transaction is processed.
+
+
+
+## **Meta Management Methods**
+
+These methods in the ContractEngine facilitate the necessary steps for contract preparation and deployment, ensuring efficient and accurate interaction with the Soroban network.
+
+#### **uploadWasm**
+
+* **Purpose**: To upload the contract wasm to the network and update the wasm hash in the contract engine.
+* **Parameters**:
+  * `wasm`: The wasm file buffer.
+  * `header`: The header for the transaction.
+  * `signers`: The signers for the transaction.
+  * `feeBump`: Optional fee bump header.
+* **Returns**: No direct return. Updates wasm hash in the engine.
+* **Usage**: Used for uploading wasm files to the Soroban server, necessary for contract deployment.
+
+#### **deploy**
+
+* **Purpose**: Deploys a new contract instance to the network and updates the contract ID in the engine.
+* **Parameters**:
+  * `wasmHash`: The wasm hash of the contract to be deployed.
+  * `header`: The header for the transaction.
+  * `signers`: The signers for the transaction.
+  * `feeBump`: Optional fee bump header.
+* **Returns**: No direct return. Updates contract ID in the engine.
+* **Usage**: Critical for deploying contracts to the Soroban network, enabling interactions with the contract instance.
+
+\
+
 
 ## Example Usage
 
