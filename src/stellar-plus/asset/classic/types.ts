@@ -1,4 +1,3 @@
-
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { AssetTypes, TokenInterface } from 'stellar-plus/asset/types'
 import { TransactionSubmitter } from 'stellar-plus/core/transaction-submitter/classic/types'
