@@ -1,2 +1,2 @@
-export { ClassicAssetHandler } from '@asset/classic/index'
-export { SACHandler } from '@asset/stellar-asset-contract/index'
+export { ClassicAssetHandler } from 'stellar-plus/asset/classic/index'
+export { SACHandler } from 'stellar-plus/asset/stellar-asset-contract/index'

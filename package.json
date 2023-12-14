@@ -9,7 +9,7 @@
   ],
   "private": false,
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias -p tsconfig.json",
     "dev": "nodemon -e ts,js --exec ts-node -r tsconfig-paths/register ./src/index-test.ts",
     "test": "echo \"No test specified yet\" && exit 0",
     "lint": "eslint --ext .js,.ts .",
@@ -39,6 +39,7 @@
     "nodemon": "^3.0.1",
     "prettier": "^3.1.0",
     "ts-node": "^10.9.1",
+    "tsc-alias": "^1.8.8",
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.6.2",
     "typescript": "^5.3.2"

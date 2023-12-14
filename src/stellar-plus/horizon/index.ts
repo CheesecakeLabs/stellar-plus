@@ -1,7 +1,7 @@
 import { Horizon } from '@stellar/stellar-sdk'
 
-import { HorizonHandler } from '@horizon/types'
-import { Network } from '@stellar-plus/types'
+import { HorizonHandler } from 'stellar-plus/horizon/types'
+import { Network } from 'stellar-plus/types'
 
 export class HorizonHandlerClient implements HorizonHandler {
   private network: Network

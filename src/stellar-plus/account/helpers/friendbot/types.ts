@@ -1,4 +1,4 @@
-import { Network } from '@stellar-plus/types'
+import { Network } from 'stellar-plus/types'
 
 //
 // Allows for accounts to be initialized with Friendbot

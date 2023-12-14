@@ -1,5 +1,5 @@
-import { AccountBase, AccountBasePayload } from '@account/base/types'
-import { AccountHelpers } from '@account/helpers'
+import { AccountBase, AccountBasePayload } from 'stellar-plus/account/base/types'
+import { AccountHelpers } from 'stellar-plus/account/helpers'
 
 export class AccountBaseClient extends AccountHelpers implements AccountBase {
   publicKey: string

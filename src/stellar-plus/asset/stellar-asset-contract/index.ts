@@ -1,13 +1,13 @@
 import { Horizon as HorizonNamespace, Asset as StellarAsset } from '@stellar/stellar-sdk'
 
-import { AccountHandler } from '@account/account-handler/types'
-import { ClassicAssetHandler } from '@asset/classic'
-import { ClassicAssetHandlerConstructorArgs } from '@asset/classic/types'
-import { SACConstructorArgs, SACHandler as SACHandlerType } from '@asset/stellar-asset-contract/types'
-import { AssetTypes } from '@asset/types'
-import { SorobanTransactionProcessor } from '@core/soroban-transaction-processor'
-import { TransactionInvocation } from '@core/types'
-import { i128 } from '@stellar-plus/types'
+import { AccountHandler } from 'stellar-plus/account/account-handler/types'
+import { ClassicAssetHandler } from 'stellar-plus/asset/classic'
+import { ClassicAssetHandlerConstructorArgs } from 'stellar-plus/asset/classic/types'
+import { SACConstructorArgs, SACHandler as SACHandlerType } from 'stellar-plus/asset/stellar-asset-contract/types'
+import { AssetTypes } from 'stellar-plus/asset/types'
+import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
+import { TransactionInvocation } from 'stellar-plus/core/types'
+import { i128 } from 'stellar-plus/types'
 
 export class SACHandler extends SorobanTransactionProcessor implements SACHandlerType {
   public code: string

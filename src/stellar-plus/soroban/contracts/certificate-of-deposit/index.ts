@@ -1,7 +1,7 @@
 import { Address, ContractSpec } from '@stellar/stellar-sdk'
 
-import { ContractEngine } from '@core/contract-engine'
-import { i128, u32, u64 } from '@stellar-plus/types'
+import { ContractEngine } from 'stellar-plus/core/contract-engine'
+import { i128, u32, u64 } from 'stellar-plus/types'
 
 import { Methods, spec } from './constants'
 import {

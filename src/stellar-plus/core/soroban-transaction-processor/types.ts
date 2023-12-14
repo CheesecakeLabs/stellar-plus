@@ -1,7 +1,7 @@
 import { Asset as StellarAsset } from '@stellar/stellar-sdk'
 
-import { AccountHandler } from '@account/account-handler/types'
-import { EnvelopeHeader, FeeBumpHeader } from '@core/types'
+import { AccountHandler } from 'stellar-plus/account/account-handler/types'
+import { EnvelopeHeader, FeeBumpHeader } from 'stellar-plus/core/types'
 
 export type SorobanInvokeArgs<T> = SorobanSimulateArgs<T> & {
   signers: AccountHandler[]

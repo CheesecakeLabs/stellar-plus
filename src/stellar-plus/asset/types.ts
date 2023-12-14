@@ -1,7 +1,7 @@
 import { Horizon as HorizonNamespace } from '@stellar/stellar-sdk'
 
-import { TransactionInvocation } from '@core/types'
-import { Address, i128, u32 } from '@stellar-plus/types'
+import { TransactionInvocation } from 'stellar-plus/core/types'
+import { Address, i128, u32 } from 'stellar-plus/types'
 
 export type TokenInterface = TokenInterfaceManagement & TokenInterfaceUser
 

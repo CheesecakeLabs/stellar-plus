@@ -1,8 +1,8 @@
 import { FeeBumpTransaction, Keypair, Transaction } from '@stellar/stellar-sdk'
 
-import { DefaultAccountHandler, DefaultAccountHandlerPayload } from '@account/account-handler/default/types'
-import { AccountBaseClient } from '@account/base'
-import { TransactionXdr } from '@stellar-plus/types'
+import { DefaultAccountHandler, DefaultAccountHandlerPayload } from 'stellar-plus/account/account-handler/default/types'
+import { AccountBaseClient } from 'stellar-plus/account/base'
+import { TransactionXdr } from 'stellar-plus/types'
 
 export class DefaultAccountHandlerClient extends AccountBaseClient implements DefaultAccountHandler {
   public secretKey: string

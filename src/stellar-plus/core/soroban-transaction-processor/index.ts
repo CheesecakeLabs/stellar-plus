@@ -14,18 +14,18 @@ import {
   xdr,
 } from '@stellar/stellar-sdk'
 
-import { AccountHandler } from '@account/account-handler/types'
-import { TransactionProcessor } from '@core/classic-transaction-processor'
+import { AccountHandler } from 'stellar-plus/account/account-handler/types'
+import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
 import {
   SorobanDeployArgs,
   SorobanSimulateArgs,
   SorobanUploadArgs,
   WrapClassicAssetArgs,
-} from '@core/soroban-transaction-processor/types'
-import { FeeBumpHeader } from '@core/types'
-import { DefaultRpcHandler } from '@rpc/default-handler'
-import { RpcHandler } from '@rpc/types'
-import { Network, TransactionXdr } from '@stellar-plus/types'
+} from 'stellar-plus/core/soroban-transaction-processor/types'
+import { FeeBumpHeader } from 'stellar-plus/core/types'
+import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
+import { RpcHandler } from 'stellar-plus/rpc/types'
+import { Network, TransactionXdr } from 'stellar-plus/types'
 
 export class SorobanTransactionProcessor extends TransactionProcessor {
   private rpcHandler: RpcHandler
