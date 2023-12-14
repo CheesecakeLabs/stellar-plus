@@ -16,7 +16,7 @@ First, import the necessary components from the StellarPlus library and set the 
 
 {% code overflow="wrap" %}
 ```typescript
-import * as StellarPlus from "./stellar-plus";
+import { StellarPlus } from "stellar-plus";
 
 const network = StellarPlus.Constants.testnet;
 ```
@@ -107,7 +107,7 @@ Below is the complete code snippet, encapsulating all the steps outlined in the 
 
 {% code lineNumbers="true" %}
 ```typescript
-import * as StellarPlus from "./stellar-plus";
+import { StellarPlus } from "stellar-plus";
 
 const run = async () => {
   const network = StellarPlus.Constants.testnet;

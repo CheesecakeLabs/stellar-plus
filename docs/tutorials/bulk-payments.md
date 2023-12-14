@@ -222,6 +222,8 @@ Below is the complete code snippet, incorporating all the steps previously outli
 
 {% code lineNumbers="true" %}
 ```typescript
+import { StellarPlus } from "stellar-plus";
+
 const run = async () => {
   const network = StellarPlus.Constants.testnet;
 
