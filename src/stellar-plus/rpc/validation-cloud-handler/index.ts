@@ -1,134 +1,186 @@
-import axios from "axios";
-import {
-  SorobanDataBuilder,
-  SorobanRpc,
-  Transaction,
-  TransactionBuilder,
-  assembleTransaction,
-  parseRawSimulation,
-  xdr,
-} from "soroban-client";
+import { SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
+import axios from 'axios'
+// import { SorobanRpc, xdr as SorobanXdr, assembleTransaction, parseRawSimulation } from 'soroban-client'
+// import { parseRawSendTransaction } from 'soroban-client/lib/parsers'
 
+import { RpcHandler } from 'stellar-plus/rpc/types'
 import {
+  ApiResponse,
   RequestPayload,
   SendTransactionAPIResponse,
   SimulateTransactionAPIResponse,
-} from "./types";
-import { parseRawSendTransaction } from "soroban-client/lib/parsers";
-import { RpcHandler } from "../types";
-import { Network } from "../../types";
+} from 'stellar-plus/rpc/validation-cloud-handler/types'
+import { Network } from 'stellar-plus/types'
 
 export class ValidationCloudRpcHandler implements RpcHandler {
-  private apiKey: string;
-  private network: Network;
-  private baseUrl: string;
-  private id: string;
-  constructor(network: Network, apiKey: string) {
-    this.network = network;
-    this.apiKey = apiKey;
-    this.baseUrl =
-      this.network.name === "testnet"
-        ? "https://testnet.stellar.validationcloud.io/v1/"
-        : "https://testnet.stellar.validationcloud.io/v1/"; // no support to mainnet yet
+  private apiKey: string
+  private network: Network
+  private baseUrl: string
+  private id: string
 
-    this.id = this.generateId();
+  /**
+   *
+   * @param {Network} network - The network to use.
+   * @param {string} apiKey - The API key to authenticate with Validation Cloud's API.
+   *
+   * @description - This rpc handler integrates directly with Validation Cloud's API. And uses their RPC infrastructure to carry out the RPC functions.
+   *
+   */
+  constructor(network: Network, apiKey: string) {
+    this.network = network
+    this.apiKey = apiKey
+    this.baseUrl =
+      this.network.name === 'testnet'
+        ? 'https://testnet.stellar.validationcloud.io/v1/'
+        : 'https://testnet.stellar.validationcloud.io/v1/' // no support to mainnet yet
+
+    this.id = this.generateId()
   }
 
   private generateId(): string {
-    const id = Math.floor(Math.random() * 100000).toString();
-    this.id = id;
-    return id;
+    const id = Math.floor(Math.random() * 100000).toString()
+    this.id = id
+    return id
   }
 
-  private async fetch(payload: RequestPayload): Promise<any> {
-    const requestUrl = this.baseUrl + this.apiKey;
-    try {
-      const response = await axios.post(requestUrl, payload, {
+  private async fetch(payload: RequestPayload): Promise<ApiResponse> {
+    const requestUrl = this.baseUrl + this.apiKey
+
+    return await axios
+      .post(requestUrl, payload, {
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-      });
-      return response.data;
-    } catch (e) {
-      console.log("Failed when invoking Validation Cloud API", e);
-      throw e;
-    }
+      })
+      .then((res) => {
+        return res.data as ApiResponse
+      })
+      .catch(() => {
+        // console.log('response', error)
+        throw new Error('Failed when invoking Validation Cloud API')
+      })
   }
 
+  /**
+   *
+   * @param {string} txHash - The transaction hash to get.
+   *
+   * @returns {Promise<SorobanRpc.GetTransactionResponse | SorobanRpc.GetFailedTransactionResponse | SorobanRpc.GetMissingTransactionResponse | SorobanRpc.GetSuccessfulTransactionResponse>} The transaction response from the Soroban server.
+   *
+   * @description - Gets the transaction from the Soroban server.
+   */
   public async getTransaction(
     txHash: string
-  ): Promise<SorobanRpc.GetTransactionResponse> {
+  ): Promise<
+    | SorobanRpc.Api.GetTransactionResponse
+    | SorobanRpc.Api.GetFailedTransactionResponse
+    | SorobanRpc.Api.GetMissingTransactionResponse
+    | SorobanRpc.Api.GetSuccessfulTransactionResponse
+  > {
     const payload: RequestPayload = {
-      jsonrpc: "2.0",
+      jsonrpc: '2.0',
       id: this.generateId(),
-      method: "getTransaction",
+      method: 'getTransaction',
       params: {
         hash: txHash,
       },
-    };
+    }
 
-    const response = await this.fetch(payload);
-    return response.json();
+    const response = (await this.fetch(payload)) as ApiResponse
+    const rawGetResponse = response.result as SorobanRpc.Api.RawGetTransactionResponse
+
+    if (rawGetResponse.status === 'NOT_FOUND') {
+      return rawGetResponse as SorobanRpc.Api.GetMissingTransactionResponse
+    }
+
+    if (rawGetResponse.status === 'FAILED') {
+      return rawGetResponse as unknown as SorobanRpc.Api.GetFailedTransactionResponse
+    }
+
+    //
+    // Necessary to parse the inner values
+    // as we need because they're returned as
+    // raw xdr strings.
+    //
+    if (rawGetResponse.status === 'SUCCESS') {
+      return {
+        ...(rawGetResponse as unknown as SorobanRpc.Api.GetSuccessfulTransactionResponse),
+        resultMetaXdr: xdr.TransactionMeta.fromXDR(
+          Buffer.from(rawGetResponse.resultMetaXdr as string, 'base64'),
+          'raw'
+        ),
+      } as unknown as SorobanRpc.Api.GetSuccessfulTransactionResponse
+    }
+
+    return rawGetResponse as SorobanRpc.Api.GetTransactionResponse
   }
 
-  public async simulateTransaction(
-    tx: Transaction
-  ): Promise<SorobanRpc.SimulateTransactionResponse> {
-    const txXdr = tx.toXDR();
+  /**
+   *
+   * @param {Transaction} tx - The transaction to simulate.
+   *
+   * @returns {Promise<SorobanRpc.SimulateTransactionResponse>} The transaction simulation response from the Soroban server.
+   *
+   * @description - Simulates the transaction on the Soroban server.
+   */
+  public async simulateTransaction(tx: Transaction): Promise<SorobanRpc.Api.SimulateTransactionResponse> {
+    const txXdr = tx.toXDR()
     const payload: RequestPayload = {
-      jsonrpc: "2.0",
+      jsonrpc: '2.0',
       id: this.generateId(), // no need for tracking it currently
-      method: "simulateTransaction",
+      method: 'simulateTransaction',
       params: {
         transaction: txXdr,
       },
-    };
+    }
 
-    const response: SimulateTransactionAPIResponse = await this.fetch(payload);
+    const response = (await this.fetch(payload)) as SimulateTransactionAPIResponse
 
-    const formattedResponse: SorobanRpc.SimulateTransactionResponse =
-      parseRawSimulation(
-        response.result as SorobanRpc.RawSimulateTransactionResponse
-      );
+    const formattedResponse: SorobanRpc.Api.SimulateTransactionResponse = SorobanRpc.parseRawSimulation(
+      response.result as unknown as SorobanRpc.Api.RawSimulateTransactionResponse
+    )
 
-    return formattedResponse;
+    return formattedResponse
   }
 
+  /**
+   *
+   * @param {Transaction} tx - The transaction to prepare.
+   *
+   * @returns {Promise<Transaction>} The prepared transaction.
+   *
+   * @description - Prepares the transaction on the Soroban server.
+   */
   public async prepareTransaction(tx: Transaction): Promise<Transaction> {
-    const response = (await this.simulateTransaction(
-      tx
-    )) as SorobanRpc.SimulateTransactionResponse;
-
-    const assembledTx = assembleTransaction(
-      tx,
-      this.network.networkPassphrase,
-      response
-    );
-
-    return assembledTx.build();
+    const response = (await this.simulateTransaction(tx)) as SorobanRpc.Api.SimulateTransactionResponse
+    const assembledTx = SorobanRpc.assembleTransaction(tx, response)
+    return assembledTx.build()
   }
 
-  public async submitTransaction(
-    tx: Transaction
-  ): Promise<SorobanRpc.SendTransactionResponse> {
-    const txXdr = tx.toXDR();
-    console.log("txXdr:", txXdr);
+  /**
+   *
+   * @param {Transaction} tx - The transaction to submit.
+   *
+   * @returns {Promise<SorobanRpc.SendTransactionResponse>} The transaction submission response from the Soroban server.
+   *
+   * @description - Submits the transaction on the Soroban server.
+   */
+  public async submitTransaction(tx: Transaction): Promise<SorobanRpc.Api.SendTransactionResponse> {
+    const txXdr = tx.toXDR()
     const payload: RequestPayload = {
-      jsonrpc: "2.0",
+      jsonrpc: '2.0',
       id: this.id,
-      method: "sendTransaction",
+      method: 'sendTransaction',
       params: {
         transaction: txXdr,
       },
-    };
+    }
 
-    const response: SendTransactionAPIResponse = await this.fetch(payload);
-    console.log("response send:", response);
-    const formattedResponse: SorobanRpc.SendTransactionResponse =
-      parseRawSendTransaction(
-        response.result as SorobanRpc.RawSendTransactionResponse
-      );
+    const response = (await this.fetch(payload)) as SendTransactionAPIResponse
 
-    return formattedResponse;
+    const formattedResponse: SorobanRpc.Api.SendTransactionResponse =
+      response.result as SorobanRpc.Api.RawSendTransactionResponse
+
+    return formattedResponse
   }
 }

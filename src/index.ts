@@ -1,3 +1,3 @@
-export * as StellarPlus from "./stellar-plus";
+export * as StellarPlus from 'stellar-plus/index'
 
-export default module.exports;
+export default module.exports

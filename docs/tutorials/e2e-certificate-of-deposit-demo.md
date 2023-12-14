@@ -316,7 +316,9 @@ Below is the complete code snippet, incorporating all the steps previously outli
 {% code overflow="wrap" lineNumbers="true" %}
 ```typescript
 import { readFile } from 'fs/promises'
+
 import { StellarPlus } from "stellar-plus";
+
 
 async function loadWasmFile(wasmFilePath: string): Promise<Buffer> {
   try {

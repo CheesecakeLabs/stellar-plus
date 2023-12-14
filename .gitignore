@@ -1,5 +1,6 @@
 # local testing
-src/index_test.ts
+src/index-test.ts
+src/wasm-files
 
 # old package.json
 package.old.json

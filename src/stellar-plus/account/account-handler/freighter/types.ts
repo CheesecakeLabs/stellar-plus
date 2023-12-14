@@ -1,24 +1,18 @@
-import { Network } from "../../../types";
-import { AccountHandler, AccountHandlerPayload } from "../types";
+import { AccountHandler, AccountHandlerPayload } from 'stellar-plus/account/account-handler/types'
+import { Network } from 'stellar-plus/types'
 
 export type FreighterAccountHandler = AccountHandler & {
-  connect(onPublicKeyReceived: FreighterCallback): Promise<void>;
-  disconnect(): void;
-  loadPublicKey(
-    onPublicKeyReceived: FreighterCallback,
-    enforceConnection: boolean
-  ): Promise<void>;
-  isFreighterConnected(
-    enforceConnection?: boolean,
-    callback?: FreighterCallback
-  ): Promise<boolean>;
-  isFreighterInstalled(): Promise<boolean>;
-  isApplicationAuthorized(): Promise<boolean>;
-  isNetworkCorrect(): Promise<boolean>;
-};
+  connect(onPublicKeyReceived: FreighterCallback): Promise<void>
+  disconnect(): void
+  loadPublicKey(onPublicKeyReceived: FreighterCallback, enforceConnection: boolean): Promise<void>
+  isFreighterConnected(enforceConnection?: boolean, callback?: FreighterCallback): Promise<boolean>
+  isFreighterInstalled(): Promise<boolean>
+  isApplicationAuthorized(): Promise<boolean>
+  isNetworkCorrect(): Promise<boolean>
+}
 
 export type FreighterAccHandlerPayload = AccountHandlerPayload & {
-  network: Network;
-};
+  network: Network
+}
 
-export type FreighterCallback = (pk: string) => void;
+export type FreighterCallback = (pk: string) => void

@@ -1,13 +1,14 @@
-import { AccountHandler } from "../../account/account-handler/types";
-import { EnvelopeHeader, FeeBumpHeader } from "../types";
+import { ContractSpec } from '@stellar/stellar-sdk'
 
-export type SorobanInvokeArgs<T> = SorobanSimulateArgs<T> & {
-  signers: AccountHandler[];
-  feeBump?: FeeBumpHeader;
-};
+import { RpcHandler } from 'stellar-plus/rpc/types'
+import { Network } from 'stellar-plus/types'
 
-export type SorobanSimulateArgs<T> = {
-  method: string;
-  methodArgs: T;
-  header: EnvelopeHeader;
-};
+
+export type ContractEngineConstructorArgs = {
+  network: Network
+  spec: ContractSpec
+  contractId?: string
+  rpcHandler?: RpcHandler
+  wasm?: Buffer
+  wasmHash?: string
+}

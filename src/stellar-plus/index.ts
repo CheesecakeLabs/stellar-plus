@@ -1,15 +1,36 @@
-export * as Constants from "./constants";
-export * as Account from "./account";
-export * as Asset from "./asset";
+import { ChannelAccounts as ChannelAccountsHandler } from 'stellar-plus/channel-accounts/index'
+import { CertificateOfDepositClient } from 'stellar-plus/soroban/contracts/certificate-of-deposit'
 
-export { HorizonHandlerClient as HorizonHandler } from "./horizon";
-export { SorobanHandlerClient as SorobanHandler } from "./soroban";
+export * as Account from 'stellar-plus/account/index'
+export * as Asset from 'stellar-plus/asset/index'
+export * as Constants from './constants'
+export { HorizonHandlerClient as HorizonHandler } from 'stellar-plus/horizon/index'
+export { SorobanHandlerClient as SorobanHandler } from 'stellar-plus/soroban/index'
 
-export { ContractEngine } from "./core/contract-engine";
+export { ContractEngine } from 'stellar-plus/core/contract-engine'
 
-import { CertificateOfDepositClient } from "./soroban/contracts/certificate-of-deposit";
+export { Core } from 'stellar-plus/core/index'
+
 export const Contracts = {
   CertificateOfDeposit: CertificateOfDepositClient,
-};
+}
 
-export * as RPC from "./rpc";
+export const Utils = {
+  ChannelAccountsHandler,
+}
+
+export * as RPC from 'stellar-plus/rpc/index'
+
+// export { TransactionInvocation } from 'stellar-plus/core/types'
+
+// import { DefaultTransactionSubmitter } from "./core/transaction-submitter/classic/default";
+// import { ChannelAccountsTransactionSubmitter } from "./core/transaction-submitter/classic/channel-accounts-submitter";
+// import { ChannelAccounts as ChannelAccountsHandler } from "./channel-accounts";
+
+// export const Core = {
+//   Classic: {
+//     DefaultTransactionSubmitter,
+//     ChannelAccountsTransactionSubmitter,
+//     ChannelAccountsHandler,
+//   },
+// };
