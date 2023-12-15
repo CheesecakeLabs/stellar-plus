@@ -113,7 +113,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       const response = await this.rpcHandler.prepareTransaction(tx)
       return response
     } catch (error) {
-      // console.log('Error: ', error)
+      console.log('tx: ', tx.toXDR())
+      console.log('Error: ', error)
       throw new Error('Failed to prepare transaction!')
     }
   }
@@ -397,4 +398,46 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       throw new Error('Failed to wrap asset contract!')
     }
   }
+
+  //
+  // There is something missing here...
+  //
+  //
+  // public async extendFootprintTTL(args: ExtendFootprintTTLArgs): Promise<string> {
+  //   const { extendTo, header, signers, feeBump } = args
+
+  //   const txInvocation = {
+  //     signers,
+  //     header,
+  //     feeBump,
+  //   }
+
+  //   const options: OperationOptions.ExtendFootprintTTL = {
+  //     extendTo,
+  //   }
+
+  //   const extendTTLOperation = [Operation.extendFootprintTtl(options)]
+
+  //   const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(extendTTLOperation, txInvocation)
+
+  //   // const envelope = TransactionBuilder.cloneFrom(builtTx)
+  //   // envelope.
+  //   // const data = xdr.SorobanTransactionData
+  //   // envelope.setSorobanData()
+
+  //   const prepared = await this.prepareTransaction(builtTx)
+
+  //   try {
+  //     const output = await this.processSorobanTransaction(
+  //       prepared,
+  //       updatedTxInvocation.signers,
+  //       updatedTxInvocation.feeBump
+  //     )
+
+  //     return output.returnValue?.value() as string
+  //   } catch (error) {
+  //     // console.log('Error: ', error)
+  //     throw new Error('Failed to wrap asset contract!')
+  //   }
+  // }
 }

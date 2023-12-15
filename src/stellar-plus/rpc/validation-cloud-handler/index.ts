@@ -116,6 +116,109 @@ export class ValidationCloudRpcHandler implements RpcHandler {
   }
 
   /**
+   * @returns {Promise<SorobanRpc.GetLatestLedgerResponse>} The latest ledger response from the Soroban server.
+   * @description - Gets the latest ledger from the Soroban RPC server.
+   * */
+  public async getLatestLedger(): Promise<SorobanRpc.Api.GetLatestLedgerResponse> {
+    const payload: RequestPayload = {
+      jsonrpc: '2.0',
+      id: this.id,
+      method: 'getLatestLedger',
+    }
+
+    const response = (await this.fetch(payload)) as ApiResponse
+
+    return response.result as SorobanRpc.Api.GetLatestLedgerResponse
+  }
+
+  /**
+   * @returns {Promise<SorobanRpc.GetHealthResponse>} The health response from the Soroban server.
+   * @description - Gets the health of the Soroban RPC server.
+   * */
+  async getHealth(): Promise<SorobanRpc.Api.GetHealthResponse> {
+    const payload: RequestPayload = {
+      jsonrpc: '2.0',
+      id: this.id,
+      method: 'getHealth',
+    }
+
+    const response = (await this.fetch(payload)) as ApiResponse
+
+    return response.result as SorobanRpc.Api.GetHealthResponse
+  }
+
+  /**
+   * @returns {Promise<SorobanRpc.GetNetworkResponse>} The network response from the Soroban server.
+   * @description - Gets the network of the Soroban RPC server.
+   * */
+  async getNetwork(): Promise<SorobanRpc.Api.GetNetworkResponse> {
+    const payload: RequestPayload = {
+      jsonrpc: '2.0',
+      id: this.id,
+      method: 'getNetwork',
+    }
+
+    const response = (await this.fetch(payload)) as ApiResponse
+
+    return response.result as SorobanRpc.Api.GetNetworkResponse
+  }
+
+  /**
+   *
+   * @description - Important: This integration might fail due to the RPC server build on VC. startLedger recently has been changed to a 'number'. Refer to https://github.com/stellar/js-stellar-sdk/issues/893
+   *
+   * @args {SorobanRpc.GetEventsRequest} request - The events request to get.
+   * @args {Api.EventFilter[]} request.filters - The filters to apply to the events.
+   * @args {number} request.startLedger - The start ledger to get the events from.
+   * @args {string} request.cursor - The cursor to get the events from.
+   * @args {number} request.limit - The limit of events to get.
+   *
+   *
+   * @returns {SorobanRpc.GetEventsResponse} The events response from the Soroban server.
+   *
+   * @description - Gets the events from the Soroban server.
+   */
+  async getEvents(request: SorobanRpc.Server.GetEventsRequest): Promise<SorobanRpc.Api.GetEventsResponse> {
+    const cursor = request.cursor ? request.cursor : undefined
+    const limit = request.limit ? request.limit : undefined
+    const pagination = { cursor, limit }
+
+    const payload: RequestPayload = {
+      jsonrpc: '2.0',
+      id: this.id,
+      method: 'getEvents',
+      params: { ...request, pagination },
+    }
+
+    const response = (await this.fetch(payload)) as ApiResponse
+
+    return response.result as SorobanRpc.Api.GetEventsResponse
+  }
+
+  /**
+   *
+   * @param {xdr.LedgerKey[]} keys - The keys to get the ledger entries for.
+   *
+   * @returns {SorobanRpc.GetLedgerEntriesResponse} The ledger entries response from the Soroban server.
+   *
+   * @description - Gets the ledger entries from the Soroban server.
+   */
+  async getLedgerEntries(...keys: xdr.LedgerKey[]): Promise<SorobanRpc.Api.GetLedgerEntriesResponse> {
+    const payload: RequestPayload = {
+      jsonrpc: '2.0',
+      id: this.id,
+      method: 'getLedgerEntries',
+      params: {
+        keys: keys.map((key) => key.toXDR()),
+      },
+    }
+
+    const response = (await this.fetch(payload)) as ApiResponse
+
+    return response.result as SorobanRpc.Api.GetLedgerEntriesResponse
+  }
+
+  /**
    *
    * @param {Transaction} tx - The transaction to simulate.
    *

@@ -56,6 +56,18 @@ export class ContractEngine extends SorobanTransactionProcessor {
     this.wasmHash = args.wasmHash
   }
 
+  public getContractId(): string | undefined {
+    return this.contractId
+  }
+
+  public getWasm(): Buffer | undefined {
+    return this.wasm
+  }
+
+  public getWasmHash(): string | undefined {
+    return this.wasmHash
+  }
+
   /**
    *
    * @args {SorobanSimulateArgs<object>} args - The arguments for the invocation.
