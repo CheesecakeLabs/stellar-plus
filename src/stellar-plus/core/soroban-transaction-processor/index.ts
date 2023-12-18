@@ -358,7 +358,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
   /**
    * @args {WrapClassicAssetArgs} args - The arguments for the invocation.
-   * @param {string} args.asset - The asset to wrap.
+   * @param {Asset} args.asset - The asset to wrap.
    * @param {EnvelopeHeader} args.header - The header for the transaction.
    * @param {AccountHandler[]} args.signers - The signers for the transaction.
    * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.

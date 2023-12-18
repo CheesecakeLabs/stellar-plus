@@ -7,7 +7,7 @@ import {
 } from 'stellar-plus/asset/classic/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
 import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
-import { SorobanSimulationInvocation, TransactionInvocation } from 'stellar-plus/core/types'
+import { TransactionInvocation } from 'stellar-plus/core/types'
 import { i128 } from 'stellar-plus/types'
 
 export class ClassicAssetHandler extends TransactionProcessor implements IClassicAssetHandler {
@@ -93,25 +93,24 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    * @param {string} id - The account id to check the balance for.
    * @returns {Promise<number>} The balance of the asset for the given account.
    */
-  public async balance(args: { id: string } & SorobanSimulationInvocation): Promise<i128> {
-    // const sourceAccount = (await this.horizonHandler.loadAccount(id)) as HorizonNamespace.AccountResponse
-    // const balanceLine = sourceAccount.balances.filter((balanceLine: HorizonNamespace.HorizonApi.BalanceLine) => {
-    //   if (balanceLine.asset_type === this.type && balanceLine.asset_type === AssetTypes.native) {
-    //     return true
-    //   }
+  public async balance(id: string): Promise<number> {
+    const sourceAccount = (await this.horizonHandler.loadAccount(id)) as HorizonNamespace.AccountResponse
+    const balanceLine = sourceAccount.balances.filter((balanceLine: HorizonNamespace.HorizonApi.BalanceLine) => {
+      if (balanceLine.asset_type === this.type && balanceLine.asset_type === AssetTypes.native) {
+        return true
+      }
 
-    //   if (
-    //     balanceLine.asset_type === AssetTypes.credit_alphanum12 ||
-    //     balanceLine.asset_type === AssetTypes.credit_alphanum4
-    //   ) {
-    //     if (balanceLine.asset_code === this.code && balanceLine.asset_issuer === this.issuerPublicKey) return true
-    //   }
+      if (
+        balanceLine.asset_type === AssetTypes.credit_alphanum12 ||
+        balanceLine.asset_type === AssetTypes.credit_alphanum4
+      ) {
+        if (balanceLine.asset_code === this.code && balanceLine.asset_issuer === this.issuerPublicKey) return true
+      }
 
-    //   return false
-    // })
+      return false
+    })
 
-    // return balanceLine[0] ? Number(balanceLine[0].balance) : 0
-    throw new Error('Method not implemented.')
+    return balanceLine[0] ? Number(balanceLine[0].balance) : 0
   }
 
   public async spendable_balance(): Promise<i128> {
@@ -131,7 +130,7 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    *
    * @description - Transfers the given amount of the asset from the 'from' account to the 'to' account.
    */
-  public async transfer(args: { from: string; to: string; amount: i128 } & TransactionInvocation): Promise<void> {
+  public async transfer(args: { from: string; to: string; amount: number } & TransactionInvocation): Promise<void> {
     const { from, to, amount, header, signers, feeBump } = args
 
     const txInvocation = {
@@ -201,14 +200,22 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    * @returns {HorizonNamespace.SubmitTransactionResponse} The response from the Horizon server.
    */
   public async mint(
-    to: string,
-    amount: i128,
-    txInvocation: TransactionInvocation
+    args: {
+      to: string
+      amount: i128
+    } & TransactionInvocation
   ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
     this.requireIssuerAccount() // Enforces the issuer account to be set.
 
+    const { to, amount, header, signers, feeBump } = args
+
+    const txInvocation = {
+      header,
+      signers,
+      feeBump,
+    }
+
     const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope(txInvocation)
-    const { header, signers, feeBump } = updatedTxInvocation
 
     const tx = envelope
       .addOperation(
@@ -219,14 +226,14 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
           source: this.asset.issuer,
         })
       )
-      .setTimeout(header.timeout)
+      .setTimeout(updatedTxInvocation.header.timeout)
       .build()
 
-    const signersWithIssuer = [...signers, this.issuerAccount!]
+    const signersWithIssuer = [...updatedTxInvocation.signers, this.issuerAccount!]
 
     this.verifySigners([this.asset.issuer], signersWithIssuer)
 
-    return await this.processTransaction(tx, signersWithIssuer, feeBump)
+    return await this.processTransaction(tx, signersWithIssuer, updatedTxInvocation.feeBump)
   }
 
   public async clawback(): Promise<void> {

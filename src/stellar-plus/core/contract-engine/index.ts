@@ -2,7 +2,11 @@ import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction } from '@s
 
 import { ContractEngineConstructorArgs } from 'stellar-plus/core/contract-engine/types'
 import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
-import { SorobanInvokeArgs, SorobanSimulateArgs } from 'stellar-plus/core/soroban-transaction-processor/types'
+import {
+  SorobanInvokeArgs,
+  SorobanSimulateArgs,
+  WrapClassicAssetArgs,
+} from 'stellar-plus/core/soroban-transaction-processor/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 
 export class ContractEngine extends SorobanTransactionProcessor {
@@ -226,6 +230,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const contractId = await this.deployContract({ wasmHash: this.wasmHash!, ...txInvocation }) // Wasm hash verified in requireWasmHash
 
+    this.contractId = contractId
+  }
+
+  public async wrapAndDeployClassicAsset(args: WrapClassicAssetArgs): Promise<void> {
+    const contractId = await this.wrapClassicAsset(args)
     this.contractId = contractId
   }
 
