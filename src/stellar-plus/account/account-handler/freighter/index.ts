@@ -41,10 +41,6 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
    * @returns {string} The public key of the account.
    */
   public getPublicKey(): string {
-    if (this.publicKey === '') {
-      this.connect()
-    }
-
     return this.publicKey
   }
 
@@ -151,17 +147,18 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
     const isApplicationAllowed = await this.isApplicationAuthorized()
     if (!isApplicationAllowed) {
       if (enforceConnection) {
-        setAllowed().then(() => {
+        setAllowed().then(async () => {
           if (callback) {
-            this.loadPublicKey(callback)
+            await this.loadPublicKey(callback)
           }
         })
       }
       return false
     }
 
-    const isNetworkCorrect = await this.isNetworkCorrect()
-    if (!isNetworkCorrect) {
+    try {
+      await this.isNetworkCorrect()
+    } catch (error) {
       return false
     }
     return true
@@ -174,7 +171,6 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
    */
   public async isFreighterInstalled(): Promise<boolean> {
     const isFreighterConnected = await isConnected()
-
     return isFreighterConnected
   }
 

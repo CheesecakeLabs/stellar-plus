@@ -1,15 +1,18 @@
 import Stellar from '@stellar/stellar-sdk'
+import Freighter from "@stellar/freighter-api"
 import axios from 'axios'
 import { Constants } from '..'
 import { Base, DefaultAccountHandler, FreighterAccountHandler } from '../account'
 import { MockAccountResponse } from './mocks/account-response-mock'
 import { MockSubmitTransaction } from './mocks/transaction-mock'
+import { FreighterAccountHandlerClient } from 'stellar-plus/account/account-handler/freighter'
 
 jest.mock('@stellar/stellar-sdk')
 jest.mock('@stellar/freighter-api', () => {
   return {
     isConnected: jest.fn().mockResolvedValue(true),
     isAllowed: jest.fn().mockResolvedValue(true),
+    setAllowed: jest.fn().mockResolvedValue(true),
     getNetworkDetails: jest.fn().mockResolvedValue({
       networkPassphrase: 'Test SDF Network ; September 2015',
     }),
@@ -69,19 +72,33 @@ describe('Test account handler', () => {
     expect(account.publicKey).toBe(publicKey)
   })
 
+  test('create and sing base account handler', async function () {
+    const userSecret = 'SCA6IAHZA53NVVOYVUQQI3YCNVUUBNJ4WMNQHFLKI4AKPXFGCU5NCXOV'
+    const account = new DefaultAccountHandler({ network: Constants.testnet, secretKey: userSecret })
+    const mockTransaction: any = ({
+      sign: jest.fn().mockReturnValue("sign"),
+      toXDR: jest.fn().mockReturnValue("toXDR"),
+    })
+    const result = account.sign(mockTransaction)
+
+    expect(result).toBe("toXDR")
+    expect(mockTransaction.sign).toHaveBeenCalled()
+  })
+
   test('create and connect freighter account', async function () {
     const network = Constants.testnet
-    const account = new FreighterAccountHandler({ network })
+    const account = new FreighterAccountHandlerClient({ network })
     const loadPublicKey = jest.spyOn(account, 'loadPublicKey')
     const isFreighterInstalled = jest.spyOn(account, 'isFreighterInstalled')
     const isFreighterConnected = jest.spyOn(account, 'isFreighterConnected')
 
     await account.connect()
+    const publicKey = account.getPublicKey()
 
     expect(loadPublicKey).toHaveBeenCalledTimes(1)
     expect(isFreighterInstalled).toHaveBeenCalledTimes(1)
     expect(isFreighterConnected).toHaveBeenCalledTimes(1)
-    expect(account.publicKey).toBe('GBDMM7FQBVQPZFQPXVS3ZKK4UMELIWPBLG2BZQSWERD2KZR44WI6PTBQ')
+    expect(account.publicKey).toBe(publicKey)
   })
 
   test('create, connect and disconnect freighter account', async function () {
@@ -115,5 +132,44 @@ describe('Test account handler', () => {
     expect(isFreighterConnected).toHaveBeenCalledTimes(2)
     expect(account.publicKey).toBe('')
     expect(connected).toBe(false)
+  })
+
+  test('Network is not correct', async function () {
+    const network = Constants.testnet
+    const account = new FreighterAccountHandler({ network })
+    const isFreighterInstalled = jest.spyOn(account, 'isFreighterInstalled')
+    const isApplicationAuthorized = jest.spyOn(account, "isApplicationAuthorized")
+
+    jest.spyOn(Freighter, "getNetworkDetails").mockResolvedValue(
+      { networkPassphrase: 'Error network', network: "network", networkUrl: "url" })
+    const isConnected = await account.isFreighterConnected()
+
+    expect(isConnected).toBeFalsy()
+    expect(isFreighterInstalled).toHaveBeenCalledTimes(1)
+    expect(isApplicationAuthorized).toHaveBeenCalledTimes(1)
+  })
+
+  test('Application is not allowed', async function () {
+    const account = new FreighterAccountHandler({ network: Constants.testnet })
+    jest.spyOn(Freighter, "isAllowed").mockResolvedValue(false)
+
+    const isConnected = await account.isApplicationAuthorized()
+
+    expect(isConnected).toBeFalsy()
+  })
+
+  test('Enforce connection', async function () {
+    const network = Constants.testnet
+    const account = new FreighterAccountHandler({ network })
+    const isFreighterInstalled = jest.spyOn(account, 'isFreighterInstalled')
+    const isApplicationAuthorized = jest.spyOn(account, "isApplicationAuthorized").mockResolvedValueOnce(false)
+
+    const enforceConnection = true
+    const freighterCallback = jest.fn()
+    const isConnected = await account.isFreighterConnected(enforceConnection, freighterCallback)
+
+    expect(isConnected).toBeFalsy()
+    expect(isFreighterInstalled).toHaveBeenCalledTimes(2)
+    expect(isApplicationAuthorized).toHaveBeenCalledTimes(1)
   })
 })
