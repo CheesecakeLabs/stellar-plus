@@ -1,6 +1,6 @@
 import { Horizon as HorizonNamespace } from '@stellar/stellar-sdk'
 
-import { TransactionInvocation } from 'stellar-plus/core/types'
+import { SorobanSimulationInvocation, TransactionInvocation } from 'stellar-plus/core/types'
 import { Address, i128, u32 } from 'stellar-plus/types'
 
 export type TokenInterface = TokenInterfaceManagement & TokenInterfaceUser
@@ -37,12 +37,17 @@ export type TokenInterfaceManagement = {
 }
 
 export type TokenInterfaceUser = {
-  allowance: (from: Address, spender: Address) => Promise<i128>
-  approve: (from: Address, spender: Address, amount: i128, live_until_ledger: u32) => Promise<void>
-  balance: (id: string) => Promise<number>
-  spendable_balance: (id: Address) => Promise<i128>
-  transfer: (from: string, to: string, amount: i128, txInvocation: TransactionInvocation) => Promise<void>
-  transfer_from: (spender: Address, from: Address, to: Address, amount: i128) => Promise<void>
+  allowance: (args: { from: string; spender: string } & SorobanSimulationInvocation) => Promise<i128>
+  approve: (
+    args: { from: string; spender: string; amount: i128; live_until_ledger: u32 } & TransactionInvocation
+  ) => Promise<void>
+  balance: (args: { id: string } & SorobanSimulationInvocation) => Promise<i128>
+  spendable_balance: (args: { id: string } & SorobanSimulationInvocation) => Promise<i128>
+  transfer: (args: { from: string; to: string; amount: i128 } & TransactionInvocation) => Promise<void>
+  transfer_from: (
+    args: { spender: string; from: string; to: string; amount: i128 } & TransactionInvocation
+  ) => Promise<void>
+
   burn: (from: Address, amount: i128) => Promise<void>
   burn_from: (spender: Address, from: Address, amount: i128) => Promise<void>
   decimals: () => Promise<u32>

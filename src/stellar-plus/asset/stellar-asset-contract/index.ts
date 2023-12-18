@@ -6,7 +6,7 @@ import { ClassicAssetHandlerConstructorArgs } from 'stellar-plus/asset/classic/t
 import { SACConstructorArgs, SACHandler as SACHandlerType } from 'stellar-plus/asset/stellar-asset-contract/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
 import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
-import { TransactionInvocation } from 'stellar-plus/core/types'
+import { SorobanSimulationInvocation, TransactionInvocation } from 'stellar-plus/core/types'
 import { i128 } from 'stellar-plus/types'
 
 export class SACHandler extends SorobanTransactionProcessor implements SACHandlerType {
@@ -94,7 +94,7 @@ export class SACHandler extends SorobanTransactionProcessor implements SACHandle
    * @param {string} id - The account id to check the balance for.
    * @returns {Promise<number>} The balance of the asset for the given account.
    */
-  public async balance(): Promise<number> {
+  public async balance(args: { id: string } & SorobanSimulationInvocation): Promise<i128> {
     throw new Error('Method not implemented.')
   }
 

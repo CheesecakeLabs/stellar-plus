@@ -39,7 +39,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    *
    */
   constructor(network: Network, rpcHandler?: RpcHandler) {
-    super(network)
+    super({ network })
     this.rpcHandler = rpcHandler || new DefaultRpcHandler(network)
   }
 
