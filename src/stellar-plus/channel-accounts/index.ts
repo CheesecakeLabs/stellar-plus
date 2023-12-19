@@ -1,10 +1,10 @@
 import { xdr as ClassicXdrNamespace, Operation } from '@stellar/stellar-sdk'
 
-import { DefaultAccountHandlerClient as DefaultAccountHandler } from '@account/account-handler/default'
-import { AccountHandler } from '@account/account-handler/types'
-import { TransactionProcessor } from '@core/classic-transaction-processor'
-import { TransactionInvocation } from '@core/types'
-import { Network } from '@stellar-plus/types'
+import { DefaultAccountHandlerClient as DefaultAccountHandler } from 'stellar-plus/account/account-handler/default'
+import { AccountHandler } from 'stellar-plus/account/account-handler/types'
+import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
+import { TransactionInvocation } from 'stellar-plus/core/types'
+import { Network } from 'stellar-plus/types'
 
 export class ChannelAccounts {
   /**
@@ -26,7 +26,7 @@ export class ChannelAccounts {
   }): Promise<DefaultAccountHandler[]> {
     const { numberOfChannels, sponsor, network, txInvocation } = args
 
-    const txProcessor = new TransactionProcessor(network)
+    const txProcessor = new TransactionProcessor({ network })
 
     if (numberOfChannels <= 0 || numberOfChannels > 15) {
       throw new Error('Invalid number of channels! Must be between 1 and 15!')
@@ -38,7 +38,7 @@ export class ChannelAccounts {
       const channel = new DefaultAccountHandler({ network })
       channels.push(channel)
 
-     operations.push(
+      operations.push(
         Operation.beginSponsoringFutureReserves({
           sponsoredId: channel.publicKey,
         }),
@@ -67,7 +67,6 @@ export class ChannelAccounts {
     // console.log("TxInvocation: ", updatedTxInvocation);
     await txProcessor.processTransaction(builtTx, updatedTxInvocation.signers)
 
-
     return channels
   }
 
@@ -88,7 +87,7 @@ export class ChannelAccounts {
     network: Network,
     txInvocation: TransactionInvocation
   ): Promise<void> {
-    const txProcessor = new TransactionProcessor(network)
+    const txProcessor = new TransactionProcessor({ network })
     const operations: ClassicXdrNamespace.Operation[] = []
 
     for (let i = 0; i < channels.length; i++) {

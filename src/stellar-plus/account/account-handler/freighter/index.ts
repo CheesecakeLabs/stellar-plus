@@ -12,9 +12,9 @@ import {
   FreighterAccHandlerPayload,
   FreighterAccountHandler,
   FreighterCallback,
-} from '@account/account-handler/freighter/types'
-import { AccountBaseClient } from '@account/base'
-import { Network } from '@stellar-plus/types'
+} from 'stellar-plus/account/account-handler/freighter/types'
+import { AccountBaseClient } from 'stellar-plus/account/base'
+import { Network } from 'stellar-plus/types'
 
 export class FreighterAccountHandlerClient extends AccountBaseClient implements FreighterAccountHandler {
   private network: Network

@@ -1,8 +1,8 @@
 import axios from 'axios'
 
-import { AccountHelpers } from '@account/helpers'
-import { Friendbot } from '@account/helpers/friendbot/types'
-import { Network, NetworksList } from '@stellar-plus/types'
+import { AccountHelpers } from 'stellar-plus/account/helpers'
+import { Friendbot } from 'stellar-plus/account/helpers/friendbot/types'
+import { Network, NetworksList } from 'stellar-plus/types'
 
 export class FriendbotClient implements Friendbot {
   private network: Network

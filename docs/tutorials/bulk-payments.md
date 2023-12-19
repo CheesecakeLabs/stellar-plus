@@ -57,7 +57,7 @@ const transactionSubmitter =
   );
 
 await transactionSubmitter.registerChannels(
-  await StellarPlus.Core.Classic.ChannelAccountsHandler.initializeNewChannels(
+  await StellarPlus.Utils.ChannelAccountsHandler.openChannels(
     {
       numberOfChannels: 15,
       sponsor: opex,
@@ -112,13 +112,13 @@ These steps ensure that both the issuer of the asset and the recipient of the pa
 After initializing the necessary accounts, the next step involves creating the asset and setting up the transaction configuration.
 
 ```javascript
-const cakeToken = new StellarPlus.Asset.ClassicAssetHandler(
-  "CAKE",
-  issuerAccount.getPublicKey(),
-  network,
-  issuerAccount,
-  transactionSubmitter
-);
+const cakeToken = new StellarPlus.Asset.ClassicAssetHandler({
+    code: 'CAKE',
+    issuerPublicKey: issuerAccount.getPublicKey(),
+    network,
+    issuerAccount,
+    transactionSubmitter,
+  });
 
 const txInvocationConfig = {
   header: {
@@ -222,6 +222,8 @@ Below is the complete code snippet, incorporating all the steps previously outli
 
 {% code lineNumbers="true" %}
 ```typescript
+import { StellarPlus } from "stellar-plus";
+
 const run = async () => {
   const network = StellarPlus.Constants.testnet;
 
@@ -248,7 +250,7 @@ const run = async () => {
   console.log("Initializing Channel Accounts");
 
  await transactionSubmitter.registerChannels(
-    await StellarPlus.Core.Classic.ChannelAccountsHandler.initializeNewChannels(
+    await StellarPlus.Utils.ChannelAccountsHandler.openChannels(
       {
         numberOfChannels: 15,
         sponsor: opex,
@@ -264,13 +266,13 @@ const run = async () => {
   });
   await issuerAccount.friendbot?.initialize();
 
-  const cakeToken = new StellarPlus.Asset.ClassicAssetHandler(
-    "CAKE",
-    issuerAccount.getPublicKey(),
+  const cakeToken = new StellarPlus.Asset.ClassicAssetHandler({
+    code: 'CAKE',
+    issuerPublicKey: issuerAccount.getPublicKey(),
     network,
     issuerAccount,
-    transactionSubmitter
-  );
+    transactionSubmitter,
+  });
 
   console.log("Initializing userAccount account");
   const userAccount = new StellarPlus.Account.DefaultAccountHandler({

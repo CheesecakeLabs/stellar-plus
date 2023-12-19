@@ -1,10 +1,13 @@
 import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
 
-import { SorobanTransactionProcessor } from '@core/soroban-transaction-processor'
-import { SorobanInvokeArgs, SorobanSimulateArgs } from '@core/soroban-transaction-processor/types'
-import { TransactionInvocation } from '@core/types'
-
-import { ContractEngineConstructorArgs, TransactionCosts } from './types'
+import { ContractEngineConstructorArgs, TransactionCosts } from 'stellar-plus/core/contract-engine/types'
+import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
+import {
+  SorobanInvokeArgs,
+  SorobanSimulateArgs,
+  WrapClassicAssetArgs,
+} from 'stellar-plus/core/soroban-transaction-processor/types'
+import { TransactionInvocation } from 'stellar-plus/core/types'
 
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
@@ -64,6 +67,18 @@ export class ContractEngine extends SorobanTransactionProcessor {
     this.wasmHash = args.wasmHash
     this.options = { ...this.options, ...args.options };
     console.log(args.options, this.options)
+  }
+
+  public getContractId(): string | undefined {
+    return this.contractId
+  }
+
+  public getWasm(): Buffer | undefined {
+    return this.wasm
+  }
+
+  public getWasmHash(): string | undefined {
+    return this.wasmHash
   }
 
   /**
@@ -267,6 +282,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const contractId = await this.deployContract({ wasmHash: this.wasmHash!, ...txInvocation }) // Wasm hash verified in requireWasmHash
 
+    this.contractId = contractId
+  }
+
+  public async wrapAndDeployClassicAsset(args: WrapClassicAssetArgs): Promise<void> {
+    const contractId = await this.wrapClassicAsset(args)
     this.contractId = contractId
   }
 

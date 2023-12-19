@@ -1,9 +1,14 @@
-import { AccountHandler } from '@account/account-handler/types'
+import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 
 export type TransactionInvocation = {
   signers: AccountHandler[]
   header: EnvelopeHeader
   feeBump?: FeeBumpHeader
+  sponsor?: AccountHandler
+}
+
+export type SorobanSimulationInvocation = {
+  header: EnvelopeHeader
 }
 
 export type EnvelopeHeader = {

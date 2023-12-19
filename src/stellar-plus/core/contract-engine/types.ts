@@ -1,7 +1,7 @@
 import { ContractSpec } from '@stellar/stellar-sdk'
 
-import { RpcHandler } from '@rpc/types'
-import { Network } from '@stellar-plus/types'
+import { RpcHandler } from 'stellar-plus/rpc/types'
+import { Network } from 'stellar-plus/types'
 
 export type ContractEngineConstructorArgs = {
   network: Network

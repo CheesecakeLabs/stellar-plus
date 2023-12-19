@@ -1,7 +1,7 @@
 import { SorobanRpc } from '@stellar/stellar-sdk'
 
-import { SorobanHandler } from '@soroban/types'
-import { Network } from '@stellar-plus/types'
+import { SorobanHandler } from 'stellar-plus/soroban/types'
+import { Network } from 'stellar-plus/types'
 export class SorobanHandlerClient implements SorobanHandler {
   private network: Network
   public server: SorobanRpc.Server

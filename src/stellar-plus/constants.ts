@@ -1,4 +1,4 @@
-import { Network, NetworksList } from '@stellar-plus/types'
+import { Network, NetworksList } from 'stellar-plus/types'
 
 const networksConfig: { [key: string]: Network } = {
   futurenet: {

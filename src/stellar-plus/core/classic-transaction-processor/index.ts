@@ -6,13 +6,14 @@ import {
   xdr as xdrNamespace,
 } from '@stellar/stellar-sdk'
 
-import { AccountHandler } from '@account/account-handler/types'
-import { DefaultTransactionSubmitter } from '@core/transaction-submitter/classic/default'
-import { TransactionSubmitter } from '@core/transaction-submitter/classic/types'
-import { FeeBumpHeader, TransactionInvocation } from '@core/types'
-import { HorizonHandlerClient } from '@horizon/index'
-import { HorizonHandler } from '@horizon/types'
-import { Network, TransactionXdr } from '@stellar-plus/types'
+import { AccountHandler } from 'stellar-plus/account/account-handler/types'
+import { TransactionProcessorConstructor } from 'stellar-plus/core/classic-transaction-processor/types'
+import { DefaultTransactionSubmitter } from 'stellar-plus/core/transaction-submitter/classic/default'
+import { TransactionSubmitter } from 'stellar-plus/core/transaction-submitter/classic/types'
+import { FeeBumpHeader, TransactionInvocation } from 'stellar-plus/core/types'
+import { HorizonHandlerClient } from 'stellar-plus/horizon/index'
+import { HorizonHandler } from 'stellar-plus/horizon/types'
+import { Network, TransactionXdr } from 'stellar-plus/types'
 
 export class TransactionProcessor {
   protected horizonHandler: HorizonHandler
@@ -24,10 +25,10 @@ export class TransactionProcessor {
    * @param {Network} network
    * @param {TransactionSubmitter=} transactionSubmitter
    */
-  constructor(network: Network, transactionSubmitter?: TransactionSubmitter) {
-    this.network = network
-    this.horizonHandler = new HorizonHandlerClient(network)
-    this.transactionSubmitter = transactionSubmitter || new DefaultTransactionSubmitter(network)
+  constructor(args: TransactionProcessorConstructor) {
+    this.network = args.network
+    this.horizonHandler = new HorizonHandlerClient(args.network)
+    this.transactionSubmitter = args.transactionSubmitter || new DefaultTransactionSubmitter(args.network)
   }
 
   /**

@@ -1,9 +1,11 @@
-import { AccountBase, AccountBasePayload } from '@account/base/types'
-import { AccountHelpers } from '@account/helpers'
+import { AccountBase, AccountBasePayload } from 'stellar-plus/account/base/types'
+import { AccountHelpers } from 'stellar-plus/account/helpers'
+import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
 
 export class AccountBaseClient extends AccountHelpers implements AccountBase {
   publicKey: string
-
+  helpers: AccountHelpers
+  private transactionProcessor?: TransactionProcessor
   /**
    *
    * @args {} payload - The payload for the account. Additional parameters may be provided to enable different helpers.
@@ -13,10 +15,17 @@ export class AccountBaseClient extends AccountHelpers implements AccountBase {
    * @description - The base account is used for handling accounts with no management actions.
    */
   constructor(payload: AccountBasePayload) {
-    const { publicKey } = payload as { publicKey: string }
     super(payload)
-
+    const { publicKey } = payload as { publicKey: string }
+    this.helpers = new AccountHelpers(payload)
     this.publicKey = publicKey
+
+    // if (payload.network) {
+    //   this.transactionProcessor = new TransactionProcessor({
+    //     network: payload.network,
+    //     transactionSubmitter: payload.transactionSubmitter,
+    //   })
+    // }
   }
 
   /**

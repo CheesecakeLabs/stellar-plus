@@ -1,4 +1,4 @@
-import { AccountHelpers, AccountHelpersPayload } from '@account/helpers/types'
+import { AccountHelpers, AccountHelpersPayload } from 'stellar-plus/account/helpers/types'
 
 export type AccountBase = AccountHelpers & {
   publicKey?: string

@@ -1,11 +1,14 @@
 import { Horizon as HorizonNamespace, Operation, Asset as StellarAsset } from '@stellar/stellar-sdk'
 
-import { AccountHandler } from '@account/account-handler/types'
-import { ClassicAssetHandlerConstructorArgs, ClassicAssetHandler as IClassicAssetHandler } from '@asset/classic/types'
-import { AssetTypes } from '@asset/types'
-import { TransactionProcessor } from '@core/classic-transaction-processor'
-import { TransactionInvocation } from '@core/types'
-import { i128 } from '@stellar-plus/types'
+import { AccountHandler } from 'stellar-plus/account/account-handler/types'
+import {
+  ClassicAssetHandlerConstructorArgs,
+  ClassicAssetHandler as IClassicAssetHandler,
+} from 'stellar-plus/asset/classic/types'
+import { AssetTypes } from 'stellar-plus/asset/types'
+import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
+import { TransactionInvocation } from 'stellar-plus/core/types'
+import { i128 } from 'stellar-plus/types'
 
 export class ClassicAssetHandler extends TransactionProcessor implements IClassicAssetHandler {
   public code: string
@@ -27,7 +30,7 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    *
    */
   constructor(args: ClassicAssetHandlerConstructorArgs) {
-    super(args.network, args.transactionSubmitter)
+    super({ ...args })
     this.code = args.code
     this.issuerPublicKey = args.issuerPublicKey
     this.type =
@@ -74,12 +77,12 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
     return this.code
   }
 
-  /**
-   * @description - Not implemented in pure classic assets. Only available for Soroban assets.
-   */
-  public async allowance(): Promise<bigint> {
-    throw new Error('Method not implemented in Classic ssets.')
-  }
+  // /**
+  //  * @description - Not implemented in pure classic assets. Only available for Soroban assets.
+  //  */
+  // public async allowance(): Promise<bigint> {
+  //   throw new Error('Method not implemented in Classic ssets.')
+  // }
 
   public async approve(): Promise<void> {
     throw new Error('Method not implemented.')
@@ -127,10 +130,17 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    *
    * @description - Transfers the given amount of the asset from the 'from' account to the 'to' account.
    */
-  public async transfer(from: string, to: string, amount: i128, txInvocation: TransactionInvocation): Promise<void> {
+  public async transfer(args: { from: string; to: string; amount: number } & TransactionInvocation): Promise<void> {
+    const { from, to, amount, header, signers, feeBump } = args
+
+    const txInvocation = {
+      header,
+      signers,
+      feeBump,
+    }
     const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope(txInvocation)
 
-    const { header, signers, feeBump } = updatedTxInvocation
+    // const { updatedHeader, updatedSigners, updatedFeeBump } = updatedTxInvocation
 
     const tx = envelope
       .addOperation(
@@ -141,25 +151,37 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
           source: from,
         })
       )
-      .setTimeout(header.timeout)
+      .setTimeout(updatedTxInvocation.header.timeout)
       .build()
 
-    this.verifySigners([from], signers)
-    await this.processTransaction(tx, signers, feeBump)
+    this.verifySigners([from], updatedTxInvocation.signers)
+    await this.processTransaction(tx, updatedTxInvocation.signers, updatedTxInvocation.feeBump)
 
     return
   }
 
-  public async transfer_from(): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
+  // public async transfer_from(): Promise<void> {
+  //   throw new Error('Method not implemented.')
+  // }
 
-  public async burn(): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
+  // public async burn_from(): Promise<void> {
+  //   throw new Error('Method not implemented.')
+  // }
 
-  public async burn_from(): Promise<void> {
-    throw new Error('Method not implemented.')
+  /**
+   *
+   * @param {string} from - The account id to burn the asset from.
+   * @param {number} amount - The amount of the asset to burn.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object. Must include the 'From' account as a signer to authorize this transaction.
+   *
+   * @requires - The 'from' account to be set as a signer in the transaction invocation.
+   *
+   * @returns {Promise<void>}
+   *
+   * @description - Burns the given amount of the asset from the 'from' account.
+   */
+  public async burn(args: { from: string; amount: number } & TransactionInvocation): Promise<void> {
+    return this.transfer({ ...args, to: this.issuerPublicKey })
   }
 
   //==========================================
@@ -168,15 +190,15 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
   //
   //
 
-  public async set_admin(): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
-  public async admin(): Promise<string> {
-    throw new Error('Method not implemented.')
-  }
-  public async set_authorized(): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
+  // public async set_admin(): Promise<void> {
+  //   throw new Error('Method not implemented.')
+  // }
+  // public async admin(): Promise<string> {
+  //   throw new Error('Method not implemented.')
+  // }
+  // public async set_authorized(): Promise<void> {
+  //   throw new Error('Method not implemented.')
+  // }
 
   /**
    *
@@ -190,14 +212,16 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    * @returns {HorizonNamespace.SubmitTransactionResponse} The response from the Horizon server.
    */
   public async mint(
-    to: string,
-    amount: i128,
-    txInvocation: TransactionInvocation
+    args: {
+      to: string
+      amount: i128
+    } & TransactionInvocation
   ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
     this.requireIssuerAccount() // Enforces the issuer account to be set.
 
-    const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope(txInvocation)
-    const { header, signers, feeBump } = updatedTxInvocation
+    const { to, amount } = args
+
+    const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope({ ...args })
 
     const tx = envelope
       .addOperation(
@@ -208,14 +232,14 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
           source: this.asset.issuer,
         })
       )
-      .setTimeout(header.timeout)
+      .setTimeout(updatedTxInvocation.header.timeout)
       .build()
 
-    const signersWithIssuer = [...signers, this.issuerAccount!]
+    const signersWithIssuer = [...updatedTxInvocation.signers, this.issuerAccount!]
 
     this.verifySigners([this.asset.issuer], signersWithIssuer)
 
-    return await this.processTransaction(tx, signersWithIssuer, feeBump)
+    return await this.processTransaction(tx, signersWithIssuer, updatedTxInvocation.feeBump)
   }
 
   public async clawback(): Promise<void> {
@@ -242,13 +266,16 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    * @returns {HorizonNamespace.SubmitTransactionResponse} The response from the Horizon server.
    */
   public async addTrustlineAndMint(
-    to: string,
-    amount: number,
-    txInvocation: TransactionInvocation
+    args: {
+      to: string
+      amount: number
+    } & TransactionInvocation
   ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
     this.requireIssuerAccount() // Enforces the issuer account to be set.
 
-    const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope(txInvocation)
+    const { to, amount } = args
+
+    const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope({ ...args })
 
     const { header, signers, feeBump } = updatedTxInvocation
 

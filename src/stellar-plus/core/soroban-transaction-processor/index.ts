@@ -14,18 +14,18 @@ import {
   xdr,
 } from '@stellar/stellar-sdk'
 
-import { AccountHandler } from '@account/account-handler/types'
-import { TransactionProcessor } from '@core/classic-transaction-processor'
+import { AccountHandler } from 'stellar-plus/account/account-handler/types'
+import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
 import {
   SorobanDeployArgs,
   SorobanSimulateArgs,
   SorobanUploadArgs,
   WrapClassicAssetArgs,
-} from '@core/soroban-transaction-processor/types'
-import { FeeBumpHeader } from '@core/types'
-import { DefaultRpcHandler } from '@rpc/default-handler'
-import { RpcHandler } from '@rpc/types'
-import { Network, TransactionXdr } from '@stellar-plus/types'
+} from 'stellar-plus/core/soroban-transaction-processor/types'
+import { FeeBumpHeader } from 'stellar-plus/core/types'
+import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
+import { RpcHandler } from 'stellar-plus/rpc/types'
+import { Network, TransactionXdr } from 'stellar-plus/types'
 
 export class SorobanTransactionProcessor extends TransactionProcessor {
   private rpcHandler: RpcHandler
@@ -39,7 +39,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    *
    */
   constructor(network: Network, rpcHandler?: RpcHandler) {
-    super(network)
+    super({ network })
     this.rpcHandler = rpcHandler || new DefaultRpcHandler(network)
   }
 
@@ -126,8 +126,9 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       const response = await this.rpcHandler.prepareTransaction(tx)
       return response
     } catch (error) {
-      // console.log('Error: ', error)
-      throw new Error(`Failed to prepare transaction: ${error}`)
+      console.log('tx: ', tx.toXDR())
+      console.log('Error: ', error)
+      throw new Error('Failed to prepare transaction!')
     }
   }
 
@@ -312,7 +313,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.feeBump
       )
 
-      // Not using the returnValue parameter because it may not be available depending on the rpcHandler.
+      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
       return (output.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString('hex') as string
     } catch (error) {
       // console.log('Error: ', error)
@@ -358,7 +359,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
-      // Not using the returnValue parameter because it may not be available depending on the rpcHandler.
+      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
       return Address.fromScAddress(
         output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
       ).toString() as string
@@ -370,7 +371,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
   /**
    * @args {WrapClassicAssetArgs} args - The arguments for the invocation.
-   * @param {string} args.asset - The asset to wrap.
+   * @param {Asset} args.asset - The asset to wrap.
    * @param {EnvelopeHeader} args.header - The header for the transaction.
    * @param {AccountHandler[]} args.signers - The signers for the transaction.
    * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
@@ -403,11 +404,55 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
-
-      return Address.fromScAddress(output.returnValue?.address() as xdr.ScAddress).toString()
+      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
+      return Address.fromScAddress(
+        output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
+      ).toString()
     } catch (error) {
-      // console.log('Error: ', error)
+      console.log('Error: ', error)
       throw new Error('Failed to wrap asset contract!')
     }
   }
+
+  //
+  //
+  // TODO: Implement TTL pipeline
+
+  // public async extendFootprintTTL(args: ExtendFootprintTTLArgs): Promise<string> {
+  //   const { extendTo, header, signers, feeBump } = args
+
+  //   const txInvocation = {
+  //     signers,
+  //     header,
+  //     feeBump,
+  //   }
+
+  //   const options: OperationOptions.ExtendFootprintTTL = {
+  //     extendTo,
+  //   }
+
+  //   const extendTTLOperation = [Operation.extendFootprintTtl(options)]
+
+  //   const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(extendTTLOperation, txInvocation)
+
+  //   // const envelope = TransactionBuilder.cloneFrom(builtTx)
+  //   // envelope.
+  //   // const data = xdr.SorobanTransactionData
+  //   // envelope.setSorobanData()
+
+  //   const prepared = await this.prepareTransaction(builtTx)
+
+  //   try {
+  //     const output = await this.processSorobanTransaction(
+  //       prepared,
+  //       updatedTxInvocation.signers,
+  //       updatedTxInvocation.feeBump
+  //     )
+
+  //     return output.returnValue?.value() as string
+  //   } catch (error) {
+  //     // console.log('Error: ', error)
+  //     throw new Error('Failed to wrap asset contract!')
+  //   }
+  // }
 }
