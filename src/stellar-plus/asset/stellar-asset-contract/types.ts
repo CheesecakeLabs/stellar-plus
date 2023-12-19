@@ -5,6 +5,7 @@ import { SorobanTokenHandlerConstructorArgs } from 'stellar-plus/asset/soroban-t
 import { AssetType } from 'stellar-plus/asset/types'
 
 export type SACHandler = AssetType & {
+
   classicHandler: ClassicAssetHandler
   sorobanTokenHandler: SorobanTokenHandler
 }

@@ -179,8 +179,8 @@ export class ValidationCloudRpcHandler implements RpcHandler {
    * @description - Gets the events from the Soroban server.
    */
   async getEvents(request: SorobanRpc.Server.GetEventsRequest): Promise<SorobanRpc.Api.GetEventsResponse> {
-    const cursor = request.cursor ? request.cursor : undefined
-    const limit = request.limit ? request.limit : undefined
+    const cursor = request.cursor
+    const limit = request.limit
     const pagination = { cursor, limit }
 
     const payload: RequestPayload = {

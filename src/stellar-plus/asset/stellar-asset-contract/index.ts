@@ -11,6 +11,7 @@ import { SorobanTokenHandlerConstructorArgs } from '../soroban-token/types'
 
 export class SACHandler implements SACHandlerType {
   public type: AssetTypes = AssetTypes.SAC
+
   public classicHandler: ClassicAssetHandler
   public sorobanTokenHandler: SorobanTokenHandler
 
