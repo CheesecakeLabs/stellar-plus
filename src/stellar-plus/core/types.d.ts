@@ -4,6 +4,11 @@ export type TransactionInvocation = {
   signers: AccountHandler[]
   header: EnvelopeHeader
   feeBump?: FeeBumpHeader
+  sponsor?: AccountHandler
+}
+
+export type SorobanSimulationInvocation = {
+  header: EnvelopeHeader
 }
 
 export type EnvelopeHeader = {

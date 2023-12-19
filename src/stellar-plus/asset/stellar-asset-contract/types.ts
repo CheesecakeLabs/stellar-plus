@@ -1,12 +1,13 @@
-import { ClassicAssetHandler, ClassicAssetHandlerConstructorArgs } from 'stellar-plus/asset/classic/types'
-import { TokenInterface } from 'stellar-plus/asset/types'
-import { RpcHandler } from 'stellar-plus/rpc/types'
+import { ClassicAssetHandler } from 'stellar-plus/asset/classic'
+import { ClassicAssetHandlerConstructorArgs } from 'stellar-plus/asset/classic/types'
+import { SorobanTokenHandler } from 'stellar-plus/asset/soroban-token'
+import { SorobanTokenHandlerConstructorArgs } from 'stellar-plus/asset/soroban-token/types'
+import { AssetType } from 'stellar-plus/asset/types'
 
-export type SACHandler = TokenInterface & {
+export type SACHandler = AssetType & {
+
   classicHandler: ClassicAssetHandler
-  getContractId(): string
+  sorobanTokenHandler: SorobanTokenHandler
 }
 
-export type SACConstructorArgs = ClassicAssetHandlerConstructorArgs & {
-  rpcHandler?: RpcHandler
-}
+export type SACConstructorArgs = ClassicAssetHandlerConstructorArgs & SorobanTokenHandlerConstructorArgs

@@ -39,7 +39,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    *
    */
   constructor(network: Network, rpcHandler?: RpcHandler) {
-    super(network)
+    super({ network })
     this.rpcHandler = rpcHandler || new DefaultRpcHandler(network)
   }
 
@@ -300,7 +300,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.feeBump
       )
 
-      // Not using the returnValue parameter because it may not be available depending on the rpcHandler.
+      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
       return (output.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString('hex') as string
     } catch (error) {
       // console.log('Error: ', error)
@@ -346,7 +346,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
-      // Not using the returnValue parameter because it may not be available depending on the rpcHandler.
+      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
       return Address.fromScAddress(
         output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
       ).toString() as string
@@ -358,7 +358,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
   /**
    * @args {WrapClassicAssetArgs} args - The arguments for the invocation.
-   * @param {string} args.asset - The asset to wrap.
+   * @param {Asset} args.asset - The asset to wrap.
    * @param {EnvelopeHeader} args.header - The header for the transaction.
    * @param {AccountHandler[]} args.signers - The signers for the transaction.
    * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
@@ -391,18 +391,20 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
-
-      return Address.fromScAddress(output.returnValue?.address() as xdr.ScAddress).toString()
+      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
+      return Address.fromScAddress(
+        output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
+      ).toString()
     } catch (error) {
-      // console.log('Error: ', error)
+      console.log('Error: ', error)
       throw new Error('Failed to wrap asset contract!')
     }
   }
 
   //
-  // There is something missing here...
   //
-  //
+  // TODO: Implement TTL pipeline
+
   // public async extendFootprintTTL(args: ExtendFootprintTTLArgs): Promise<string> {
   //   const { extendTo, header, signers, feeBump } = args
 

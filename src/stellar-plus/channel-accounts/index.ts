@@ -26,7 +26,7 @@ export class ChannelAccounts {
   }): Promise<DefaultAccountHandler[]> {
     const { numberOfChannels, sponsor, network, txInvocation } = args
 
-    const txProcessor = new TransactionProcessor(network)
+    const txProcessor = new TransactionProcessor({ network })
 
     if (numberOfChannels <= 0 || numberOfChannels > 15) {
       throw new Error('Invalid number of channels! Must be between 1 and 15!')
@@ -87,7 +87,7 @@ export class ChannelAccounts {
     network: Network,
     txInvocation: TransactionInvocation
   ): Promise<void> {
-    const txProcessor = new TransactionProcessor(network)
+    const txProcessor = new TransactionProcessor({ network })
     const operations: ClassicXdrNamespace.Operation[] = []
 
     for (let i = 0; i < channels.length; i++) {
