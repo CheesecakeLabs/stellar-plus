@@ -12,7 +12,7 @@ export type ClassicAsset = AssetType & {
   type: AssetTypes.native | AssetTypes.credit_alphanum4 | AssetTypes.credit_alphanum12
 }
 
-export type ClassicAssetHandler = ClassicAsset & ClassicTokenInterface
+export type ClassicAssetHandler = ClassicAsset & ClassicTokenInterface & ClassicUtils
 
 export type ClassicAssetHandlerConstructorArgs = {
   code: string
@@ -68,9 +68,15 @@ export type ClassicTokenInterfaceUser = {
   //   args: { spender: string; from: string; to: string; amount: i128 } & TransactionInvocation
   // ) => Promise<void>
 
-  // burn: (from: Address, amount: i128) => Promise<void>
+  burn: (args: { from: string; amount: number } & TransactionInvocation) => Promise<void>
   // burn_from: (spender: Address, from: Address, amount: i128) => Promise<void>
   decimals: () => Promise<number>
   name: () => Promise<string>
   symbol: () => Promise<string>
+}
+
+export type ClassicUtils = {
+  addTrustlineAndMint: (
+    args: { to: string; amount: number } & TransactionInvocation
+  ) => Promise<HorizonApi.SubmitTransactionResponse>
 }

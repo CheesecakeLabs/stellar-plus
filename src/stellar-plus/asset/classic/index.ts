@@ -77,12 +77,12 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
     return this.code
   }
 
-  /**
-   * @description - Not implemented in pure classic assets. Only available for Soroban assets.
-   */
-  public async allowance(): Promise<bigint> {
-    throw new Error('Method not implemented in Classic ssets.')
-  }
+  // /**
+  //  * @description - Not implemented in pure classic assets. Only available for Soroban assets.
+  //  */
+  // public async allowance(): Promise<bigint> {
+  //   throw new Error('Method not implemented in Classic ssets.')
+  // }
 
   public async approve(): Promise<void> {
     throw new Error('Method not implemented.')
@@ -160,16 +160,28 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
     return
   }
 
-  public async transfer_from(): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
+  // public async transfer_from(): Promise<void> {
+  //   throw new Error('Method not implemented.')
+  // }
 
-  public async burn(): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
+  // public async burn_from(): Promise<void> {
+  //   throw new Error('Method not implemented.')
+  // }
 
-  public async burn_from(): Promise<void> {
-    throw new Error('Method not implemented.')
+  /**
+   *
+   * @param {string} from - The account id to burn the asset from.
+   * @param {number} amount - The amount of the asset to burn.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object. Must include the 'From' account as a signer to authorize this transaction.
+   *
+   * @requires - The 'from' account to be set as a signer in the transaction invocation.
+   *
+   * @returns {Promise<void>}
+   *
+   * @description - Burns the given amount of the asset from the 'from' account.
+   */
+  public async burn(args: { from: string; amount: number } & TransactionInvocation): Promise<void> {
+    return this.transfer({ ...args, to: this.issuerPublicKey })
   }
 
   //==========================================
@@ -178,15 +190,15 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
   //
   //
 
-  public async set_admin(): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
-  public async admin(): Promise<string> {
-    throw new Error('Method not implemented.')
-  }
-  public async set_authorized(): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
+  // public async set_admin(): Promise<void> {
+  //   throw new Error('Method not implemented.')
+  // }
+  // public async admin(): Promise<string> {
+  //   throw new Error('Method not implemented.')
+  // }
+  // public async set_authorized(): Promise<void> {
+  //   throw new Error('Method not implemented.')
+  // }
 
   /**
    *
@@ -207,15 +219,9 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
   ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
     this.requireIssuerAccount() // Enforces the issuer account to be set.
 
-    const { to, amount, header, signers, feeBump } = args
+    const { to, amount } = args
 
-    const txInvocation = {
-      header,
-      signers,
-      feeBump,
-    }
-
-    const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope(txInvocation)
+    const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope({ ...args })
 
     const tx = envelope
       .addOperation(
@@ -260,13 +266,16 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    * @returns {HorizonNamespace.SubmitTransactionResponse} The response from the Horizon server.
    */
   public async addTrustlineAndMint(
-    to: string,
-    amount: number,
-    txInvocation: TransactionInvocation
+    args: {
+      to: string
+      amount: number
+    } & TransactionInvocation
   ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
     this.requireIssuerAccount() // Enforces the issuer account to be set.
 
-    const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope(txInvocation)
+    const { to, amount } = args
+
+    const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope({ ...args })
 
     const { header, signers, feeBump } = updatedTxInvocation
 
