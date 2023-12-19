@@ -1,4 +1,4 @@
-import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction } from '@stellar/stellar-sdk'
+import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import { SorobanTransactionProcessor } from '@core/soroban-transaction-processor'
 import { SorobanInvokeArgs, SorobanSimulateArgs } from '@core/soroban-transaction-processor/types'
@@ -11,6 +11,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
+  private debug?: boolean
 
   /**
    *
@@ -55,6 +56,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     this.contractId = args.contractId
     this.wasm = args.wasm
     this.wasmHash = args.wasmHash
+    this.debug = args.debug
   }
 
   /**
@@ -126,6 +128,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
 
+    if (this.debug) {
+      console.log("Debugging method: ", args.method)
+      this.printCosts(builtTx)
+    }
+
     const prepared = await this.prepareTransaction(builtTx)
 
     const submitted = (await this.processSorobanTransaction(
@@ -137,6 +144,61 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const output = this.extractOutputFromProcessedInvocation(submitted, args.method)
 
     return output
+  }
+
+  private async printCosts(
+    tx: Transaction,
+  ) {
+    const simulated = await this._simulateTransaction(tx)
+
+    const calculateEventSize = (event: any) => {
+      const diagnosticEventType = 'diagnostic';
+      const parsedEvent = xdr.DiagnosticEvent.fromXDR(event, 'base64');
+
+      if (parsedEvent.event().type().name === diagnosticEventType) {
+        return 0;
+      }
+
+      return parsedEvent.toXDR().length;
+    };
+
+    const calculateEventsAndReturnValueSize = (events: any[], returnValueXDR: string) => {
+      const eventsSize = events.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+      const returnValueSize = Buffer.from(returnValueXDR, 'base64').length;
+
+      return eventsSize + returnValueSize;
+    };
+
+    const sorobanTransactionData = simulated.transactionData ? xdr.SorobanTransactionData.fromXDR(simulated.transactionData, 'base64') : null;
+
+    const events = simulated.events?.map((event) => calculateEventSize(event));
+
+    const returnValueXDR = simulated.results ? simulated.results[0].xdr : "";
+    const transactionDataXDR = simulated.transactionData || "";
+
+    const eventsAndReturnValueSize = events ? calculateEventsAndReturnValueSize(events, returnValueXDR) : "";
+    const transactionDataSize = Buffer.from(transactionDataXDR, 'base64').length;
+
+    const transactionStats = {
+      CPU_instructions: Number(simulated.cost?.cpuInsns),
+      RAM: Number(simulated.cost?.memBytes),
+      minResourceFee: simulated.minResourceFee,
+      ledger_read_bytes: sorobanTransactionData?.resources().readBytes(),
+      ledger_write_bytes: sorobanTransactionData?.resources().writeBytes(),
+      ledger_entry_reads: sorobanTransactionData?.resources().footprint().readOnly().length,
+      ledger_entry_writes: sorobanTransactionData?.resources().footprint().readWrite().length,
+      events_and_return_value_size: eventsAndReturnValueSize,
+      transaction_size: transactionDataSize,
+    };
+
+    console.log(transactionStats);
+    console.log(
+      `${transactionStats.CPU_instructions},${transactionStats.RAM},${transactionStats.minResourceFee},` +
+      `${transactionStats.ledger_read_bytes},${transactionStats.ledger_write_bytes},` +
+      `${transactionStats.ledger_entry_reads},${transactionStats.ledger_entry_writes},` +
+      `${eventsAndReturnValueSize},${transactionDataSize}`
+    );
+
   }
 
   private async extractOutputFromSimulation(

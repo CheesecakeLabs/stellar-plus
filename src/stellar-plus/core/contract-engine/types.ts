@@ -10,4 +10,5 @@ export type ContractEngineConstructorArgs = {
   rpcHandler?: RpcHandler
   wasm?: Buffer
   wasmHash?: string
+  debug?: boolean
 }

@@ -99,6 +99,19 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     }
   }
 
+  protected async _simulateTransaction(tx: Transaction): Promise<SorobanRpcNamespace.Api.RawSimulateTransactionResponse> {
+    try {
+      if (this.rpcHandler._simulateTransaction) {
+        const response = await this.rpcHandler._simulateTransaction(tx)
+        return response
+      } else {
+        throw new Error('Rpc handler does not have the required methods')
+      }
+    } catch (error) {
+      throw new Error('Failed to simulate transaction!')
+    }
+  }
+
   /**
    *
    * @param {SorobanRpcNamespace.SimulateTransactionResponse} simulationResponse - The simulation response.
@@ -114,7 +127,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       return response
     } catch (error) {
       // console.log('Error: ', error)
-      throw new Error('Failed to prepare transaction!')
+      throw new Error(`Failed to prepare transaction: ${error}`)
     }
   }
 
