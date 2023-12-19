@@ -10,5 +10,21 @@ export type ContractEngineConstructorArgs = {
   rpcHandler?: RpcHandler
   wasm?: Buffer
   wasmHash?: string
-  debug?: boolean
+  options?: {
+    debug?: boolean,
+    costHandler?: (methodName: string, costs: TransactionCosts) => void;
+  }
+}
+
+export type TransactionCosts = {
+  cpuInstructions?: number;
+  ram?: number;
+  minResourceFee?: string;
+  ledgerReadBytes?: number;
+  ledgerWriteBytes?: number;
+  ledgerEntryReads?: number;
+  ledgerEntryWrites?: number;
+  eventSize?: number;
+  returnValueSize?: number;
+  transactionSize?: number;
 }

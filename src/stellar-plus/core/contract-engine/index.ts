@@ -4,14 +4,20 @@ import { SorobanTransactionProcessor } from '@core/soroban-transaction-processor
 import { SorobanInvokeArgs, SorobanSimulateArgs } from '@core/soroban-transaction-processor/types'
 import { TransactionInvocation } from '@core/types'
 
-import { ContractEngineConstructorArgs } from './types'
+import { ContractEngineConstructorArgs, TransactionCosts } from './types'
 
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
-  private debug?: boolean
+  private options: {
+    debug: boolean;
+    costHandler: (methodName: string, costs: TransactionCosts) => void;
+  } = {
+      debug: false,
+      costHandler: defaultCostHandler
+    };
 
   /**
    *
@@ -56,7 +62,8 @@ export class ContractEngine extends SorobanTransactionProcessor {
     this.contractId = args.contractId
     this.wasm = args.wasm
     this.wasmHash = args.wasmHash
-    this.debug = args.debug
+    this.options = { ...this.options, ...args.options };
+    console.log(args.options, this.options)
   }
 
   /**
@@ -128,9 +135,9 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
 
-    if (this.debug) {
-      console.log("Debugging method: ", args.method)
-      this.printCosts(builtTx)
+    if (this.options.debug) {
+      const costs = await this.parseTransactionCosts(builtTx)
+      this.options.costHandler?.(args.method, costs);
     }
 
     const prepared = await this.prepareTransaction(builtTx)
@@ -146,59 +153,42 @@ export class ContractEngine extends SorobanTransactionProcessor {
     return output
   }
 
-  private async printCosts(
+  private async parseTransactionCosts(
     tx: Transaction,
-  ) {
+  ): Promise<TransactionCosts> {
     const simulated = await this._simulateTransaction(tx)
 
     const calculateEventSize = (event: any) => {
-      const diagnosticEventType = 'diagnostic';
       const parsedEvent = xdr.DiagnosticEvent.fromXDR(event, 'base64');
 
-      if (parsedEvent.event().type().name === diagnosticEventType) {
+      if (parsedEvent.event().type().name === 'diagnostic') {
         return 0;
       }
 
       return parsedEvent.toXDR().length;
     };
 
-    const calculateEventsAndReturnValueSize = (events: any[], returnValueXDR: string) => {
-      const eventsSize = events.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-      const returnValueSize = Buffer.from(returnValueXDR, 'base64').length;
-
-      return eventsSize + returnValueSize;
-    };
-
     const sorobanTransactionData = simulated.transactionData ? xdr.SorobanTransactionData.fromXDR(simulated.transactionData, 'base64') : null;
-
     const events = simulated.events?.map((event) => calculateEventSize(event));
-
     const returnValueXDR = simulated.results ? simulated.results[0].xdr : "";
     const transactionDataXDR = simulated.transactionData || "";
 
-    const eventsAndReturnValueSize = events ? calculateEventsAndReturnValueSize(events, returnValueXDR) : "";
+    const eventsSize = events?.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+    const returnValueSize = Buffer.from(returnValueXDR, 'base64').length;
     const transactionDataSize = Buffer.from(transactionDataXDR, 'base64').length;
 
-    const transactionStats = {
-      CPU_instructions: Number(simulated.cost?.cpuInsns),
-      RAM: Number(simulated.cost?.memBytes),
+    return {
+      cpuInstructions: Number(simulated.cost?.cpuInsns),
+      ram: Number(simulated.cost?.memBytes),
       minResourceFee: simulated.minResourceFee,
-      ledger_read_bytes: sorobanTransactionData?.resources().readBytes(),
-      ledger_write_bytes: sorobanTransactionData?.resources().writeBytes(),
-      ledger_entry_reads: sorobanTransactionData?.resources().footprint().readOnly().length,
-      ledger_entry_writes: sorobanTransactionData?.resources().footprint().readWrite().length,
-      events_and_return_value_size: eventsAndReturnValueSize,
-      transaction_size: transactionDataSize,
+      ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
+      ledgerWriteBytes: sorobanTransactionData?.resources().writeBytes(),
+      ledgerEntryReads: sorobanTransactionData?.resources().footprint().readOnly().length,
+      ledgerEntryWrites: sorobanTransactionData?.resources().footprint().readWrite().length,
+      eventSize: eventsSize,
+      returnValueSize: returnValueSize,
+      transactionSize: transactionDataSize,
     };
-
-    console.log(transactionStats);
-    console.log(
-      `${transactionStats.CPU_instructions},${transactionStats.RAM},${transactionStats.minResourceFee},` +
-      `${transactionStats.ledger_read_bytes},${transactionStats.ledger_write_bytes},` +
-      `${transactionStats.ledger_entry_reads},${transactionStats.ledger_entry_writes},` +
-      `${eventsAndReturnValueSize},${transactionDataSize}`
-    );
-
   }
 
   private async extractOutputFromSimulation(
@@ -303,4 +293,9 @@ export class ContractEngine extends SorobanTransactionProcessor {
       throw new Error('Wasm hash not set!')
     }
   }
+}
+
+function defaultCostHandler(methodName: string, costs: TransactionCosts): void {
+  console.log("Debugging method: ", methodName)
+  console.log(costs);
 }
