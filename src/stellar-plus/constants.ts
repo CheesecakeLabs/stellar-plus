@@ -16,15 +16,15 @@ const networksConfig: { [key: string]: Network } = {
     friendbotUrl: 'https://friendbot.stellar.org',
     horizonUrl: 'https://horizon-testnet.stellar.org',
   },
-
-  // networksConfig.mainnet = {
-  //   name: NetworksList.mainnet,
-  //   networkPassphrase: "Public Global Stellar Network ; September 2015",
-  //   rpcUrl: "https://soroban.stellar.org:443",
-  //   horizonUrl: "https://horizon.stellar.org",
-  // };
+  mainnet: {
+    name: NetworksList.mainnet,
+    networkPassphrase: 'Public Global Stellar Network ; September 2015',
+    rpcUrl: '',
+    horizonUrl: 'https://horizon.stellar.org',
+  },
 }
 const testnet: Network = networksConfig.testnet
 const futurenet: Network = networksConfig.futurenet
+const mainnet: Network = networksConfig.mainnet
 
-export { testnet, futurenet }
+export { testnet, futurenet, mainnet }

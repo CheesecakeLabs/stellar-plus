@@ -2,7 +2,13 @@ import axios from 'axios'
 
 import { AccountHelpers } from 'stellar-plus/account/helpers'
 import { Friendbot } from 'stellar-plus/account/helpers/friendbot/types'
-import { Network, NetworksList } from 'stellar-plus/types'
+import { Network } from 'stellar-plus/types'
+
+import {
+  accountHasNoValidPublicKeyError,
+  failedToCreateAccountWithFriendbotError,
+  friendbotNotAvailableError,
+} from './errors'
 
 export class FriendbotClient implements Friendbot {
   private network: Network
@@ -26,11 +32,10 @@ export class FriendbotClient implements Friendbot {
 
         return
       } catch (error) {
-        throw new Error('Failed to create account with friendbot!')
+        failedToCreateAccountWithFriendbotError(error as Error)
       }
     }
-
-    throw new Error('Account has no valid public key!')
+    accountHasNoValidPublicKeyError()
   }
 
   /**
@@ -38,8 +43,8 @@ export class FriendbotClient implements Friendbot {
    * @description - Throws an error if the network is not a test network.
    */
   private requireTestNetwork(): void {
-    if (this.network.name === NetworksList.mainnet) {
-      throw new Error('Friendbot is not available in mainnet!')
+    if (!this.network.friendbotUrl) {
+      friendbotNotAvailableError()
     }
   }
 }
