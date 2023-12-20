@@ -5,9 +5,11 @@ import { ClassicAssetHandlerErrorCodes } from 'stellar-plus/asset/classic/errors
 import { ChannelAccountsErrorCodes } from 'stellar-plus/channel-accounts/errors'
 import { ClassicTransactionProcessorErrorCodes } from 'stellar-plus/core/classic-transaction-processor/errors'
 import { ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/errors'
+import { SorobanTransactionProcessorErrorCodes } from 'stellar-plus/core/soroban-transaction-processor/errors'
 
 import { AxiosErrorInfo } from './axios'
-import { SimulationErrorInfo } from './soroban-rpc'
+import { GetTransactionErrorInfo, SendTransactionErrorInfo, SimulationErrorInfo } from './soroban-rpc'
+import { TransactionInvocationMeta } from './transaction-invocation'
 
 export type StellarPlusErrorObject = {
   code: ErrorCodes
@@ -32,6 +34,7 @@ export type ErrorCodes =
   | ChannelAccountsErrorCodes
   | ClassicTransactionProcessorErrorCodes
   | ContractEngineErrorCodes
+  | SorobanTransactionProcessorErrorCodes
 
 export enum GeneralErrorCodes {
   ER000 = 'ER000',
@@ -40,4 +43,10 @@ export enum GeneralErrorCodes {
 export type Meta = {
   axiosError?: AxiosErrorInfo
   sorobanSimulationData?: SimulationErrorInfo
+  sorobanSendTransactionData?: SendTransactionErrorInfo
+  sorobanGetTransactionData?: GetTransactionErrorInfo
+  transactionInvocation?: TransactionInvocationMeta
+  message?: string
+  transactionXDR?: string
+  error?: Error
 }
