@@ -40,15 +40,15 @@ export class ChannelAccounts {
 
       operations.push(
         Operation.beginSponsoringFutureReserves({
-          sponsoredId: channel.publicKey,
+          sponsoredId: channel.getPublicKey(),
         }),
         Operation.createAccount({
           source: sponsor.getPublicKey(),
-          destination: channel.publicKey,
+          destination: channel.getPublicKey(),
           startingBalance: '0',
         }),
         Operation.endSponsoringFutureReserves({
-          source: channel.publicKey,
+          source: channel.getPublicKey(),
         })
       )
     }
@@ -95,7 +95,7 @@ export class ChannelAccounts {
 
       operations.push(
         Operation.accountMerge({
-          source: channel.publicKey,
+          source: channel.getPublicKey(),
           destination: sponsor.getPublicKey(),
         })
       )

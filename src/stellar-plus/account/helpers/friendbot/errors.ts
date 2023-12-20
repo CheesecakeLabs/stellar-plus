@@ -59,7 +59,7 @@ export const failedToCreateAccountWithFriendbotError = (error: Error): void => {
     throwFriendbotError(
       FriendbotErrorCodes.FB102,
       'Failed response when initializing account with friendbot!',
-      'The response failed when initializing the account with the friendbot. Make sure the account has not been already initialized.',
+      'Received a failed response when initializing the account with the friendbot. Make sure the account has not been already initialized.',
       { axiosError }
     )
   }

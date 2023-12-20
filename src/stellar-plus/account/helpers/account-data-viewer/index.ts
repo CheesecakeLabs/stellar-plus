@@ -40,7 +40,7 @@ export class AccountDataViewerClient implements AccountDataViewer {
   /**
    *
    */
-  public async getTransactions(): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
+  // public async getTransactions(): Promise<void> {
+  //   throw new Error('Method not implemented.')
+  // }
 }

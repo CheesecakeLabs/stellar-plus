@@ -1,3 +1,4 @@
+import { DefaultAccountHandlerErrorCodes } from 'stellar-plus/account/account-handler/default/errors'
 import { FriendbotErrorCodes } from 'stellar-plus/account/helpers/friendbot/errors'
 
 import { AxiosErrorInfo } from './axios'
@@ -16,12 +17,11 @@ export type StellarPlusErrorObject = {
 // ClassicTransaction = 'ClassicTransaction',
 // SorobanTransaction = 'SorobanTransaction',
 
-export type ErrorCodes =
-  // | HorizonApiErrorCodes
-  // | SorobanRpcErrorCodes
-  // | ClassicTransactionErrorCodes
-  // | SorobanTransactionErrorCodes
-  FriendbotErrorCodes
+export type ErrorCodes = FriendbotErrorCodes | DefaultAccountHandlerErrorCodes | GeneralErrorCodes
+
+export enum GeneralErrorCodes {
+  ER000 = 'ER000',
+}
 
 export type Meta = {
   axiosError?: AxiosErrorInfo

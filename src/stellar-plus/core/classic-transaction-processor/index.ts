@@ -118,7 +118,7 @@ export class TransactionProcessor {
    */
   protected verifySigners(publicKeys: string[], signers: AccountHandler[]): void {
     publicKeys.forEach((publicKey) => {
-      if (!signers.find((signer) => signer.publicKey === publicKey)) {
+      if (!signers.find((signer) => signer.getPublicKey() === publicKey)) {
         throw new Error(`Missing signer for public key: ${publicKey}`)
       }
     })

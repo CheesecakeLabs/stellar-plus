@@ -56,7 +56,7 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
   }
 
   private releaseChannel(channelPublicKey: string): void {
-    const channelIndex = this.lockedChannels.findIndex((channel) => channel.publicKey === channelPublicKey)
+    const channelIndex = this.lockedChannels.findIndex((channel) => channel.getPublicKey() === channelPublicKey)
     if (channelIndex === -1) {
       throw new Error('Error releasing channel! Account not found!')
     }
@@ -88,7 +88,7 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
     // console.log("Waiting for Channel!");
     const channel = await this.allocateChannel()
 
-    const sourceAccount = await this.horizonHandler.loadAccount(channel.publicKey as string)
+    const sourceAccount = await this.horizonHandler.loadAccount(channel.getPublicKey() as string)
 
     const envelope = new TransactionBuilder(sourceAccount, {
       fee: header.fee,
