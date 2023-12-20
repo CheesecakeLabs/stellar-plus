@@ -4,11 +4,7 @@ import { AccountHelpers } from 'stellar-plus/account/helpers'
 import { Friendbot } from 'stellar-plus/account/helpers/friendbot/types'
 import { Network } from 'stellar-plus/types'
 
-import {
-  accountHasNoValidPublicKeyError,
-  failedToCreateAccountWithFriendbotError,
-  friendbotNotAvailableError,
-} from './errors'
+import { throwFriendbotError } from './errors'
 
 export class FriendbotClient implements Friendbot {
   private network: Network
@@ -32,10 +28,10 @@ export class FriendbotClient implements Friendbot {
 
         return
       } catch (error) {
-        failedToCreateAccountWithFriendbotError(error as Error)
+        throwFriendbotError.failedToCreateAccountWithFriendbotError(error as Error)
       }
     }
-    accountHasNoValidPublicKeyError()
+    throwFriendbotError.accountHasNoValidPublicKeyError()
   }
 
   /**
@@ -44,7 +40,7 @@ export class FriendbotClient implements Friendbot {
    */
   private requireTestNetwork(): void {
     if (!this.network.friendbotUrl) {
-      friendbotNotAvailableError()
+      throwFriendbotError.friendbotNotAvailableError()
     }
   }
 }

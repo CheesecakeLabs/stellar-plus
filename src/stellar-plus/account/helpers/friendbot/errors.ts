@@ -2,7 +2,6 @@ import { AxiosError } from 'axios'
 
 import { StellarPlusError } from 'stellar-plus/error'
 import { AxiosErrorTypes, extractAxiosErrorInfo } from 'stellar-plus/error/axios'
-import { Meta } from 'stellar-plus/error/types'
 
 export enum FriendbotErrorCodes {
   // F0 General
@@ -16,60 +15,61 @@ export enum FriendbotErrorCodes {
   FB103 = 'FB103',
 }
 
-const friendbotSource = 'Friendbot'
-
-const throwFriendbotError = (code: FriendbotErrorCodes, message: string, details: string, meta?: Meta): void => {
+const friendbotNotAvailableError = (): void => {
   throw new StellarPlusError({
-    code,
-    message,
-    source: friendbotSource,
-    details,
-    meta,
+    code: FriendbotErrorCodes.FB001,
+    message: 'Friendbot not available!',
+    source: 'Friendbot',
+    details:
+      'Friendbot is only available in test networks such as the Testnet and Futurenet. Make sure that the Network configuration object contains a valid Friendbot URL.',
   })
 }
 
-export const friendbotNotAvailableError = (): void => {
-  throwFriendbotError(
-    FriendbotErrorCodes.FB001,
-    'Friendbot is not available in this network!',
-    'Friendbot is only available in test networks such as the Testnet and Futurenet. Make sure that the Network configuration object contains a valid Friendbot URL.'
-  )
+const accountHasNoValidPublicKeyError = (): void => {
+  throw new StellarPlusError({
+    code: FriendbotErrorCodes.FB002,
+    message: 'Account has no valid public key!',
+    source: 'Friendbot',
+    details:
+      'The account has no valid public key. Make sure that this account instance has been initialized corectly and contains a valid public key.',
+  })
 }
 
-export const accountHasNoValidPublicKeyError = (): void => {
-  throwFriendbotError(
-    FriendbotErrorCodes.FB002,
-    'Account has no valid public key!',
-    'The account has no valid public key. Make sure that this account instance has been initialized corectly and contains a valid public key.'
-  )
-}
-
-export const failedToCreateAccountWithFriendbotError = (error: Error): void => {
+const failedToCreateAccountWithFriendbotError = (error: Error): void => {
   const axiosError = extractAxiosErrorInfo(error as AxiosError)
   if (axiosError.type === AxiosErrorTypes.AxiosRequestError) {
-    throwFriendbotError(
-      FriendbotErrorCodes.FB101,
-      'Failed request when initializing account with friendbot!',
-      'The request failed when initializing the account with the friendbot. Make sure that the network is available and that friendbot URL is correct.',
-      { axiosError }
-    )
+    throw new StellarPlusError({
+      code: FriendbotErrorCodes.FB101,
+      message: 'Failed request when initializing account with friendbot!',
+      source: 'Friendbot',
+      details:
+        'The request failed when initializing the account with the friendbot. Make sure that the network is available and that friendbot URL is correct.',
+      meta: { axiosError },
+    })
   }
 
   if (axiosError.type === AxiosErrorTypes.AxiosResponseError) {
-    throwFriendbotError(
-      FriendbotErrorCodes.FB102,
-      'Failed response when initializing account with friendbot!',
-      'Received a failed response when initializing the account with the friendbot. Make sure the account has not been already initialized.',
-      { axiosError }
-    )
+    throw new StellarPlusError({
+      code: FriendbotErrorCodes.FB102,
+      message: 'Failed response when initializing account with friendbot!',
+      source: 'Friendbot',
+      details:
+        'Received a failed response when initializing the account with the friendbot. Make sure the account has not been already initialized.',
+      meta: { axiosError },
+    })
   }
 
-  throwFriendbotError(
-    FriendbotErrorCodes.FB100,
-    'Unknown error while initializing account with Friendbot',
-    'An unexpected error occured during the Friendbot invocation to initialize an account.',
-    {
-      axiosError,
-    }
-  )
+  throw new StellarPlusError({
+    code: FriendbotErrorCodes.FB100,
+    message: 'Unknown error when initializing account with friendbot!',
+    source: 'Friendbot',
+    details: 'An unexpected error occured during the friendbot invocation to initialize an account.',
+    meta: { axiosError },
+  })
+}
+
+export const throwFriendbotError = {
+  accountHasNoValidPublicKeyError,
+  failedToCreateAccountWithFriendbotError,
+  friendbotNotAvailableError,
 }
