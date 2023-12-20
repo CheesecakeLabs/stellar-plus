@@ -1,8 +1,8 @@
 import { DefaultAccountHandlerErrorCodes } from 'stellar-plus/account/account-handler/default/errors'
+import { FreighterAccountHandlerErrorCodes } from 'stellar-plus/account/account-handler/freighter/errors'
 import { FriendbotErrorCodes } from 'stellar-plus/account/helpers/friendbot/errors'
 
 import { AxiosErrorInfo } from './axios'
-import { FreighterAccountHandlerErrorCodes } from 'stellar-plus/account/account-handler/freighter/errors'
 
 export type StellarPlusErrorObject = {
   code: ErrorCodes

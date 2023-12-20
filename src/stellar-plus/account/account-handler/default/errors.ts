@@ -1,5 +1,4 @@
 import { StellarPlusError } from 'stellar-plus/error'
-import { Meta } from 'stellar-plus/error/types'
 
 export enum DefaultAccountHandlerErrorCodes {
   // DAH0 General
@@ -7,33 +6,26 @@ export enum DefaultAccountHandlerErrorCodes {
   DAH002 = 'DAH002',
 }
 
-const throwDefaultAccountHandlerError = (
-  code: DefaultAccountHandlerErrorCodes,
-  message: string,
-  details: string,
-  meta?: Meta
-): void => {
+const failedToLoadSecretKeyError = (): void => {
   throw new StellarPlusError({
-    code,
-    message,
+    code: DefaultAccountHandlerErrorCodes.DAH001,
+    message: 'Failed to load secret key!',
     source: 'DefaultAccountHandler',
-    details,
-    meta,
+    details:
+      'The secret key could not be loaded. Make sure that the secret key is correct and that it is a valid Stellar secret key.',
   })
 }
 
-export const failedToLoadSecretKeyError = (): void => {
-  throwDefaultAccountHandlerError(
-    DefaultAccountHandlerErrorCodes.DAH001,
-    'Invalid Secret Key!',
-    "The Account's secret key is invalid and couldn't be used to initialize a Keypair. Make sure that the secret key is correct and that it is a valid Stellar secret key."
-  )
+const failedToSignTransactionError = (): void => {
+  throw new StellarPlusError({
+    code: DefaultAccountHandlerErrorCodes.DAH002,
+    message: 'Failed to sign transaction!',
+    source: 'DefaultAccountHandler',
+    details: 'The transaction could not be signed. Review the secret key.',
+  })
 }
 
-export const failedToSignTransactionError = (): void => {
-  throwDefaultAccountHandlerError(
-    DefaultAccountHandlerErrorCodes.DAH002,
-    'Failed to sign transaction!',
-    'The transaction could not be signed. Make sure that the secret key is correct and that it is a valid Stellar secret key.'
-  )
+export const throwDefaultAccountHandlerError = {
+  failedToLoadSecretKeyError,
+  failedToSignTransactionError,
 }
