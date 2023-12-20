@@ -39,5 +39,5 @@ export enum GeneralErrorCodes {
 
 export type Meta = {
   axiosError?: AxiosErrorInfo
-  sorobanSimulationError?: SimulationErrorInfo
+  sorobanSimulationData?: SimulationErrorInfo
 }
