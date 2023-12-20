@@ -4,8 +4,10 @@ import { FriendbotErrorCodes } from 'stellar-plus/account/helpers/friendbot/erro
 import { ClassicAssetHandlerErrorCodes } from 'stellar-plus/asset/classic/errors'
 import { ChannelAccountsErrorCodes } from 'stellar-plus/channel-accounts/errors'
 import { ClassicTransactionProcessorErrorCodes } from 'stellar-plus/core/classic-transaction-processor/errors'
+import { ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/errors'
 
 import { AxiosErrorInfo } from './axios'
+import { SimulationErrorInfo } from './soroban-rpc'
 
 export type StellarPlusErrorObject = {
   code: ErrorCodes
@@ -29,6 +31,7 @@ export type ErrorCodes =
   | ClassicAssetHandlerErrorCodes
   | ChannelAccountsErrorCodes
   | ClassicTransactionProcessorErrorCodes
+  | ContractEngineErrorCodes
 
 export enum GeneralErrorCodes {
   ER000 = 'ER000',
@@ -36,4 +39,5 @@ export enum GeneralErrorCodes {
 
 export type Meta = {
   axiosError?: AxiosErrorInfo
+  sorobanSimulationError?: SimulationErrorInfo
 }

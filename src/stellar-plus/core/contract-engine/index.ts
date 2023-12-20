@@ -9,6 +9,8 @@ import {
 } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 
+import { throwContractEngineError } from './errors'
+
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
   private contractId?: string
@@ -179,20 +181,12 @@ export class ContractEngine extends SorobanTransactionProcessor {
   private verifySimulationResult(
     simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse
   ): SorobanRpcNamespace.Api.SimulateHostFunctionResult {
-    if (SorobanRpcNamespace.Api.isSimulationError(simulated)) {
-      throw new Error('Transaction Simulation Failed!')
-    }
-    if (SorobanRpcNamespace.Api.isSimulationRestore(simulated)) {
-      throw new Error('Transaction simulation indicates a restore is required!')
-    }
-    if (!SorobanRpcNamespace.Api.isSimulationSuccess(simulated)) {
-      throw new Error('Transaction Simulation not successful!')
-    }
-    if (!simulated.result) {
-      throw new Error('No result in the simulation!')
+    if (SorobanRpcNamespace.Api.isSimulationSuccess(simulated) && simulated.result) {
+      return simulated.result as SorobanRpcNamespace.Api.SimulateHostFunctionResult
     }
 
-    return simulated.result as SorobanRpcNamespace.Api.SimulateHostFunctionResult
+    throwContractEngineError.simulationFailed(simulated)
+    throw new Error('') // This is unreachable, but TypeScript doesn't know that.
   }
 
   //==========================================
@@ -246,19 +240,19 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
   private requireContractId(): void {
     if (!this.contractId) {
-      throw new Error('Contract id not set!')
+      throwContractEngineError.missingContractId()
     }
   }
 
   private requireWasm(): void {
     if (!this.wasm) {
-      throw new Error('Wasm not set!')
+      throwContractEngineError.missingWasm()
     }
   }
 
   private requireWasmHash(): void {
     if (!this.wasmHash) {
-      throw new Error('Wasm hash not set!')
+      throwContractEngineError.missingWasmHash()
     }
   }
 }
