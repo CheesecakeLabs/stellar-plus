@@ -15,6 +15,8 @@ import { HorizonHandlerClient } from 'stellar-plus/horizon/index'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
 import { Network, TransactionXdr } from 'stellar-plus/types'
 
+import { throwClassicTransactionProcessorError } from './errors'
+
 export class TransactionProcessor {
   protected horizonHandler: HorizonHandler
   protected network: Network
@@ -64,7 +66,8 @@ export class TransactionProcessor {
     const innerTx = TransactionBuilder.fromXDR(envelopeXdr, this.network.networkPassphrase)
 
     if (innerTx instanceof FeeBumpTransaction) {
-      throw new Error('Cannot wrap fee bump transaction with fee bump transaction')
+      throwClassicTransactionProcessorError.wrappingFeeBumpWithFeeBump()
+      throw new Error('') // This is unreachable, but TypeScript doesn't know that.
     }
 
     const feeBumpTx = TransactionBuilder.buildFeeBumpTransaction(
@@ -119,7 +122,7 @@ export class TransactionProcessor {
   protected verifySigners(publicKeys: string[], signers: AccountHandler[]): void {
     publicKeys.forEach((publicKey) => {
       if (!signers.find((signer) => signer.getPublicKey() === publicKey)) {
-        throw new Error(`Missing signer for public key: ${publicKey}`)
+        throwClassicTransactionProcessorError.missingSignerPublicKey(publicKey)
       }
     })
   }

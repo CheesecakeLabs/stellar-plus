@@ -3,6 +3,7 @@ import { FreighterAccountHandlerErrorCodes } from 'stellar-plus/account/account-
 import { FriendbotErrorCodes } from 'stellar-plus/account/helpers/friendbot/errors'
 import { ClassicAssetHandlerErrorCodes } from 'stellar-plus/asset/classic/errors'
 import { ChannelAccountsErrorCodes } from 'stellar-plus/channel-accounts/errors'
+import { ClassicTransactionProcessorErrorCodes } from 'stellar-plus/core/classic-transaction-processor/errors'
 
 import { AxiosErrorInfo } from './axios'
 
@@ -27,6 +28,7 @@ export type ErrorCodes =
   | FreighterAccountHandlerErrorCodes
   | ClassicAssetHandlerErrorCodes
   | ChannelAccountsErrorCodes
+  | ClassicTransactionProcessorErrorCodes
 
 export enum GeneralErrorCodes {
   ER000 = 'ER000',
