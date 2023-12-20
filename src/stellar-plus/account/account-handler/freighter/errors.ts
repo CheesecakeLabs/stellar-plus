@@ -1,5 +1,4 @@
 import { StellarPlusError } from 'stellar-plus/error'
-import { Meta } from 'stellar-plus/error/types'
 
 export enum FreighterAccountHandlerErrorCodes {
   // FAH0 General
@@ -9,51 +8,40 @@ export enum FreighterAccountHandlerErrorCodes {
   FAH004 = 'FAH004',
 }
 
-const throwFreighterAccountHandlerError = (
-  code: FreighterAccountHandlerErrorCodes,
-  message: string,
-  details: string,
-  meta?: Meta
-): void => {
+const connectedToWrongNetworkError = (targetNetworkName: string): void => {
   throw new StellarPlusError({
-    code,
-    message,
-    source: 'DefaultAccountHandler',
-    details,
-    meta,
+    code: FreighterAccountHandlerErrorCodes.FAH001,
+    message: 'Connected to wrong network!',
+    source: 'FreighterAccountHandler',
+    details: `The Freighter account is connected to the wrong network. Make sure that the Freighter account is connected to the ${targetNetworkName}.`,
   })
 }
 
-const connectedToWrongNetworkError = (targetNetworkName: string): void => {
-  throwFreighterAccountHandlerError(
-    FreighterAccountHandlerErrorCodes.FAH001,
-    'Connected to wrong network!',
-    `The Freighter account is connected to the wrong network. Make sure that the Freighter account is connected to the ${targetNetworkName} network.`
-  )
-}
-
 const failedToLoadPublicKeyError = (): void => {
-  throwFreighterAccountHandlerError(
-    FreighterAccountHandlerErrorCodes.FAH002,
-    'Failed to load public key!',
-    "The Account's public key could not be loaded. Make sure that the Freighter account is connected to the correct network."
-  )
+  throw new StellarPlusError({
+    code: FreighterAccountHandlerErrorCodes.FAH002,
+    message: 'Failed to load public key!',
+    source: 'FreighterAccountHandler',
+    details: 'The public key could not be loaded. Make sure that the Freighter account is connected.',
+  })
 }
 
 const failedToSignTransactionError = (): void => {
-  throwFreighterAccountHandlerError(
-    FreighterAccountHandlerErrorCodes.FAH003,
-    'Failed to sign transaction!',
-    'The transaction could not be signed. Review the Freighter extension.'
-  )
+  throw new StellarPlusError({
+    code: FreighterAccountHandlerErrorCodes.FAH003,
+    message: 'Failed to sign transaction!',
+    source: 'FreighterAccountHandler',
+    details: 'The transaction could not be signed. Review the Freighter account.',
+  })
 }
 
 const freighterIsNotConnectedError = (): void => {
-  throwFreighterAccountHandlerError(
-    FreighterAccountHandlerErrorCodes.FAH004,
-    'Freighter is not connected!',
-    'Freighter is not connected. User needs to accept the connection request from the Freighter extension before proceeding.'
-  )
+  throw new StellarPlusError({
+    code: FreighterAccountHandlerErrorCodes.FAH004,
+    message: 'Freighter is not connected!',
+    source: 'FreighterAccountHandler',
+    details: 'Freighter is not connected. Make sure that the Freighter account is connected.',
+  })
 }
 
 export const throwFreighterError = {
