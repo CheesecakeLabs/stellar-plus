@@ -2,6 +2,7 @@ import { DefaultAccountHandlerErrorCodes } from 'stellar-plus/account/account-ha
 import { FriendbotErrorCodes } from 'stellar-plus/account/helpers/friendbot/errors'
 
 import { AxiosErrorInfo } from './axios'
+import { FreighterAccountHandlerErrorCodes } from 'stellar-plus/account/account-handler/freighter/errors'
 
 export type StellarPlusErrorObject = {
   code: ErrorCodes
@@ -17,7 +18,11 @@ export type StellarPlusErrorObject = {
 // ClassicTransaction = 'ClassicTransaction',
 // SorobanTransaction = 'SorobanTransaction',
 
-export type ErrorCodes = FriendbotErrorCodes | DefaultAccountHandlerErrorCodes | GeneralErrorCodes
+export type ErrorCodes =
+  | GeneralErrorCodes
+  | FriendbotErrorCodes
+  | DefaultAccountHandlerErrorCodes
+  | FreighterAccountHandlerErrorCodes
 
 export enum GeneralErrorCodes {
   ER000 = 'ER000',
