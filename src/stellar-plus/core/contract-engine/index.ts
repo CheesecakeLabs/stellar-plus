@@ -17,9 +17,13 @@ export class ContractEngine extends SorobanTransactionProcessor {
   private options: {
     debug: boolean;
     costHandler: (methodName: string, costs: TransactionCosts) => void;
+    txTimeHandler: (methodName: string, elapsedTime: number) => void;
+    // preInvokeContract?: () => void;
+    // postInvokeContract?: () => void;
   } = {
       debug: false,
-      costHandler: defaultCostHandler
+      costHandler: defaultCostHandler,
+      txTimeHandler: defaultTxTimeHandler,
     };
 
   /**
@@ -148,6 +152,10 @@ export class ContractEngine extends SorobanTransactionProcessor {
   protected async invokeContract(args: SorobanInvokeArgs<object>): Promise<unknown> {
     this.requireContractId()
 
+    // this.options.preInvokeContract?.();
+
+    const startTime = Date.now();
+
     const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
 
     if (this.options.debug) {
@@ -164,6 +172,12 @@ export class ContractEngine extends SorobanTransactionProcessor {
     )) as SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
 
     const output = this.extractOutputFromProcessedInvocation(submitted, args.method)
+
+    // this.options.postInvokeContract?.();
+
+    if (this.options.debug) {
+      this.options.txTimeHandler?.(args.method, Date.now() - startTime);
+    }
 
     return output
   }
@@ -319,3 +333,8 @@ function defaultCostHandler(methodName: string, costs: TransactionCosts): void {
   console.log("Debugging method: ", methodName)
   console.log(costs);
 }
+
+function defaultTxTimeHandler(methodName: string, elapsedTime: number): void {
+  console.log("Elapsed time: ", elapsedTime)
+}
+

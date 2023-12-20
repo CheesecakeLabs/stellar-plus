@@ -13,6 +13,9 @@ export type ContractEngineConstructorArgs = {
   options?: {
     debug?: boolean,
     costHandler?: (methodName: string, costs: TransactionCosts) => void;
+    txTimeHandler?: (methodName: string, elapsedTime: number) => void;
+    // preInvokeContract?: () => void;
+    // postInvokeContract?: () => void;
   }
 }
 
