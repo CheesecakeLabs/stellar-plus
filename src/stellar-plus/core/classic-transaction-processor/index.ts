@@ -68,17 +68,20 @@ export class TransactionProcessor {
     if (innerTx instanceof FeeBumpTransaction) {
       throw CTPError.wrappingFeeBumpWithFeeBump()
     }
+    try {
+      const feeBumpTx = TransactionBuilder.buildFeeBumpTransaction(
+        feeBump.header.source,
+        feeBump.header.fee,
+        innerTx,
+        this.network.networkPassphrase
+      )
 
-    const feeBumpTx = TransactionBuilder.buildFeeBumpTransaction(
-      feeBump.header.source,
-      feeBump.header.fee,
-      innerTx,
-      this.network.networkPassphrase
-    )
+      const signedFeeBumpXDR = await this.signEnvelope(feeBumpTx, feeBump.signers)
 
-    const signedFeeBumpXDR = await this.signEnvelope(feeBumpTx, feeBump.signers)
-
-    return TransactionBuilder.fromXDR(signedFeeBumpXDR, this.network.networkPassphrase) as FeeBumpTransaction
+      return TransactionBuilder.fromXDR(signedFeeBumpXDR, this.network.networkPassphrase) as FeeBumpTransaction
+    } catch (error) {
+      throw CTPError.failedToWrapFeeBump(error as Error, feeBump)
+    }
   }
 
   /**
