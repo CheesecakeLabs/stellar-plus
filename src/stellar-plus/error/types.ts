@@ -7,6 +7,7 @@ import { ClassicTransactionProcessorErrorCodes } from 'stellar-plus/core/classic
 import { ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/errors'
 import { SorobanTransactionProcessorErrorCodes } from 'stellar-plus/core/soroban-transaction-processor/errors'
 import { ChannelAccountsTransactionSubmitterErrorCodes } from 'stellar-plus/core/transaction-submitter/classic/channel-accounts-submitter/errors'
+import { DefaultTransactionSubmitterErrorCodes } from 'stellar-plus/core/transaction-submitter/classic/default/errors'
 
 import { AxiosErrorInfo } from './axios'
 import { SubmitTransactionMetaInfo } from './horizon'
@@ -35,6 +36,7 @@ export type ErrorCodes =
   | ClassicAssetHandlerErrorCodes
   | DefaultAccountHandlerErrorCodes
   | FreighterAccountHandlerErrorCodes
+  | DefaultTransactionSubmitterErrorCodes
   | ClassicTransactionProcessorErrorCodes
   | SorobanTransactionProcessorErrorCodes
   | ChannelAccountsTransactionSubmitterErrorCodes
