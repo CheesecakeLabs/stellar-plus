@@ -3,6 +3,8 @@ import { FeeBumpTransaction, Operation, Transaction } from '@stellar/stellar-sdk
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { EnvelopeHeader, FeeBumpHeader } from 'stellar-plus/core/types'
 
+// ========== Trasnaction Invocation ============
+
 //
 // Signers must be public keys to avoid accidentally exposing a secret key
 // when logging the error.
@@ -44,14 +46,16 @@ export const extractTransactionInvocationMeta = (
   return stringfy ? JSON.stringify(meta) : meta
 }
 
+// ========== Trasnaction Data ============
+
 export type TransactionData = FeeBumpTransactionData & {
   source: string
   fee: string
   sequence: string
-  timeBounds?: {
-    minTime: string
-    maxTime: string
-  }
+
+  minTime?: string
+  maxTime?: string
+
   operations?: OperationData[] | string
 }
 
@@ -77,7 +81,7 @@ export const extractTransactionData = (envelope: Transaction | FeeBumpTransactio
     source: innerTransaction.source,
     fee: innerTransaction.fee,
     sequence: innerTransaction.sequence,
-    timeBounds: innerTransaction.timeBounds,
+    ...innerTransaction.timeBounds,
     operations,
   } as TransactionData
 }

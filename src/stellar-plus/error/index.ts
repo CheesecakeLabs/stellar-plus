@@ -1,3 +1,4 @@
+import { TransactionDiagnostic } from './horizon'
 import { ErrorCodes, GeneralErrorCodes, Meta, StellarPlusErrorObject } from './types'
 
 export class StellarPlusError extends Error {
@@ -5,6 +6,7 @@ export class StellarPlusError extends Error {
   source: string
   details?: string
   meta?: Meta
+  diagnostic?: TransactionDiagnostic
 
   constructor(e: StellarPlusErrorObject) {
     super(e.message)
@@ -12,6 +14,7 @@ export class StellarPlusError extends Error {
     this.source = e.source
     this.details = e.details
     this.meta = e.meta
+    this.diagnostic = e.diagnostic
     this.name = this.constructor.name
   }
 
