@@ -8,6 +8,7 @@ import { ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/erro
 import { SorobanTransactionProcessorErrorCodes } from 'stellar-plus/core/soroban-transaction-processor/errors'
 import { ChannelAccountsTransactionSubmitterErrorCodes } from 'stellar-plus/core/transaction-submitter/classic/channel-accounts-submitter/errors'
 import { DefaultTransactionSubmitterErrorCodes } from 'stellar-plus/core/transaction-submitter/classic/default/errors'
+import { ValidationCloudRpcHandlerErrorCodes } from 'stellar-plus/rpc/validation-cloud-handler/errors'
 
 import { AxiosErrorInfo } from './axios'
 import { SubmitTransactionMetaInfo } from './horizon'
@@ -36,6 +37,7 @@ export type ErrorCodes =
   | ClassicAssetHandlerErrorCodes
   | DefaultAccountHandlerErrorCodes
   | FreighterAccountHandlerErrorCodes
+  | ValidationCloudRpcHandlerErrorCodes
   | DefaultTransactionSubmitterErrorCodes
   | ClassicTransactionProcessorErrorCodes
   | SorobanTransactionProcessorErrorCodes
@@ -47,6 +49,7 @@ export enum GeneralErrorCodes {
 
 export type Meta = {
   error?: Error
+  data?: object
   message?: string
   transactionXDR?: string
   axiosError?: AxiosErrorInfo
