@@ -44,7 +44,7 @@ export type ClassicTokenInterfaceManagement = {
   mint: (
     args: {
       to: string
-      amount: i128
+      amount: number
     } & TransactionInvocation
   ) => Promise<HorizonApi.SubmitTransactionResponse>
 

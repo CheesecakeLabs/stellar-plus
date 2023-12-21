@@ -216,7 +216,7 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
   public async mint(
     args: {
       to: string
-      amount: i128
+      amount: number
     } & TransactionInvocation
   ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
     this.requireIssuerAccount() // Enforces the issuer account to be set.
