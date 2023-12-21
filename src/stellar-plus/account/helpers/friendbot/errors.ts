@@ -15,8 +15,8 @@ export enum FriendbotErrorCodes {
   FB103 = 'FB103',
 }
 
-const friendbotNotAvailableError = (): void => {
-  throw new StellarPlusError({
+const friendbotNotAvailableError = (): StellarPlusError => {
+  return new StellarPlusError({
     code: FriendbotErrorCodes.FB001,
     message: 'Friendbot not available!',
     source: 'Friendbot',
@@ -25,8 +25,8 @@ const friendbotNotAvailableError = (): void => {
   })
 }
 
-const accountHasNoValidPublicKeyError = (): void => {
-  throw new StellarPlusError({
+const accountHasNoValidPublicKeyError = (): StellarPlusError => {
+  return new StellarPlusError({
     code: FriendbotErrorCodes.FB002,
     message: 'Account has no valid public key!',
     source: 'Friendbot',
@@ -35,10 +35,10 @@ const accountHasNoValidPublicKeyError = (): void => {
   })
 }
 
-const failedToCreateAccountWithFriendbotError = (error: Error): void => {
+const failedToCreateAccountWithFriendbotError = (error: Error): StellarPlusError => {
   const axiosError = extractAxiosErrorInfo(error as AxiosError)
   if (axiosError.type === AxiosErrorTypes.AxiosRequestError) {
-    throw new StellarPlusError({
+    return new StellarPlusError({
       code: FriendbotErrorCodes.FB101,
       message: 'Failed request when initializing account with friendbot!',
       source: 'Friendbot',
@@ -49,7 +49,7 @@ const failedToCreateAccountWithFriendbotError = (error: Error): void => {
   }
 
   if (axiosError.type === AxiosErrorTypes.AxiosResponseError) {
-    throw new StellarPlusError({
+    return new StellarPlusError({
       code: FriendbotErrorCodes.FB102,
       message: 'Failed response when initializing account with friendbot!',
       source: 'Friendbot',
@@ -59,7 +59,7 @@ const failedToCreateAccountWithFriendbotError = (error: Error): void => {
     })
   }
 
-  throw new StellarPlusError({
+  return new StellarPlusError({
     code: FriendbotErrorCodes.FB100,
     message: 'Unknown error when initializing account with friendbot!',
     source: 'Friendbot',
@@ -68,7 +68,7 @@ const failedToCreateAccountWithFriendbotError = (error: Error): void => {
   })
 }
 
-export const throwFriendbotError = {
+export const FBError = {
   accountHasNoValidPublicKeyError,
   failedToCreateAccountWithFriendbotError,
   friendbotNotAvailableError,

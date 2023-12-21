@@ -6,8 +6,8 @@ export enum ClassicTransactionProcessorErrorCodes {
   CTP002 = 'CTP002',
 }
 
-const wrappingFeeBumpWithFeeBump = (): void => {
-  throw new StellarPlusError({
+const wrappingFeeBumpWithFeeBump = (): StellarPlusError => {
+  return new StellarPlusError({
     code: ClassicTransactionProcessorErrorCodes.CTP001,
     message: 'Failed to wrap fee bump!',
     source: 'ClassicTransactionProcessor',
@@ -16,8 +16,8 @@ const wrappingFeeBumpWithFeeBump = (): void => {
   })
 }
 
-const missingSignerPublicKey = (publicKey: string): void => {
-  throw new StellarPlusError({
+const missingSignerPublicKey = (publicKey: string): StellarPlusError => {
+  return new StellarPlusError({
     code: ClassicTransactionProcessorErrorCodes.CTP002,
     message: 'Missing signer public key!',
     source: 'ClassicTransactionProcessor',
@@ -25,7 +25,7 @@ const missingSignerPublicKey = (publicKey: string): void => {
   })
 }
 
-export const throwClassicTransactionProcessorError = {
+export const CTPError = {
   wrappingFeeBumpWithFeeBump,
   missingSignerPublicKey,
 }

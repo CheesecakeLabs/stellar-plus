@@ -10,7 +10,7 @@ import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-proc
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { i128 } from 'stellar-plus/types'
 
-import { throwClassicAssetHandlerError } from './errors'
+import { CAHError } from './errors'
 
 export class ClassicAssetHandler extends TransactionProcessor implements IClassicAssetHandler {
   public code: string
@@ -316,7 +316,7 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    */
   private requireIssuerAccount(): void {
     if (!this.issuerAccount) {
-      throwClassicAssetHandlerError.issuerAccountNotDefined()
+      throw CAHError.issuerAccountNotDefined()
     }
   }
 }

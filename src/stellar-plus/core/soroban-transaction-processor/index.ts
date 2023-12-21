@@ -28,7 +28,7 @@ import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network, TransactionXdr } from 'stellar-plus/types'
 
-import { throwSorobanTransactionProcessorError } from './errors'
+import { STPError } from './errors'
 
 export class SorobanTransactionProcessor extends TransactionProcessor {
   private rpcHandler: RpcHandler
@@ -81,8 +81,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
       return txEnvelope
     } catch (error) {
-      throwSorobanTransactionProcessorError.failedToBuildTransaction(error as Error, header)
-      throw error // This is unreachable, but TypeScript doesn't know that.
+      throw STPError.failedToBuildTransaction(error as Error, header)
     }
   }
 
@@ -99,8 +98,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       const response = await this.rpcHandler.simulateTransaction(tx)
       return response
     } catch (error) {
-      throwSorobanTransactionProcessorError.failedToSimulateTransaction(error as Error, tx.toXDR())
-      throw error // This is unreachable, but TypeScript doesn't know that.
+      throw STPError.failedToSimulateTransaction(error as Error, tx.toXDR())
     }
   }
 
@@ -118,8 +116,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       const response = await this.rpcHandler.prepareTransaction(tx)
       return response
     } catch (error) {
-      throwSorobanTransactionProcessorError.failedToPrepareTransaction(error as Error, tx.toXDR())
-      throw new Error('') // This is unreachable, but TypeScript doesn't know that.
+      throw STPError.failedToPrepareTransaction(error as Error, tx.toXDR())
     }
   }
 
@@ -139,8 +136,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       const response = await this.rpcHandler.submitTransaction(tx)
       return response
     } catch (error) {
-      throwSorobanTransactionProcessorError.failedToSubmitTransaction(error as Error, tx.toXDR())
-      throw error // This is unreachable, but TypeScript doesn't know that.
+      throw STPError.failedToSubmitTransaction(error as Error, tx.toXDR())
     }
   }
 
@@ -183,7 +179,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     response: SorobanRpcNamespace.Api.SendTransactionResponse
   ): Promise<SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse> {
     if (response.status === 'ERROR') {
-      throwSorobanTransactionProcessorError.failedToSubmitTransactionWithResponse(response)
+      throw STPError.failedToSubmitTransactionWithResponse(response)
     }
 
     if (response.status === 'PENDING' || response.status === 'TRY_AGAIN_LATER') {
@@ -191,8 +187,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       return await this.waitForTransaction(response.hash, 15) // Arbitrary 15 seconds timeout
     }
 
-    throwSorobanTransactionProcessorError.failedToVerifyTransactionSubmission(response)
-    throw new Error('') // This is unreachable, but TypeScript doesn't know that.
+    throw STPError.failedToVerifyTransactionSubmission(response)
   }
 
   /**
@@ -234,11 +229,10 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     if (updatedTransaction.status === SorobanRpcNamespace.Api.GetTransactionStatus.FAILED) {
       // const failedTransaction = updatedTransaction as SorobanRpcNamespace.GetFailedTransactionResponse
       // console.log("Details!: ", JSON.stringify(failedTransaction));
-      throwSorobanTransactionProcessorError.transactionSubmittedFailed(updatedTransaction)
+      throw STPError.transactionSubmittedFailed(updatedTransaction)
     }
 
-    throwSorobanTransactionProcessorError.transactionSubmittedNotFound(updatedTransaction)
-    throw new Error('') // This is unreachable, but TypeScript doesn't know that.
+    throw STPError.transactionSubmittedNotFound(updatedTransaction)
   }
 
   protected postProcessTransaction(
@@ -309,8 +303,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
       return (output.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString('hex') as string
     } catch (error) {
-      throwSorobanTransactionProcessorError.failedToUploadWasm(error as StellarPlusError)
-      throw error // This is unreachable, but TypeScript doesn't know that.
+      throw STPError.failedToUploadWasm(error as StellarPlusError)
     }
   }
 
@@ -357,8 +350,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
       ).toString() as string
     } catch (error) {
-      throwSorobanTransactionProcessorError.failedToDeployContract(error as StellarPlusError)
-      throw error // This is unreachable, but TypeScript doesn't know that.
+      throw STPError.failedToDeployContract(error as StellarPlusError)
     }
   }
 
@@ -402,8 +394,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
       ).toString()
     } catch (error) {
-      throwSorobanTransactionProcessorError.failedToWrapAsset(error as StellarPlusError)
-      throw error // This is unreachable, but TypeScript doesn't know that.
+      throw STPError.failedToWrapAsset(error as StellarPlusError)
     }
   }
 

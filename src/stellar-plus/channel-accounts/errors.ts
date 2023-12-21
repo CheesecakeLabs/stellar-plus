@@ -5,8 +5,8 @@ export enum ChannelAccountsErrorCodes {
   CHA001 = 'CHA001',
 }
 
-const invalidNumberOfChannelsToCreate = (min: number, max: number): void => {
-  throw new StellarPlusError({
+const invalidNumberOfChannelsToCreate = (min: number, max: number): StellarPlusError => {
+  return new StellarPlusError({
     code: ChannelAccountsErrorCodes.CHA001,
     message: 'Invalid number of channels to create!',
     source: 'ChannelAccounts',
@@ -14,6 +14,6 @@ const invalidNumberOfChannelsToCreate = (min: number, max: number): void => {
   })
 }
 
-export const throwChannelAccountsError = {
+export const CHAError = {
   invalidNumberOfChannelsToCreate,
 }

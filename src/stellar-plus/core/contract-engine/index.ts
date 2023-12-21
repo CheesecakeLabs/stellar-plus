@@ -9,7 +9,7 @@ import {
 } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 
-import { throwContractEngineError } from './errors'
+import { CEError } from './errors'
 
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
@@ -185,8 +185,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
       return simulated.result as SorobanRpcNamespace.Api.SimulateHostFunctionResult
     }
 
-    throwContractEngineError.simulationFailed(simulated)
-    throw new Error('') // This is unreachable, but TypeScript doesn't know that.
+    throw CEError.simulationFailed(simulated)
   }
 
   //==========================================
@@ -240,19 +239,19 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
   private requireContractId(): void {
     if (!this.contractId) {
-      throwContractEngineError.missingContractId()
+      throw CEError.missingContractId()
     }
   }
 
   private requireWasm(): void {
     if (!this.wasm) {
-      throwContractEngineError.missingWasm()
+      throw CEError.missingWasm()
     }
   }
 
   private requireWasmHash(): void {
     if (!this.wasmHash) {
-      throwContractEngineError.missingWasmHash()
+      throw CEError.missingWasmHash()
     }
   }
 }

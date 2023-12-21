@@ -5,8 +5,8 @@ export enum ClassicAssetHandlerErrorCodes {
   CAH001 = 'CAH001',
 }
 
-const issuerAccountNotDefined = (): void => {
-  throw new StellarPlusError({
+const issuerAccountNotDefined = (): StellarPlusError => {
+  return new StellarPlusError({
     code: ClassicAssetHandlerErrorCodes.CAH001,
     message: 'Issuer account not defined!',
     source: 'ClassicAssetHandler',
@@ -15,6 +15,6 @@ const issuerAccountNotDefined = (): void => {
   })
 }
 
-export const throwClassicAssetHandlerError = {
+export const CAHError = {
   issuerAccountNotDefined,
 }

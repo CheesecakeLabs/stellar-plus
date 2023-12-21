@@ -4,7 +4,7 @@ import { DefaultAccountHandler, DefaultAccountHandlerPayload } from 'stellar-plu
 import { AccountBaseClient } from 'stellar-plus/account/base'
 import { TransactionXdr } from 'stellar-plus/types'
 
-import { throwDefaultAccountHandlerError } from './errors'
+import { DAHError } from './errors'
 
 export class DefaultAccountHandlerClient extends AccountBaseClient implements DefaultAccountHandler {
   protected secretKey: string
@@ -25,8 +25,7 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
 
       this.secretKey = keypair.secret()
     } catch (error) {
-      throwDefaultAccountHandlerError.failedToLoadSecretKeyError()
-      throw error // This is unreachable, but TypeScript doesn't know that.
+      throw DAHError.failedToLoadSecretKeyError()
     }
   }
 
@@ -38,8 +37,7 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
     try {
       return Keypair.fromSecret(this.secretKey).publicKey()
     } catch (error) {
-      throwDefaultAccountHandlerError.failedToLoadSecretKeyError()
-      throw error // This is unreachable, but TypeScript doesn't know that.
+      throw DAHError.failedToLoadSecretKeyError()
     }
   }
 
@@ -58,8 +56,7 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
 
       return tx.toXDR() as TransactionXdr
     } catch (error) {
-      throwDefaultAccountHandlerError.failedToSignTransactionError()
-      throw error // This is unreachable, but TypeScript doesn't know that.
+      throw DAHError.failedToSignTransactionError()
     }
   }
 }

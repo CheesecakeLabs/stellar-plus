@@ -6,8 +6,8 @@ export enum DefaultAccountHandlerErrorCodes {
   DAH002 = 'DAH002',
 }
 
-const failedToLoadSecretKeyError = (): void => {
-  throw new StellarPlusError({
+const failedToLoadSecretKeyError = (): StellarPlusError => {
+  return new StellarPlusError({
     code: DefaultAccountHandlerErrorCodes.DAH001,
     message: 'Failed to load secret key!',
     source: 'DefaultAccountHandler',
@@ -16,8 +16,8 @@ const failedToLoadSecretKeyError = (): void => {
   })
 }
 
-const failedToSignTransactionError = (): void => {
-  throw new StellarPlusError({
+const failedToSignTransactionError = (): StellarPlusError => {
+  return new StellarPlusError({
     code: DefaultAccountHandlerErrorCodes.DAH002,
     message: 'Failed to sign transaction!',
     source: 'DefaultAccountHandler',
@@ -25,7 +25,7 @@ const failedToSignTransactionError = (): void => {
   })
 }
 
-export const throwDefaultAccountHandlerError = {
+export const DAHError = {
   failedToLoadSecretKeyError,
   failedToSignTransactionError,
 }

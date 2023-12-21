@@ -20,8 +20,8 @@ export enum ContractEngineErrorCodes {
   CE103 = 'CE103',
 }
 
-const missingContractId = (): void => {
-  throw new StellarPlusError({
+const missingContractId = (): StellarPlusError => {
+  return new StellarPlusError({
     code: ContractEngineErrorCodes.CE001,
     message: 'Missing contract ID!',
     source: 'ContractEngine',
@@ -30,8 +30,8 @@ const missingContractId = (): void => {
   })
 }
 
-const missingWasm = (): void => {
-  throw new StellarPlusError({
+const missingWasm = (): StellarPlusError => {
+  return new StellarPlusError({
     code: ContractEngineErrorCodes.CE002,
     message: 'Missing wasm!',
     source: 'ContractEngine',
@@ -40,8 +40,8 @@ const missingWasm = (): void => {
   })
 }
 
-const missingWasmHash = (): void => {
-  throw new StellarPlusError({
+const missingWasmHash = (): StellarPlusError => {
+  return new StellarPlusError({
     code: ContractEngineErrorCodes.CE003,
     message: 'Missing wasm hash!',
     source: 'ContractEngine',
@@ -50,9 +50,9 @@ const missingWasmHash = (): void => {
   })
 }
 
-const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionResponse): void => {
+const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionResponse): StellarPlusError => {
   if (SorobanRpc.Api.isSimulationError(simulation)) {
-    throw new StellarPlusError({
+    return new StellarPlusError({
       code: ContractEngineErrorCodes.CE101,
       message: 'Transaction simulation failed!',
       source: 'ContractEngine',
@@ -62,7 +62,7 @@ const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionResponse
     })
   }
   if (SorobanRpc.Api.isSimulationRestore(simulation)) {
-    throw new StellarPlusError({
+    return new StellarPlusError({
       code: ContractEngineErrorCodes.CE102,
       message: 'Transaction simulation failed!',
       source: 'ContractEngine',
@@ -73,7 +73,7 @@ const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionResponse
   }
 
   if (SorobanRpc.Api.isSimulationSuccess(simulation) && !simulation.result) {
-    throw new StellarPlusError({
+    return new StellarPlusError({
       code: ContractEngineErrorCodes.CE103,
       message: 'Transaction simulation is missing the result data!',
       source: 'ContractEngine',
@@ -82,7 +82,7 @@ const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionResponse
     })
   }
 
-  throw new StellarPlusError({
+  return new StellarPlusError({
     code: ContractEngineErrorCodes.CE100,
     message: 'Unexpected error in transaction simulation!',
     source: 'ContractEngine',
@@ -92,7 +92,7 @@ const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionResponse
   })
 }
 
-export const throwContractEngineError = {
+export const CEError = {
   missingContractId,
   missingWasm,
   missingWasmHash,

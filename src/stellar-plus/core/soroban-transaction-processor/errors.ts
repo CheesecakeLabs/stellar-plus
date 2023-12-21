@@ -20,8 +20,8 @@ export enum SorobanTransactionProcessorErrorCodes {
   STP010 = 'STP010',
 }
 
-const failedToBuildTransaction = (error: Error, header: EnvelopeHeader): void => {
-  throw new StellarPlusError({
+const failedToBuildTransaction = (error: Error, header: EnvelopeHeader): StellarPlusError => {
+  return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP001,
     message: 'Failed to build transaction!',
     source: 'SorobanTransactionProcessor',
@@ -31,8 +31,8 @@ const failedToBuildTransaction = (error: Error, header: EnvelopeHeader): void =>
   })
 }
 
-const failedToSimulateTransaction = (error: Error, txXdr: string): void => {
-  throw new StellarPlusError({
+const failedToSimulateTransaction = (error: Error, txXdr: string): StellarPlusError => {
+  return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP002,
     message: 'Failed to simulate transaction!',
     source: 'SorobanTransactionProcessor',
@@ -41,8 +41,8 @@ const failedToSimulateTransaction = (error: Error, txXdr: string): void => {
   })
 }
 
-const failedToPrepareTransaction = (error: Error, txXdr: string): void => {
-  throw new StellarPlusError({
+const failedToPrepareTransaction = (error: Error, txXdr: string): StellarPlusError => {
+  return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP003,
     message: 'Failed to prepare transaction!',
     source: 'SorobanTransactionProcessor',
@@ -51,8 +51,8 @@ const failedToPrepareTransaction = (error: Error, txXdr: string): void => {
   })
 }
 
-const failedToSubmitTransaction = (error?: Error, txXdr?: string): void => {
-  throw new StellarPlusError({
+const failedToSubmitTransaction = (error?: Error, txXdr?: string): StellarPlusError => {
+  return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP004,
     message: 'Failed to submit transaction!',
     source: 'SorobanTransactionProcessor',
@@ -61,8 +61,8 @@ const failedToSubmitTransaction = (error?: Error, txXdr?: string): void => {
   })
 }
 
-const failedToSubmitTransactionWithResponse = (response: SorobanRpc.Api.SendTransactionResponse): void => {
-  throw new StellarPlusError({
+const failedToSubmitTransactionWithResponse = (response: SorobanRpc.Api.SendTransactionResponse): StellarPlusError => {
+  return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP004,
     message: 'Submitted transaction failed!',
     source: 'SorobanTransactionProcessor',
@@ -72,8 +72,8 @@ const failedToSubmitTransactionWithResponse = (response: SorobanRpc.Api.SendTran
   })
 }
 
-const failedToVerifyTransactionSubmission = (response: SorobanRpc.Api.SendTransactionResponse): void => {
-  throw new StellarPlusError({
+const failedToVerifyTransactionSubmission = (response: SorobanRpc.Api.SendTransactionResponse): StellarPlusError => {
+  return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP005,
     message: 'Submitted transaction could not be verified!',
     source: 'SorobanTransactionProcessor',
@@ -83,8 +83,8 @@ const failedToVerifyTransactionSubmission = (response: SorobanRpc.Api.SendTransa
   })
 }
 
-const transactionSubmittedFailed = (response: SorobanRpc.Api.GetFailedTransactionResponse): void => {
-  throw new StellarPlusError({
+const transactionSubmittedFailed = (response: SorobanRpc.Api.GetFailedTransactionResponse): StellarPlusError => {
+  return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP006,
     message: 'Transaction failed!',
     source: 'SorobanTransactionProcessor',
@@ -94,8 +94,8 @@ const transactionSubmittedFailed = (response: SorobanRpc.Api.GetFailedTransactio
   })
 }
 
-const transactionSubmittedNotFound = (response: SorobanRpc.Api.GetTransactionResponse): void => {
-  throw new StellarPlusError({
+const transactionSubmittedNotFound = (response: SorobanRpc.Api.GetTransactionResponse): StellarPlusError => {
+  return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP007,
     message: 'Transaction not found!',
     source: 'SorobanTransactionProcessor',
@@ -105,8 +105,8 @@ const transactionSubmittedNotFound = (response: SorobanRpc.Api.GetTransactionRes
   })
 }
 
-const failedToUploadWasm = (error: StellarPlusError): void => {
-  throw new StellarPlusError({
+const failedToUploadWasm = (error: StellarPlusError): StellarPlusError => {
+  return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP008,
     message: 'Failed to upload wasm!',
     source: 'SorobanTransactionProcessor',
@@ -116,8 +116,8 @@ const failedToUploadWasm = (error: StellarPlusError): void => {
   })
 }
 
-const failedToDeployContract = (error: StellarPlusError): void => {
-  throw new StellarPlusError({
+const failedToDeployContract = (error: StellarPlusError): StellarPlusError => {
+  return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP009,
     message: 'Failed to deploy contract!',
     source: 'SorobanTransactionProcessor',
@@ -127,8 +127,8 @@ const failedToDeployContract = (error: StellarPlusError): void => {
   })
 }
 
-const failedToWrapAsset = (error: StellarPlusError): void => {
-  throw new StellarPlusError({
+const failedToWrapAsset = (error: StellarPlusError): StellarPlusError => {
+  return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP010,
     message: 'Failed to wrap asset!',
     source: 'SorobanTransactionProcessor',
@@ -137,7 +137,7 @@ const failedToWrapAsset = (error: StellarPlusError): void => {
   })
 }
 
-export const throwSorobanTransactionProcessorError = {
+export const STPError = {
   failedToBuildTransaction,
   failedToSimulateTransaction,
   failedToPrepareTransaction,

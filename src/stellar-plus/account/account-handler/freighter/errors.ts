@@ -8,8 +8,8 @@ export enum FreighterAccountHandlerErrorCodes {
   FAH004 = 'FAH004',
 }
 
-const connectedToWrongNetworkError = (targetNetworkName: string): void => {
-  throw new StellarPlusError({
+const connectedToWrongNetworkError = (targetNetworkName: string): StellarPlusError => {
+  return new StellarPlusError({
     code: FreighterAccountHandlerErrorCodes.FAH001,
     message: 'Connected to wrong network!',
     source: 'FreighterAccountHandler',
@@ -17,8 +17,8 @@ const connectedToWrongNetworkError = (targetNetworkName: string): void => {
   })
 }
 
-const failedToLoadPublicKeyError = (): void => {
-  throw new StellarPlusError({
+const failedToLoadPublicKeyError = (): StellarPlusError => {
+  return new StellarPlusError({
     code: FreighterAccountHandlerErrorCodes.FAH002,
     message: 'Failed to load public key!',
     source: 'FreighterAccountHandler',
@@ -26,8 +26,8 @@ const failedToLoadPublicKeyError = (): void => {
   })
 }
 
-const failedToSignTransactionError = (): void => {
-  throw new StellarPlusError({
+const failedToSignTransactionError = (): StellarPlusError => {
+  return new StellarPlusError({
     code: FreighterAccountHandlerErrorCodes.FAH003,
     message: 'Failed to sign transaction!',
     source: 'FreighterAccountHandler',
@@ -35,8 +35,8 @@ const failedToSignTransactionError = (): void => {
   })
 }
 
-const freighterIsNotConnectedError = (): void => {
-  throw new StellarPlusError({
+const freighterIsNotConnectedError = (): StellarPlusError => {
+  return new StellarPlusError({
     code: FreighterAccountHandlerErrorCodes.FAH004,
     message: 'Freighter is not connected!',
     source: 'FreighterAccountHandler',
@@ -44,7 +44,7 @@ const freighterIsNotConnectedError = (): void => {
   })
 }
 
-export const throwFreighterError = {
+export const FAHError = {
   connectedToWrongNetworkError,
   failedToLoadPublicKeyError,
   failedToSignTransactionError,
