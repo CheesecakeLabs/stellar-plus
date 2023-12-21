@@ -1,4 +1,4 @@
-import { ContractSpec, SorobanRpc, SorobanRpc as SorobanRpcNamespace, Transaction, xdr, } from '@stellar/stellar-sdk'
+import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr, } from '@stellar/stellar-sdk'
 
 import { ContractEngineConstructorArgs, TransactionCosts } from 'stellar-plus/core/contract-engine/types'
 import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
@@ -70,7 +70,6 @@ export class ContractEngine extends SorobanTransactionProcessor {
     this.wasm = args.wasm
     this.wasmHash = args.wasmHash
     this.options = { ...this.options, ...args.options };
-    console.log(args.options, this.options)
   }
 
   public getContractId(): string | undefined {
