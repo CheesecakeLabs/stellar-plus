@@ -196,16 +196,15 @@ export class ContractEngine extends SorobanTransactionProcessor {
   private async parseTransactionCosts(
     tx: Transaction | SorobanRpcNamespace.Api.SimulateTransactionResponse,
   ): Promise<TransactionCosts> {
-    let simulated = (tx as Transaction) ? await this.simulateTransaction(tx as Transaction) : tx;
+    let simulated = (tx instanceof Transaction) ? await this.simulateTransaction(tx as Transaction) : tx;
 
     simulated = this.verifySimulationResponse(simulated as SorobanRpcNamespace.Api.SimulateTransactionResponse);
 
-    const calculateEventSize = (event: any) => {
-      const parsedEvent = xdr.DiagnosticEvent.fromXDR(event, 'base64');
-      if (parsedEvent.event().type().name === 'diagnostic') {
+    const calculateEventSize = (event: xdr.DiagnosticEvent) => {
+      if (event.event()?.type().name === 'diagnostic') {
         return 0;
       }
-      return parsedEvent.toXDR().length;
+      return event.toXDR().length;
     };
 
     const sorobanTransactionData = simulated.transactionData.build();
