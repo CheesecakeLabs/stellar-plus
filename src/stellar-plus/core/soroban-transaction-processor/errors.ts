@@ -2,7 +2,7 @@ import { SorobanRpc } from '@stellar/stellar-sdk'
 
 import { StellarPlusError } from 'stellar-plus/error'
 import { extractGetTransactionData, extractSendTransactionErrorData } from 'stellar-plus/error/soroban-rpc'
-import { extractTransactionInvocationMeta } from 'stellar-plus/error/transaction-invocation'
+import { extractTransactionInvocationMeta } from 'stellar-plus/error/transaction'
 
 import { EnvelopeHeader } from '../types'
 

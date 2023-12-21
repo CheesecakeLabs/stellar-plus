@@ -1,8 +1,11 @@
 import { FeeBumpTransaction, Transaction } from '@stellar/stellar-sdk'
 import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
+import { AxiosError } from 'axios'
 
 import { StellarPlusError } from 'stellar-plus/error'
+import { extractAxiosErrorInfo } from 'stellar-plus/error/axios'
 import { extractDataFromSubmitTransactionError } from 'stellar-plus/error/horizon'
+import { extractTransactionData } from 'stellar-plus/error/transaction'
 
 export enum ChannelAccountsTransactionSubmitterErrorCodes {
   // CHATS0 General
@@ -26,7 +29,10 @@ const failedToSubmitTransaction = (error: Error, tx: Transaction | FeeBumpTransa
     source: 'ChannelAccountsTransactionSubmitter',
     details: `Failed to submit transaction! A problem occurred while submitting the transaction to the network for processing! Check the meta property for more details.`,
     meta: {
-      error,
+      message: error.message,
+
+      transactionData: extractTransactionData(tx),
+      axiosError: error instanceof AxiosError ? extractAxiosErrorInfo(error as AxiosError) : undefined,
       transactionXDR: tx.toXDR(),
     },
   })

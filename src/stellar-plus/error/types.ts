@@ -13,7 +13,7 @@ import { ValidationCloudRpcHandlerErrorCodes } from 'stellar-plus/rpc/validation
 import { AxiosErrorInfo } from './axios'
 import { SubmitTransactionMetaInfo } from './horizon'
 import { GetTransactionErrorInfo, SendTransactionErrorInfo, SimulationErrorInfo } from './soroban-rpc'
-import { TransactionInvocationMeta } from './transaction-invocation'
+import { TransactionData, TransactionInvocationMeta } from './transaction'
 
 export type StellarPlusErrorObject = {
   code: ErrorCodes
@@ -53,6 +53,7 @@ export type Meta = {
   message?: string
   transactionXDR?: string
   axiosError?: AxiosErrorInfo
+  transactionData?: TransactionData
   sorobanSimulationData?: SimulationErrorInfo
   transactionInvocation?: TransactionInvocationMeta
   sorobanGetTransactionData?: GetTransactionErrorInfo
