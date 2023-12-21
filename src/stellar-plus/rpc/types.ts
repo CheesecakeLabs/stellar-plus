@@ -8,7 +8,6 @@ export type RpcHandler = {
   getEvents(request: SorobanRpc.Server.GetEventsRequest): Promise<SorobanRpc.Api.GetEventsResponse>
   getLedgerEntries(...keys: xdr.LedgerKey[]): Promise<SorobanRpc.Api.GetLedgerEntriesResponse>
   simulateTransaction(tx: Transaction): Promise<SorobanRpc.Api.SimulateTransactionResponse>
-  _simulateTransaction?(tx: Transaction): Promise<SorobanRpc.Api.RawSimulateTransactionResponse>
   prepareTransaction(tx: Transaction): Promise<Transaction>
   submitTransaction(tx: Transaction | FeeBumpTransaction): Promise<SorobanRpc.Api.SendTransactionResponse>
 }
