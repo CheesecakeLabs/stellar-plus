@@ -112,10 +112,22 @@ export class ContractEngine extends SorobanTransactionProcessor {
   protected async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
     this.requireContractId()
 
+    const startTime = Date.now();
+
     const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
     const simulated = await this.simulateTransaction(builtTx)
 
+    if (this.options.debug) {
+      const costs = await this.parseTransactionCosts(simulated)
+      this.options.costHandler?.(args.method, costs);
+    }
+
     const output = this.extractOutputFromSimulation(simulated, args.method)
+
+    if (this.options.debug) {
+      this.options.txTimeHandler?.(args.method, Date.now() - startTime);
+    }
+
     return output
   }
 
@@ -183,11 +195,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 
   private async parseTransactionCosts(
-    tx: Transaction,
+    tx: Transaction | SorobanRpcNamespace.Api.SimulateTransactionResponse,
   ): Promise<TransactionCosts> {
-    let simulated = await this.simulateTransaction(tx)
-    this.verifySimulationResult(simulated);
-    simulated = simulated as SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse;
+    let simulated = (tx as Transaction) ? await this.simulateTransaction(tx as Transaction) : tx;
+
+    simulated = this.verifySimulationResponse(simulated as SorobanRpcNamespace.Api.SimulateTransactionResponse);
 
     const calculateEventSize = (event: any) => {
       const parsedEvent = xdr.DiagnosticEvent.fromXDR(event, 'base64');
@@ -221,9 +233,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
     simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse,
     method: string
   ): Promise<unknown> {
-    const simulationResult = this.verifySimulationResult(simulated)
-    const output = this.spec.funcResToNative(method, simulationResult.retval) as unknown
-    return output
+    const simulationResult = this.verifySimulationResponse(simulated).result;
+    if (simulationResult) {
+      const output = this.spec.funcResToNative(method, simulationResult.retval) as unknown
+      return output
+    }
   }
 
   private async extractOutputFromProcessedInvocation(
@@ -239,9 +253,9 @@ export class ContractEngine extends SorobanTransactionProcessor {
     return output
   }
 
-  private verifySimulationResult(
+  private verifySimulationResponse(
     simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse
-  ): SorobanRpcNamespace.Api.SimulateHostFunctionResult {
+  ): SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse {
     if (SorobanRpcNamespace.Api.isSimulationError(simulated)) {
       throw new Error('Transaction Simulation Failed!')
     }
@@ -255,7 +269,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
       throw new Error('No result in the simulation!')
     }
 
-    return simulated.result as SorobanRpcNamespace.Api.SimulateHostFunctionResult
+    return simulated as SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
   }
 
   //==========================================
