@@ -5,7 +5,7 @@ import {
   extractSimulationBaseData,
   extractSimulationErrorData,
   extractSimulationRestoreData,
-} from 'stellar-plus/error/soroban-rpc'
+} from 'stellar-plus/error/helpers/soroban-rpc'
 
 export enum ContractEngineErrorCodes {
   // CE0 General

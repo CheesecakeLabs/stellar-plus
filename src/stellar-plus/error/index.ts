@@ -1,4 +1,4 @@
-import { TransactionDiagnostic } from './horizon'
+import { TransactionDiagnostic } from './helpers/horizon'
 import { ErrorCodes, GeneralErrorCodes, Meta, StellarPlusErrorObject } from './types'
 
 export class StellarPlusError extends Error {

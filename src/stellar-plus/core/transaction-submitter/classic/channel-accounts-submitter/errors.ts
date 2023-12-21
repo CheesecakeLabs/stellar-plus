@@ -2,7 +2,7 @@ import { FeeBumpTransaction, Transaction } from '@stellar/stellar-sdk'
 import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
 
 import { StellarPlusError } from 'stellar-plus/error'
-import { diagnoseSubmitError, extractDataFromSubmitTransactionError } from 'stellar-plus/error/horizon'
+import { diagnoseSubmitError, extractDataFromSubmitTransactionError } from 'stellar-plus/error/helpers/horizon'
 
 export enum ChannelAccountsTransactionSubmitterErrorCodes {
   // CHATS0 General

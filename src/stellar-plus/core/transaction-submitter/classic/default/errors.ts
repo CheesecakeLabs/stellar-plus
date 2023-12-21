@@ -3,7 +3,7 @@ import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
 import { AxiosError } from 'axios'
 
 import { StellarPlusError } from 'stellar-plus/error'
-import { diagnoseSubmitError, extractDataFromSubmitTransactionError } from 'stellar-plus/error/horizon'
+import { diagnoseSubmitError, extractDataFromSubmitTransactionError } from 'stellar-plus/error/helpers/horizon'
 
 export enum DefaultTransactionSubmitterErrorCodes {
   // DTS0 General

@@ -1,8 +1,8 @@
 import { SorobanRpc } from '@stellar/stellar-sdk'
 
 import { StellarPlusError } from 'stellar-plus/error'
-import { extractGetTransactionData, extractSendTransactionErrorData } from 'stellar-plus/error/soroban-rpc'
-import { extractTransactionInvocationMeta } from 'stellar-plus/error/transaction'
+import { extractGetTransactionData, extractSendTransactionErrorData } from 'stellar-plus/error/helpers/soroban-rpc'
+import { extractTransactionInvocationMeta } from 'stellar-plus/error/helpers/transaction'
 
 import { EnvelopeHeader } from '../types'
 

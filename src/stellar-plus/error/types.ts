@@ -10,10 +10,10 @@ import { ChannelAccountsTransactionSubmitterErrorCodes } from 'stellar-plus/core
 import { DefaultTransactionSubmitterErrorCodes } from 'stellar-plus/core/transaction-submitter/classic/default/errors'
 import { ValidationCloudRpcHandlerErrorCodes } from 'stellar-plus/rpc/validation-cloud-handler/errors'
 
-import { AxiosErrorInfo } from './axios'
-import { SubmitTransactionMetaInfo, TransactionDiagnostic } from './horizon'
-import { GetTransactionErrorInfo, SendTransactionErrorInfo, SimulationErrorInfo } from './soroban-rpc'
-import { TransactionData, TransactionInvocationMeta } from './transaction'
+import { AxiosErrorInfo } from './helpers/axios'
+import { SubmitTransactionMetaInfo, TransactionDiagnostic } from './helpers/horizon'
+import { GetTransactionErrorInfo, SendTransactionErrorInfo, SimulationErrorInfo } from './helpers/soroban-rpc'
+import { TransactionData, TransactionInvocationMeta } from './helpers/transaction'
 
 export type StellarPlusErrorObject = {
   code: ErrorCodes

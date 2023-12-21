@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios'
 
 import { StellarPlusError } from 'stellar-plus/error'
-import { AxiosErrorTypes, extractAxiosErrorInfo } from 'stellar-plus/error/axios'
+import { AxiosErrorTypes, extractAxiosErrorInfo } from 'stellar-plus/error/helpers/axios'
 
 export enum FriendbotErrorCodes {
   // F0 General

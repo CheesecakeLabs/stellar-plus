@@ -1,5 +1,5 @@
 import { StellarPlusError } from 'stellar-plus/error'
-import { extractTransactionInvocationMeta } from 'stellar-plus/error/transaction'
+import { extractTransactionInvocationMeta } from 'stellar-plus/error/helpers/transaction'
 
 import { FeeBumpHeader } from '../types'
 
