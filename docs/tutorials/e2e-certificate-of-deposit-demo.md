@@ -198,7 +198,7 @@ const expirationLedger = (await sorobanHandler.server.getLatestLedger()).sequenc
 
 const codParams = {
   admin: codVault.getPublicKey(),
-  asset: cakeToken.sorobanTokenHandler.getContractId(),
+  asset: cakeToken.sorobanTokenHandler.getContractId() as string,
   term: BigInt(600) as bigint,
   compoundStep: BigInt(4) as bigint,
   yieldRate: BigInt(15) as bigint,
@@ -412,7 +412,7 @@ const run = async (): Promise<void> => {
 
   const codParams = {
     admin: codVault.getPublicKey(),
-    asset: cakeToken.sorobanTokenHandler.getContractId(),
+    asset: cakeToken.sorobanTokenHandler.getContractId() as string,
     term: BigInt(600) as bigint,
     compoundStep: BigInt(4) as bigint,
     yieldRate: BigInt(15) as bigint,
