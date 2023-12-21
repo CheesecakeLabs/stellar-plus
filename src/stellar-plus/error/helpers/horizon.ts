@@ -25,8 +25,8 @@ export type SubmitTransactionMetaInfo = {
 }
 
 export type HorizonDiagnostics = {
-  meta?: Meta
   diagnostic?: TransactionDiagnostic
+  meta?: Meta
 }
 
 export const diagnoseSubmitError = (

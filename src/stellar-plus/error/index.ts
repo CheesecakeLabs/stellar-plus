@@ -13,8 +13,8 @@ export class StellarPlusError extends Error {
     this.code = e.code
     this.source = e.source
     this.details = e.details
-    this.meta = e.meta
     this.diagnostic = e.diagnostic
+    this.meta = e.meta
     this.name = this.constructor.name
   }
 
