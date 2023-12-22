@@ -91,9 +91,9 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
         if (onPublicKeyReceived) {
           onPublicKeyReceived(publicKey)
         }
-      } catch (error) {
+      } catch (e) {
         // console.log("Couldn't retrieve public key from Freighter! ", error)
-        throw FAHError.failedToLoadPublicKeyError()
+        throw FAHError.failedToLoadPublicKeyError(e as Error)
       }
     }
   }
@@ -119,9 +119,9 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
           accountToSign: this.publicKey,
         })
         return signedTx
-      } catch (error) {
+      } catch (e) {
         // console.log("Couldn't sign transaction with Freighter! ", error)
-        throw FAHError.failedToSignTransactionError()
+        throw FAHError.failedToSignTransactionError(e as Error)
       }
     } else {
       this.connect()

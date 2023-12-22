@@ -27,8 +27,8 @@ export class FriendbotClient implements Friendbot {
         await axios.get(`${this.network.friendbotUrl}?addr=${encodeURIComponent(this.parent.publicKey as string)}`)
 
         return
-      } catch (error) {
-        throw FBError.failedToCreateAccountWithFriendbotError(error as Error)
+      } catch (e) {
+        throw FBError.failedToCreateAccountWithFriendbotError(e as Error)
       }
     }
     throw FBError.accountHasNoValidPublicKeyError()

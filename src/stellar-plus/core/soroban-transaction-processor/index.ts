@@ -80,8 +80,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         .build()
 
       return txEnvelope
-    } catch (error) {
-      throw STPError.failedToBuildTransaction(error as Error, header)
+    } catch (e) {
+      throw STPError.failedToBuildTransaction(e as Error, header)
     }
   }
 
@@ -97,8 +97,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     try {
       const response = await this.rpcHandler.simulateTransaction(tx)
       return response
-    } catch (error) {
-      throw STPError.failedToSimulateTransaction(error as Error, tx.toXDR())
+    } catch (e) {
+      throw STPError.failedToSimulateTransaction(e as Error, tx)
     }
   }
 
@@ -115,8 +115,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     try {
       const response = await this.rpcHandler.prepareTransaction(tx)
       return response
-    } catch (error) {
-      throw STPError.failedToPrepareTransaction(error as Error, tx.toXDR())
+    } catch (e) {
+      throw STPError.failedToPrepareTransaction(e as Error, tx)
     }
   }
 
@@ -135,8 +135,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     try {
       const response = await this.rpcHandler.submitTransaction(tx)
       return response
-    } catch (error) {
-      throw STPError.failedToSubmitTransaction(error as Error, tx.toXDR())
+    } catch (e) {
+      throw STPError.failedToSubmitTransaction(e as Error, tx)
     }
   }
 
@@ -232,7 +232,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       throw STPError.transactionSubmittedFailed(updatedTransaction)
     }
 
-    throw STPError.transactionSubmittedNotFound(updatedTransaction)
+    throw STPError.transactionSubmittedNotFound(updatedTransaction, timeout)
   }
 
   protected postProcessTransaction(

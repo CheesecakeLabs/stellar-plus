@@ -58,7 +58,10 @@ const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionResponse
       source: 'ContractEngine',
       details:
         'Transaction simulation failed! The transaction simulation returned a failure status. Review the meta data for further information about this error.',
-      meta: { sorobanSimulationData: extractSimulationErrorData(simulation) },
+      meta: {
+        sorobanSimulationData: extractSimulationErrorData(simulation),
+        data: { simulation },
+      },
     })
   }
   if (SorobanRpc.Api.isSimulationRestore(simulation)) {
@@ -68,7 +71,7 @@ const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionResponse
       source: 'ContractEngine',
       details:
         'Transaction simulation failed! The transaction simulation returned a restore status. This usually indicates the contract instance or the storage data has reached its limit. Review the meta data for further information about this error. It might be possible to restore the contract state by extending the contract instance or the storage data TTL.',
-      meta: { sorobanSimulationData: extractSimulationRestoreData(simulation) },
+      meta: { sorobanSimulationData: extractSimulationRestoreData(simulation), data: { simulation } },
     })
   }
 
@@ -79,6 +82,7 @@ const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionResponse
       source: 'ContractEngine',
       details:
         'Transaction simulation is missing the result data! The transaction simulation returned a success status, but the result data is missing. Review the simulated transaction parameters for further for troubleshooting.',
+      meta: { data: { simulation } },
     })
   }
 
@@ -88,7 +92,7 @@ const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionResponse
     source: 'ContractEngine',
     details:
       'Unexpected error in transaction simulation! The transaction simulation returned an unexpected status. Review the meta data for further information about this error.',
-    meta: { sorobanSimulationData: extractSimulationBaseData(simulation) },
+    meta: { sorobanSimulationData: extractSimulationBaseData(simulation), data: { simulation } },
   })
 }
 

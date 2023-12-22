@@ -1,8 +1,8 @@
-import { SorobanRpc } from '@stellar/stellar-sdk'
+import { FeeBumpTransaction, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import { StellarPlusError } from 'stellar-plus/error'
 import { extractGetTransactionData, extractSendTransactionErrorData } from 'stellar-plus/error/helpers/soroban-rpc'
-import { extractTransactionInvocationMeta } from 'stellar-plus/error/helpers/transaction'
+import { extractTransactionData, extractTransactionInvocationMeta } from 'stellar-plus/error/helpers/transaction'
 
 import { EnvelopeHeader } from '../types'
 
@@ -31,33 +31,33 @@ const failedToBuildTransaction = (error: Error, header: EnvelopeHeader): Stellar
   })
 }
 
-const failedToSimulateTransaction = (error: Error, txXdr: string): StellarPlusError => {
+const failedToSimulateTransaction = (error: Error, tx: Transaction | FeeBumpTransaction): StellarPlusError => {
   return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP002,
     message: 'Failed to simulate transaction!',
     source: 'SorobanTransactionProcessor',
     details: 'The transaction could not be simulated. Review the transaction envelope and make sure that it is valid.',
-    meta: { message: error.message, transactionXDR: txXdr },
+    meta: { message: error.message, transactionData: extractTransactionData(tx), transactionXDR: tx.toXDR(), error },
   })
 }
 
-const failedToPrepareTransaction = (error: Error, txXdr: string): StellarPlusError => {
+const failedToPrepareTransaction = (error: Error, tx: Transaction | FeeBumpTransaction): StellarPlusError => {
   return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP003,
     message: 'Failed to prepare transaction!',
     source: 'SorobanTransactionProcessor',
     details: 'The transaction could not be prepared. Review the transaction envelope and make sure that it is valid.',
-    meta: { message: error.message, transactionXDR: txXdr },
+    meta: { message: error.message, transactionData: extractTransactionData(tx), transactionXDR: tx.toXDR(), error },
   })
 }
 
-const failedToSubmitTransaction = (error?: Error, txXdr?: string): StellarPlusError => {
+const failedToSubmitTransaction = (error: Error, tx: Transaction | FeeBumpTransaction): StellarPlusError => {
   return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP004,
     message: 'Failed to submit transaction!',
     source: 'SorobanTransactionProcessor',
     details: 'The transaction could not be submitted. Review the transaction envelope and make sure that it is valid.',
-    meta: { message: error?.message, transactionXDR: txXdr },
+    meta: { message: error.message, transactionData: extractTransactionData(tx), transactionXDR: tx.toXDR(), error },
   })
 }
 
@@ -88,19 +88,20 @@ const transactionSubmittedFailed = (response: SorobanRpc.Api.GetFailedTransactio
     code: SorobanTransactionProcessorErrorCodes.STP006,
     message: 'Transaction failed!',
     source: 'SorobanTransactionProcessor',
-    details:
-      'The transaction submitted failed. Review the transaction envelope and make sure that it is valid. Also review the error message for further information about the failure.',
+    details: `The transaction submitted failed. Review the transaction envelope and make sure that it is valid. Also review the error message for further information about the failure.`,
     meta: { sorobanGetTransactionData: extractGetTransactionData(response) },
   })
 }
 
-const transactionSubmittedNotFound = (response: SorobanRpc.Api.GetTransactionResponse): StellarPlusError => {
+const transactionSubmittedNotFound = (
+  response: SorobanRpc.Api.GetTransactionResponse,
+  waitTimeout: number
+): StellarPlusError => {
   return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP007,
     message: 'Transaction not found!',
     source: 'SorobanTransactionProcessor',
-    details:
-      "The transaction submitted was not found. Althought the transaction was sent for processing, the subsequent attempts to verify the transaction status didn't succeed to locate it. Review the error message for further information about the failure.",
+    details: `The transaction submitted was not found within the waiting period of ${waitTimeout} ms. Althought the transaction was sent for processing, the subsequent attempts to verify the transaction status didn't succeed to locate it. Review the error message for further information about the failure.`,
     meta: { sorobanGetTransactionData: extractGetTransactionData(response) },
   })
 }

@@ -1,5 +1,5 @@
 import { StellarPlusError } from 'stellar-plus/error'
-import { extractTransactionInvocationMeta } from 'stellar-plus/error/helpers/transaction'
+import { TransactionInvocationMeta, extractTransactionInvocationMeta } from 'stellar-plus/error/helpers/transaction'
 
 import { FeeBumpHeader } from '../types'
 
@@ -10,13 +10,14 @@ export enum ClassicTransactionProcessorErrorCodes {
   CTP003 = 'CTP003',
 }
 
-const wrappingFeeBumpWithFeeBump = (): StellarPlusError => {
+const wrappingFeeBumpWithFeeBump = (error?: Error): StellarPlusError => {
   return new StellarPlusError({
     code: ClassicTransactionProcessorErrorCodes.CTP001,
     message: 'Failed to wrap fee bump!',
     source: 'ClassicTransactionProcessor',
     details:
       'Cannot wrap a fee bump transaction with another fee bump transaction. Make sure that the inner transaction is a normal transaction envelope.',
+    meta: { error },
   })
 }
 
@@ -37,7 +38,8 @@ const failedToWrapFeeBump = (error: Error, feeBump: FeeBumpHeader): StellarPlusE
     details: `Failed to wrap fee bump! A problem occurred while wrapping the fee bump transaction! Check the meta property for more details.`,
     meta: {
       message: error.message,
-      transactionInvocation: extractTransactionInvocationMeta(feeBump, true),
+      error,
+      transactionInvocation: extractTransactionInvocationMeta(feeBump, true) as TransactionInvocationMeta,
     },
   })
 }

@@ -32,6 +32,7 @@ const transactionSubmittedFailed = (response: HorizonApi.SubmitTransactionRespon
     details: `Transaction submitted failed! A problem occurred while processing the transaction after submission! Check the meta property for more details.`,
     meta: {
       horizonSubmitTransactionData: extractDataFromSubmitTransactionError(response),
+      data: { response },
     },
   })
 }

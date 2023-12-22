@@ -37,6 +37,7 @@ const transactionSubmittedFailed = (response: HorizonApi.SubmitTransactionRespon
     details: `Failed to submit transaction! A problem occurred while submitting the transaction to the network for processing! Check the meta property for more details.`,
     meta: {
       horizonSubmitTransactionData: extractDataFromSubmitTransactionError(response),
+      data: { response },
     },
   })
 }

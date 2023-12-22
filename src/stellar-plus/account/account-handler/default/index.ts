@@ -24,8 +24,8 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
       super({ ...payload, publicKey })
 
       this.secretKey = keypair.secret()
-    } catch (error) {
-      throw DAHError.failedToLoadSecretKeyError()
+    } catch (e) {
+      throw DAHError.failedToLoadSecretKeyError(e as Error)
     }
   }
 
@@ -36,8 +36,8 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
   public getPublicKey(): string {
     try {
       return Keypair.fromSecret(this.secretKey).publicKey()
-    } catch (error) {
-      throw DAHError.failedToLoadSecretKeyError()
+    } catch (e) {
+      throw DAHError.failedToLoadSecretKeyError(e as Error)
     }
   }
 
@@ -55,8 +55,8 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
       tx.sign(keypair)
 
       return tx.toXDR() as TransactionXdr
-    } catch (error) {
-      throw DAHError.failedToSignTransactionError()
+    } catch (e) {
+      throw DAHError.failedToSignTransactionError(e as Error)
     }
   }
 }
