@@ -18,15 +18,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
   private wasmHash?: string
   private options: {
     debug: boolean
-    costHandler: (methodName: string, costs: TransactionCosts) => void
-    txTimeHandler: (methodName: string, elapsedTime: number) => void
-    // preInvokeContract?: () => void;
-    // postInvokeContract?: () => void;
+    costHandler: (methodName: string, costs: TransactionCosts, elapsedTime: number) => void
   } = {
-    debug: false,
-    costHandler: defaultCostHandler,
-    txTimeHandler: defaultTxTimeHandler,
-  }
+      debug: false,
+      costHandler: defaultCostHandler,
+    }
 
   /**
    *
@@ -118,15 +114,12 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
     const simulated = await this.simulateTransaction(builtTx)
 
-    if (this.options.debug) {
-      const costs = await this.parseTransactionCosts(simulated)
-      this.options.costHandler?.(args.method, costs)
-    }
+    const costs = this.options.debug ? await this.parseTransactionCosts(builtTx) : {};
 
     const output = this.extractOutputFromSimulation(simulated, args.method)
 
     if (this.options.debug) {
-      this.options.txTimeHandler?.(args.method, Date.now() - startTime)
+      this.options.costHandler?.(args.method, costs, Date.now() - startTime)
     }
 
     return output
@@ -165,19 +158,13 @@ export class ContractEngine extends SorobanTransactionProcessor {
   protected async invokeContract(args: SorobanInvokeArgs<object>): Promise<unknown> {
     this.requireContractId()
 
-    // this.options.preInvokeContract?.();
-
     const startTime = Date.now()
 
     const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
 
-    if (this.options.debug) {
-      const costs = await this.parseTransactionCosts(builtTx)
-      this.options.costHandler?.(args.method, costs)
-    }
+    const costs = this.options.debug ? await this.parseTransactionCosts(builtTx) : {};
 
     const prepared = await this.prepareTransaction(builtTx)
-
     const submitted = (await this.processSorobanTransaction(
       prepared,
       args.signers,
@@ -186,10 +173,8 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const output = this.extractOutputFromProcessedInvocation(submitted, args.method)
 
-    // this.options.postInvokeContract?.();
-
     if (this.options.debug) {
-      this.options.txTimeHandler?.(args.method, Date.now() - startTime)
+      this.options.costHandler?.(args.method, costs, Date.now() - startTime)
     }
 
     return output
@@ -333,11 +318,8 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 }
 
-function defaultCostHandler(methodName: string, costs: TransactionCosts): void {
-  console.log('Debugging method: ', methodName)
+function defaultCostHandler(methodName: string, costs: TransactionCosts, elapsedTime: number): void {
+  console.log("Debugging method: ", methodName)
   console.log(costs)
-}
-
-function defaultTxTimeHandler(methodName: string, elapsedTime: number): void {
-  console.log('Elapsed time: ', elapsedTime)
+  console.log("Elapsed time: ", elapsedTime)
 }
