@@ -32,7 +32,7 @@ const accountHasNoValidPublicKeyError = (error?: Error): StellarPlusError => {
     message: 'Account has no valid public key!',
     source: 'Friendbot',
     details:
-      'The account has no valid public key. Make sure that this account instance has been initialized corectly and contains a valid public key.',
+      'The account has no valid public key. Make sure that this account instance has been initialized correctly and contains a valid public key.',
     meta: { error },
   })
 }
