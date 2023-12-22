@@ -1,8 +1,9 @@
+import { ContractSpec } from '@stellar/stellar-sdk'
 
+import { Options } from 'stellar-plus/core/contract-engine/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network, i128, u64 } from 'stellar-plus/types'
-
 
 export enum methods {
   get_position = 'get_position',
@@ -20,10 +21,12 @@ export type CertificateOfDepositContract = {
 
 export type CertificateOfDepositContractConstructorArgs = {
   network: Network
+  spec?: ContractSpec //optional when compared to ContractEngine
   contractId?: string
   rpcHandler?: RpcHandler
   wasm?: Buffer
   wasmHash?: string
+  options?: Options
 }
 
 export type DepositArgs = TransactionInvocation & {

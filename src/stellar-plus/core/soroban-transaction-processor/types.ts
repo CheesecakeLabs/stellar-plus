@@ -1,8 +1,7 @@
 import { Asset as StellarAsset } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
-import { EnvelopeHeader, FeeBumpHeader } from 'stellar-plus/core/types'
-
+import { EnvelopeHeader, FeeBumpHeader, TransactionInvocation } from 'stellar-plus/core/types'
 
 export type SorobanInvokeArgs<T> = SorobanSimulateArgs<T> & {
   signers: AccountHandler[]
@@ -15,23 +14,18 @@ export type SorobanSimulateArgs<T> = {
   header: EnvelopeHeader
 }
 
-export type SorobanUploadArgs = {
+export type SorobanUploadArgs = TransactionInvocation & {
   wasm: Buffer
-  header: EnvelopeHeader
-  signers: AccountHandler[]
-  feeBump?: FeeBumpHeader
 }
 
-export type SorobanDeployArgs = {
+export type SorobanDeployArgs = TransactionInvocation & {
   wasmHash: string
-  header: EnvelopeHeader
-  signers: AccountHandler[]
-  feeBump?: FeeBumpHeader
 }
 
-export type WrapClassicAssetArgs = {
+export type WrapClassicAssetArgs = TransactionInvocation & {
   asset: StellarAsset
-  header: EnvelopeHeader
-  signers: AccountHandler[]
-  feeBump?: FeeBumpHeader
+}
+
+export type ExtendFootprintTTLArgs = TransactionInvocation & {
+  extendTo: number
 }

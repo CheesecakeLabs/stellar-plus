@@ -61,15 +61,15 @@ describe('Test account handler', () => {
     axios.get = jest.fn().mockResolvedValue({ data: 'Success' })
     await account.friendbot?.initialize()
 
-    expect(account.publicKey).toHaveLength(56)
-    expect(axios.get).toHaveBeenCalledWith(`${Constants.testnet.friendbotUrl}?addr=${account.publicKey}`)
+    expect(account.getPublicKey()).toHaveLength(56)
+    expect(axios.get).toHaveBeenCalledWith(`${Constants.testnet.friendbotUrl}?addr=${account.getPublicKey()}`)
   })
 
   test('create and initialize base account', async function () {
     const publicKey = 'CCZUQBT62C3E7NRKQKMVKMS6SY5UNLGJINOLRGXMOU35WXC6RRBSMZGM'
     const account = new Base({ publicKey })
 
-    expect(account.publicKey).toBe(publicKey)
+    expect(account.getPublicKey()).toBe(publicKey)
   })
 
   test('create and sing base account handler', async function () {
@@ -98,7 +98,7 @@ describe('Test account handler', () => {
     expect(loadPublicKey).toHaveBeenCalledTimes(1)
     expect(isFreighterInstalled).toHaveBeenCalledTimes(1)
     expect(isFreighterConnected).toHaveBeenCalledTimes(1)
-    expect(account.publicKey).toBe(publicKey)
+    expect(account.getPublicKey()).toBe(publicKey)
   })
 
   test('create, connect and disconnect freighter account', async function () {
@@ -114,7 +114,7 @@ describe('Test account handler', () => {
     expect(loadPublicKey).toHaveBeenCalledTimes(1)
     expect(isFreighterInstalled).toHaveBeenCalledTimes(1)
     expect(isFreighterConnected).toHaveBeenCalledTimes(1)
-    expect(account.publicKey).toBe('')
+    expect(account.getPublicKey()).toBe('')
   })
 
   test('create and freighter not installed', async function () {
@@ -130,7 +130,7 @@ describe('Test account handler', () => {
     expect(loadPublicKey).toHaveBeenCalledTimes(1)
     expect(isFreighterInstalled).toHaveBeenCalledTimes(2)
     expect(isFreighterConnected).toHaveBeenCalledTimes(2)
-    expect(account.publicKey).toBe('')
+    expect(account.getPublicKey()).toBe('')
     expect(connected).toBe(false)
   })
 

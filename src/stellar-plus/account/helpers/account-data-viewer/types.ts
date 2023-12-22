@@ -15,7 +15,7 @@ export type AccountDataViewer = {
       | Horizon.HorizonApi.BalanceLineLiquidityPool
     )[]
   >
-  getTransactions(): Promise<void>
+  // getTransactions(): Promise<void>
 }
 
 export type AccountDataViewerConstructor = {

@@ -102,17 +102,19 @@ describe('Test classic asset handler', () => {
       issuerPublicKey: issuerKey,
       network: Constants.testnet,
       issuerAccount: assetIssuer,
-      transactionSubmitter: mockTransactionSubmitter,
+      transactionSubmitter: mockTransactionSubmitter(),
     })
 
     const processTransaction = jest.spyOn(cakeToken, 'processTransaction').mockResolvedValue(<any>true)
 
-    await cakeToken.addTrustlineAndMint(user.getPublicKey(), 100, {
+    const mockTransactionInvocation = {
       ...txInvocationConfig,
       signers: [user],
-    })
+    }
 
-    const userBalance = await cakeToken.balance(user.publicKey)
+    await cakeToken.addTrustlineAndMint({ to: user.getPublicKey(), amount: 100, ...mockTransactionInvocation })
+
+    const userBalance = await cakeToken.balance(user.getPublicKey())
     expect(processTransaction).toHaveBeenCalled()
     expect(userBalance).toEqual(3000000)
   })
@@ -146,12 +148,14 @@ describe('Test classic asset handler', () => {
       issuerPublicKey: issuerKey,
       network: Constants.testnet,
       issuerAccount: assetIssuer,
-      transactionSubmitter: mockTransactionSubmitter,
+      transactionSubmitter: mockTransactionSubmitter(issuerKey),
     })
-    const txInvocation = mockTransactionInvocation(userOne.publicKey)
+    const txInvocation = mockTransactionInvocation(userOne.getPublicKey())
 
     const processTransaction = jest.spyOn(classicAssetHandler, 'processTransaction').mockResolvedValue(<any>true)
-    await classicAssetHandler.transfer(userOne.publicKey, userTwo.publicKey, BigInt(100000), txInvocation)
+    await classicAssetHandler.transfer({
+      from: userOne.getPublicKey(), to: userTwo.getPublicKey(), amount: 100000, ...txInvocation
+    })
     expect(processTransaction).toHaveBeenCalled()
   })
 
@@ -186,12 +190,12 @@ describe('Test classic asset handler', () => {
       issuerPublicKey: issuerKey,
       network: Constants.testnet,
       issuerAccount: assetIssuer,
-      transactionSubmitter: mockTransactionSubmitter,
+      transactionSubmitter: mockTransactionSubmitter(),
     })
 
     const processTransaction = jest.spyOn(cakeToken, 'processTransaction').mockResolvedValue(<any>true)
-    await cakeToken.mint(user.getPublicKey(), BigInt(100), txInvocationConfig)
-    const userBalance = await cakeToken.balance(user.publicKey)
+    await cakeToken.mint({ to: user.getPublicKey(), amount: 100, ...txInvocationConfig })
+    const userBalance = await cakeToken.balance(user.getPublicKey())
 
     expect(userBalance).toEqual(3000000)
     expect(processTransaction).toHaveBeenCalled()

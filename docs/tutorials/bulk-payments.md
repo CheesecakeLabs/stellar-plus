@@ -129,10 +129,12 @@ const txInvocationConfig = {
   signers: [],
 };
 
-await cakeToken.addTrustlineAndMint(userAccount.getPublicKey(), 100, {
-  ...txInvocationConfig,
-  signers: [userAccount],
-});
+await cakeToken.addTrustlineAndMint({
+    to: userAccount.getPublicKey(),
+    amount: 100,
+    ...txInvocationConfig,
+    signers: [userAccount],
+  });
 ```
 
 #### Explanation:
@@ -154,7 +156,11 @@ for (let i = 0; i < 100; i++) {
   const amount = Math.floor(Math.random() * (100 - 5 + 1) + 5); // random amount between 5 to 100
 
   cakeToken
-    .mint(userAccount.getPublicKey(), BigInt(amount), txInvocationConfig)
+    .mint({
+      to: userAccount.getPublicKey(), 
+      amount, 
+      ...txInvocationConfig
+    })
     .then((result) => {
       console.log("Minted: ", amount);
     });
@@ -187,7 +193,11 @@ for (let i = 0; i < 100; i++) {
   const amount = Math.floor(Math.random() * (100 - 5 + 1) + 5); // random amount between 5 to 100
   payments.push(
     cakeToken
-      .mint(userAccount.getPublicKey(), BigInt(amount), txInvocationConfig)
+      .mint({
+        to: userAccount.getPublicKey(), 
+        amount, 
+        ...txInvocationConfig
+      })
       .then((result) => {
         console.log("Minted: ", amount);
       })
@@ -290,7 +300,9 @@ const run = async () => {
     signers: [],
   };
 
-  await cakeToken.addTrustlineAndMint(userAccount.getPublicKey(), 100, {
+  await cakeToken.addTrustlineAndMint({
+    to: userAccount.getPublicKey(), 
+    amount: 100, 
     ...txInvocationConfig,
     signers: [userAccount],
   });
@@ -305,7 +317,11 @@ const run = async () => {
     const amount = Math.floor(Math.random() * (100 - 5 + 1) + 5); // random amount between 5 to 100
     payments.push(
       cakeToken
-        .mint(userAccount.getPublicKey(), BigInt(amount), txInvocationConfig)
+        .mint({
+          to: userAccount.getPublicKey(), 
+          amount, 
+          ...txInvocationConfig
+        })
         .then((result) => {
           console.log("Minted: ", amount);
         })

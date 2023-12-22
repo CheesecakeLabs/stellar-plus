@@ -55,7 +55,7 @@ describe('Test classic transaction processor', () => {
 
   test('Build custom transaction', async () => {
     const network = Constants.testnet
-    const transactionProcessor = new TransactionProcessor(network, mockTransactionSubmitter)
+    const transactionProcessor = new TransactionProcessor({ network: network, transactionSubmitter: mockTransactionSubmitter() })
 
     const transaction = await transactionProcessor.buildCustomTransaction(<any>'operations', <any>'txInvocation')
     expect(String(transaction)).toBe(String({ builtTx: true, updatedTxInvocation: mockTransactionInvocation() }))
@@ -63,7 +63,7 @@ describe('Test classic transaction processor', () => {
 
   test('Process transaction', async () => {
     const network = Constants.testnet
-    const transactionProcessor = new TransactionProcessor(network, mockTransactionSubmitter)
+    const transactionProcessor = new TransactionProcessor({ network: network, transactionSubmitter: mockTransactionSubmitter() })
     const processTransaction = jest
       .spyOn(transactionProcessor as any, 'signEnvelope')
       .mockResolvedValue('signedEnvelope')

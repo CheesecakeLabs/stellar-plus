@@ -4,7 +4,7 @@ export type RequestPayload = {
   jsonrpc: string
   id?: string
   method: string
-  params: object
+  params?: object
 }
 
 export type ApiResponse = {

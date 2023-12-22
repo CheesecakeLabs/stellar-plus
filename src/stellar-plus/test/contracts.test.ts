@@ -98,7 +98,7 @@ describe('Test contracts handler', () => {
 
     const userAInvocationHeader = {
       header: {
-        source: user.publicKey,
+        source: user.getPublicKey(),
         fee: '500000',
         timeout: 30,
       },
@@ -107,14 +107,14 @@ describe('Test contracts handler', () => {
 
     jest.spyOn(codContract as any, 'invokeContract').mockResolvedValue('Success')
     await codContract.deposit({
-      address: user.publicKey,
+      address: user.getPublicKey(),
       amount: BigInt(1000000),
       ...userAInvocationHeader,
     })
 
     jest.spyOn(codContract as any, 'readFromContract').mockResolvedValue('1000000')
     const position = await codContract.getPosition({
-      address: user.publicKey,
+      address: user.getPublicKey(),
       ...userAInvocationHeader,
     })
 
@@ -148,7 +148,7 @@ describe('Test contracts handler', () => {
 
     const userInvocationHeader = {
       header: {
-        source: user.publicKey,
+        source: user.getPublicKey(),
         fee: '500000',
         timeout: 30,
       },
@@ -157,7 +157,7 @@ describe('Test contracts handler', () => {
 
     jest.spyOn(codContract as any, 'invokeContract').mockResolvedValue('Success')
     await codContract.withdraw({
-      address: user.publicKey,
+      address: user.getPublicKey(),
       acceptPrematureWithdraw: true,
       ...userInvocationHeader,
     })
@@ -191,7 +191,7 @@ describe('Test contracts handler', () => {
 
     const userInvocationHeader = {
       header: {
-        source: user.publicKey,
+        source: user.getPublicKey(),
         fee: '500000',
         timeout: 30,
       },
@@ -200,7 +200,7 @@ describe('Test contracts handler', () => {
 
     jest.spyOn(codContract as any, 'readFromContract').mockResolvedValue('1000')
     const estimatedYield = await codContract.getEstimatedYield({
-      address: user.publicKey,
+      address: user.getPublicKey(),
       ...userInvocationHeader,
     })
 
@@ -232,7 +232,7 @@ describe('Test contracts handler', () => {
 
     const userInvocationHeader = {
       header: {
-        source: user.publicKey,
+        source: user.getPublicKey(),
         fee: '500000',
         timeout: 30,
       },
@@ -241,7 +241,7 @@ describe('Test contracts handler', () => {
 
     jest.spyOn(codContract as any, 'readFromContract').mockResolvedValue('10011234')
     const getTimeLeft = await codContract.getTimeLeft({
-      address: user.publicKey,
+      address: user.getPublicKey(),
       ...userInvocationHeader,
     })
 

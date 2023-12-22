@@ -16,6 +16,8 @@ import {
 import { AccountBaseClient } from 'stellar-plus/account/base'
 import { Network } from 'stellar-plus/types'
 
+import { FAHError } from './errors'
+
 export class FreighterAccountHandlerClient extends AccountBaseClient implements FreighterAccountHandler {
   private network: Network
 
@@ -85,9 +87,9 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
         if (onPublicKeyReceived) {
           onPublicKeyReceived(publicKey)
         }
-      } catch (error) {
+      } catch (e) {
         // console.log("Couldn't retrieve public key from Freighter! ", error)
-        throw new Error("Couldn't retrieve public key from Freighter! ")
+        throw FAHError.failedToLoadPublicKeyError(e as Error)
       }
     }
   }
@@ -113,13 +115,13 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
           accountToSign: this.publicKey,
         })
         return signedTx
-      } catch (error) {
+      } catch (e) {
         // console.log("Couldn't sign transaction with Freighter! ", error)
-        throw new Error("Couldn't sign transaction with Freighter! ")
+        throw FAHError.failedToSignTransactionError(e as Error)
       }
     } else {
       this.connect()
-      throw new Error('Freighter not connected')
+      throw FAHError.freighterIsNotConnectedError()
     }
   }
 
@@ -196,8 +198,7 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
     const networkDetails = await getNetworkDetails()
 
     if (networkDetails.networkPassphrase !== this.network.networkPassphrase) {
-      // console.log(`You need to be in ${this.network.name} to connect to this application.`)
-      throw new Error(`You need to be in ${this.network.name} to connect to this application.`)
+      throw FAHError.connectedToWrongNetworkError(this.network.name)
     }
     return true
   }
