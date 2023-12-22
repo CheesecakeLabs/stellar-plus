@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@stellar/freighter-api": "^1.7.1",
-    "@stellar/stellar-sdk": "^11.0.1",
+    "@stellar/stellar-sdk": "^11.1.0",
     "axios": "^1.6.2",
     "stellar-base": "^9.0.0"
   }

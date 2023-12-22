@@ -10,4 +10,24 @@ export type ContractEngineConstructorArgs = {
   rpcHandler?: RpcHandler
   wasm?: Buffer
   wasmHash?: string
+  options?: {
+    debug?: boolean,
+    costHandler?: (methodName: string, costs: TransactionCosts) => void;
+    txTimeHandler?: (methodName: string, elapsedTime: number) => void;
+    // preInvokeContract?: () => void;
+    // postInvokeContract?: () => void;
+  }
+}
+
+export type TransactionCosts = {
+  cpuInstructions?: number;
+  ram?: number;
+  minResourceFee?: string;
+  ledgerReadBytes?: number;
+  ledgerWriteBytes?: number;
+  ledgerEntryReads?: number;
+  ledgerEntryWrites?: number;
+  eventSize?: number;
+  returnValueSize?: number;
+  transactionSize?: number;
 }

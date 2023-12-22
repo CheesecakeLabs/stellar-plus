@@ -1,3 +1,4 @@
+import { TransactionCosts } from 'stellar-plus/core/contract-engine/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network, i128, u64 } from 'stellar-plus/types'
@@ -21,7 +22,11 @@ export type CertificateOfDepositContractConstructorArgs = {
   contractId?: string
   rpcHandler?: RpcHandler
   wasm?: Buffer
-  wasmHash?: string
+  wasmHash?: string,
+  options?: {
+    debug?: boolean,
+    costHandler?: (methodName: string, costs: TransactionCosts) => void;
+  }
 }
 
 export type DepositArgs = TransactionInvocation & {
