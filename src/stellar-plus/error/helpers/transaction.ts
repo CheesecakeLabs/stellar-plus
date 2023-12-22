@@ -46,7 +46,7 @@ export const extractTransactionInvocationMeta = (
   return stringfy ? JSON.stringify(meta) : meta
 }
 
-// ========== Trasnaction Data ============
+// ========== Transaction Data ============
 
 export type TransactionData = FeeBumpTransactionData & {
   source: string
