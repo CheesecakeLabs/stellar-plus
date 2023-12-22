@@ -37,10 +37,4 @@ export class AccountDataViewerClient implements AccountDataViewer {
     throw new Error('Account has no valid public key!')
   }
 
-  /**
-   *
-   */
-  // public async getTransactions(): Promise<void> {
-  //   throw new Error('Method not implemented.')
-  // }
 }
