@@ -1,6 +1,6 @@
-import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction } from '@stellar/stellar-sdk'
+import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr, } from '@stellar/stellar-sdk'
 
-import { ContractEngineConstructorArgs } from 'stellar-plus/core/contract-engine/types'
+import { ContractEngineConstructorArgs, TransactionCosts } from 'stellar-plus/core/contract-engine/types'
 import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
 import {
   SorobanInvokeArgs,
@@ -14,6 +14,17 @@ export class ContractEngine extends SorobanTransactionProcessor {
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
+  private options: {
+    debug: boolean;
+    costHandler: (methodName: string, costs: TransactionCosts) => void;
+    txTimeHandler: (methodName: string, elapsedTime: number) => void;
+    // preInvokeContract?: () => void;
+    // postInvokeContract?: () => void;
+  } = {
+      debug: false,
+      costHandler: defaultCostHandler,
+      txTimeHandler: defaultTxTimeHandler,
+    };
 
   /**
    *
@@ -58,6 +69,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     this.contractId = args.contractId
     this.wasm = args.wasm
     this.wasmHash = args.wasmHash
+    this.options = { ...this.options, ...args.options };
   }
 
   public getContractId(): string | undefined {
@@ -99,10 +111,22 @@ export class ContractEngine extends SorobanTransactionProcessor {
   protected async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
     this.requireContractId()
 
+    const startTime = Date.now();
+
     const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
     const simulated = await this.simulateTransaction(builtTx)
 
+    if (this.options.debug) {
+      const costs = await this.parseTransactionCosts(simulated)
+      this.options.costHandler?.(args.method, costs);
+    }
+
     const output = this.extractOutputFromSimulation(simulated, args.method)
+
+    if (this.options.debug) {
+      this.options.txTimeHandler?.(args.method, Date.now() - startTime);
+    }
+
     return output
   }
 
@@ -139,7 +163,16 @@ export class ContractEngine extends SorobanTransactionProcessor {
   protected async invokeContract(args: SorobanInvokeArgs<object>): Promise<unknown> {
     this.requireContractId()
 
+    // this.options.preInvokeContract?.();
+
+    const startTime = Date.now();
+
     const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
+
+    if (this.options.debug) {
+      const costs = await this.parseTransactionCosts(builtTx)
+      this.options.costHandler?.(args.method, costs);
+    }
 
     const prepared = await this.prepareTransaction(builtTx)
 
@@ -151,16 +184,58 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const output = this.extractOutputFromProcessedInvocation(submitted, args.method)
 
+    // this.options.postInvokeContract?.();
+
+    if (this.options.debug) {
+      this.options.txTimeHandler?.(args.method, Date.now() - startTime);
+    }
+
     return output
+  }
+
+  private async parseTransactionCosts(
+    tx: Transaction | SorobanRpcNamespace.Api.SimulateTransactionResponse,
+  ): Promise<TransactionCosts> {
+    let simulated = (tx instanceof Transaction) ? await this.simulateTransaction(tx as Transaction) : tx;
+
+    simulated = this.verifySimulationResponse(simulated as SorobanRpcNamespace.Api.SimulateTransactionResponse);
+
+    const calculateEventSize = (event: xdr.DiagnosticEvent) => {
+      if (event.event()?.type().name === 'diagnostic') {
+        return 0;
+      }
+      return event.toXDR().length;
+    };
+
+    const sorobanTransactionData = simulated.transactionData.build();
+    const events = simulated.events?.map((event) => calculateEventSize(event));
+    const returnValueSize = simulated.result?.retval.toXDR().length;
+    const transactionDataSize = sorobanTransactionData.toXDR().length;
+    const eventsSize = events?.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+
+    return {
+      cpuInstructions: Number(simulated.cost?.cpuInsns),
+      ram: Number(simulated.cost?.memBytes),
+      minResourceFee: simulated.minResourceFee,
+      ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
+      ledgerWriteBytes: sorobanTransactionData?.resources().writeBytes(),
+      ledgerEntryReads: sorobanTransactionData?.resources().footprint().readOnly().length,
+      ledgerEntryWrites: sorobanTransactionData?.resources().footprint().readWrite().length,
+      eventSize: eventsSize,
+      returnValueSize: returnValueSize,
+      transactionSize: transactionDataSize,
+    };
   }
 
   private async extractOutputFromSimulation(
     simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse,
     method: string
   ): Promise<unknown> {
-    const simulationResult = this.verifySimulationResult(simulated)
-    const output = this.spec.funcResToNative(method, simulationResult.retval) as unknown
-    return output
+    const simulationResult = this.verifySimulationResponse(simulated).result;
+    if (simulationResult) {
+      const output = this.spec.funcResToNative(method, simulationResult.retval) as unknown
+      return output
+    }
   }
 
   private async extractOutputFromProcessedInvocation(
@@ -176,9 +251,9 @@ export class ContractEngine extends SorobanTransactionProcessor {
     return output
   }
 
-  private verifySimulationResult(
+  private verifySimulationResponse(
     simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse
-  ): SorobanRpcNamespace.Api.SimulateHostFunctionResult {
+  ): SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse {
     if (SorobanRpcNamespace.Api.isSimulationError(simulated)) {
       throw new Error('Transaction Simulation Failed!')
     }
@@ -192,7 +267,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
       throw new Error('No result in the simulation!')
     }
 
-    return simulated.result as SorobanRpcNamespace.Api.SimulateHostFunctionResult
+    return simulated as SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
   }
 
   //==========================================
@@ -262,3 +337,13 @@ export class ContractEngine extends SorobanTransactionProcessor {
     }
   }
 }
+
+function defaultCostHandler(methodName: string, costs: TransactionCosts): void {
+  console.log("Debugging method: ", methodName)
+  console.log(costs);
+}
+
+function defaultTxTimeHandler(methodName: string, elapsedTime: number): void {
+  console.log("Elapsed time: ", elapsedTime)
+}
+
