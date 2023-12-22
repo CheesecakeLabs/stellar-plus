@@ -7,6 +7,8 @@ import { HorizonHandlerClient } from 'stellar-plus/horizon/index'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
 import { Network } from 'stellar-plus/types'
 
+import { CHATSError } from './errors'
+
 export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter {
   private feeBump?: FeeBumpHeader
   private freeChannels: DefaultAccountHandler[]
@@ -56,9 +58,9 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
   }
 
   private releaseChannel(channelPublicKey: string): void {
-    const channelIndex = this.lockedChannels.findIndex((channel) => channel.publicKey === channelPublicKey)
+    const channelIndex = this.lockedChannels.findIndex((channel) => channel.getPublicKey() === channelPublicKey)
     if (channelIndex === -1) {
-      throw new Error('Error releasing channel! Account not found!')
+      throw CHATSError.failedToReleaseChannelNotFound(channelPublicKey)
     }
 
     const channel = this.lockedChannels[channelIndex]
@@ -88,7 +90,7 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
     // console.log("Waiting for Channel!");
     const channel = await this.allocateChannel()
 
-    const sourceAccount = await this.horizonHandler.loadAccount(channel.publicKey as string)
+    const sourceAccount = await this.horizonHandler.loadAccount(channel.getPublicKey() as string)
 
     const envelope = new TransactionBuilder(sourceAccount, {
       fee: header.fee,
@@ -127,9 +129,7 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
       return response as HorizonNamespace.HorizonApi.SubmitTransactionResponse
     } catch (error) {
       this.releaseChannel(allocatedChannel)
-      // const resultObject = (error as any)?.response?.data?.extras?.result_codes
-      // // console.log('RESULTOBJECT!!', resultObject)
-      throw new Error('Failed to submit transaction!')
+      throw CHATSError.failedToSubmitTransaction(error as Error, envelope)
     }
   }
 
@@ -148,7 +148,7 @@ export class ChannelAccountsTransactionSubmitter implements TransactionSubmitter
     if (!response.successful) {
       // const restulObject = xdrNamespace.TransactionResult.fromXDR(response.result_xdr, 'base64')
       // const resultMetaObject = xdrNamespace.TransactionResultMeta.fromXDR(response.result_meta_xdr, 'base64')
-      throw new Error('Transaction failed!')
+      throw CHATSError.transactionSubmittedFailed(response)
     }
 
     return response

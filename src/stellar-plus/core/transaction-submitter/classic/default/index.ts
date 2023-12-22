@@ -6,6 +6,8 @@ import { HorizonHandlerClient } from 'stellar-plus/horizon/index'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
 import { Network } from 'stellar-plus/types'
 
+import { DTSError } from './errors'
+
 export class DefaultTransactionSubmitter implements TransactionSubmitter {
   private feeBump?: FeeBumpHeader
   private network: Network
@@ -71,10 +73,7 @@ export class DefaultTransactionSubmitter implements TransactionSubmitter {
         classicEnvelope
       )) as HorizonNamespace.HorizonApi.SubmitTransactionResponse
     } catch (error) {
-      // console.log("Couldn't Submit the transaction: ")
-      // const resultObject = (error as any)?.response?.data?.extras?.result_codes
-      // console.log(resultObject)
-      throw new Error('Failed to submit transaction!')
+      throw DTSError.failedToSubmitTransaction(error as Error, envelope)
     }
   }
 
@@ -91,9 +90,7 @@ export class DefaultTransactionSubmitter implements TransactionSubmitter {
     response: HorizonNamespace.HorizonApi.SubmitTransactionResponse
   ): HorizonNamespace.HorizonApi.SubmitTransactionResponse {
     if (!response.successful) {
-      // const restulObject = xdrNamespace.TransactionResult.fromXDR(response.result_xdr, 'base64')
-      // const resultMetaObject = xdrNamespace.TransactionResultMeta.fromXDR(response.result_meta_xdr, 'base64')
-      throw new Error('Transaction failed!')
+      throw DTSError.transactionSubmittedFailed(response)
     }
 
     return response

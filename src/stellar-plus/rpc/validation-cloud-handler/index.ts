@@ -12,6 +12,8 @@ import {
 } from 'stellar-plus/rpc/validation-cloud-handler/types'
 import { Network } from 'stellar-plus/types'
 
+import { VCRPCError } from './errors'
+
 export class ValidationCloudRpcHandler implements RpcHandler {
   private apiKey: string
   private network: Network
@@ -27,6 +29,10 @@ export class ValidationCloudRpcHandler implements RpcHandler {
    *
    */
   constructor(network: Network, apiKey: string) {
+    if (!apiKey) {
+      throw VCRPCError.invalidApiKey()
+    }
+
     this.network = network
     this.apiKey = apiKey
     this.baseUrl =
@@ -55,9 +61,8 @@ export class ValidationCloudRpcHandler implements RpcHandler {
       .then((res) => {
         return res.data as ApiResponse
       })
-      .catch(() => {
-        // console.log('response', error)
-        throw new Error('Failed when invoking Validation Cloud API')
+      .catch((error) => {
+        throw VCRPCError.failedToInvokeVCApi(error as Error, payload)
       })
   }
 

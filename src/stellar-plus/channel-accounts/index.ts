@@ -6,6 +6,8 @@ import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-proc
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { Network } from 'stellar-plus/types'
 
+import { CHAError } from './errors'
+
 export class ChannelAccounts {
   /**
    * @args {} The arguments for opening channels.
@@ -29,7 +31,7 @@ export class ChannelAccounts {
     const txProcessor = new TransactionProcessor({ network })
 
     if (numberOfChannels <= 0 || numberOfChannels > 15) {
-      throw new Error('Invalid number of channels! Must be between 1 and 15!')
+      throw CHAError.invalidNumberOfChannelsToCreate(0, 15)
     }
     const channels: DefaultAccountHandler[] = []
     const operations: ClassicXdrNamespace.Operation[] = []
@@ -40,15 +42,15 @@ export class ChannelAccounts {
 
       operations.push(
         Operation.beginSponsoringFutureReserves({
-          sponsoredId: channel.publicKey,
+          sponsoredId: channel.getPublicKey(),
         }),
         Operation.createAccount({
           source: sponsor.getPublicKey(),
-          destination: channel.publicKey,
+          destination: channel.getPublicKey(),
           startingBalance: '0',
         }),
         Operation.endSponsoringFutureReserves({
-          source: channel.publicKey,
+          source: channel.getPublicKey(),
         })
       )
     }
@@ -95,7 +97,7 @@ export class ChannelAccounts {
 
       operations.push(
         Operation.accountMerge({
-          source: channel.publicKey,
+          source: channel.getPublicKey(),
           destination: sponsor.getPublicKey(),
         })
       )

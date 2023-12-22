@@ -15,6 +15,8 @@ import { HorizonHandlerClient } from 'stellar-plus/horizon/index'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
 import { Network, TransactionXdr } from 'stellar-plus/types'
 
+import { CTPError } from './errors'
+
 export class TransactionProcessor {
   protected horizonHandler: HorizonHandler
   protected network: Network
@@ -64,19 +66,22 @@ export class TransactionProcessor {
     const innerTx = TransactionBuilder.fromXDR(envelopeXdr, this.network.networkPassphrase)
 
     if (innerTx instanceof FeeBumpTransaction) {
-      throw new Error('Cannot wrap fee bump transaction with fee bump transaction')
+      throw CTPError.wrappingFeeBumpWithFeeBump()
     }
+    try {
+      const feeBumpTx = TransactionBuilder.buildFeeBumpTransaction(
+        feeBump.header.source,
+        feeBump.header.fee,
+        innerTx,
+        this.network.networkPassphrase
+      )
 
-    const feeBumpTx = TransactionBuilder.buildFeeBumpTransaction(
-      feeBump.header.source,
-      feeBump.header.fee,
-      innerTx,
-      this.network.networkPassphrase
-    )
+      const signedFeeBumpXDR = await this.signEnvelope(feeBumpTx, feeBump.signers)
 
-    const signedFeeBumpXDR = await this.signEnvelope(feeBumpTx, feeBump.signers)
-
-    return TransactionBuilder.fromXDR(signedFeeBumpXDR, this.network.networkPassphrase) as FeeBumpTransaction
+      return TransactionBuilder.fromXDR(signedFeeBumpXDR, this.network.networkPassphrase) as FeeBumpTransaction
+    } catch (error) {
+      throw CTPError.failedToWrapFeeBump(error as Error, feeBump)
+    }
   }
 
   /**
@@ -118,8 +123,8 @@ export class TransactionProcessor {
    */
   protected verifySigners(publicKeys: string[], signers: AccountHandler[]): void {
     publicKeys.forEach((publicKey) => {
-      if (!signers.find((signer) => signer.publicKey === publicKey)) {
-        throw new Error(`Missing signer for public key: ${publicKey}`)
+      if (!signers.find((signer) => signer.getPublicKey() === publicKey)) {
+        throw CTPError.missingSignerPublicKey(publicKey)
       }
     })
   }

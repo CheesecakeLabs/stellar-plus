@@ -10,6 +10,8 @@ import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-proc
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { i128 } from 'stellar-plus/types'
 
+import { CAHError } from './errors'
+
 export class ClassicAssetHandler extends TransactionProcessor implements IClassicAssetHandler {
   public code: string
   public issuerPublicKey: string
@@ -214,7 +216,7 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
   public async mint(
     args: {
       to: string
-      amount: i128
+      amount: number
     } & TransactionInvocation
   ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
     this.requireIssuerAccount() // Enforces the issuer account to be set.
@@ -314,7 +316,7 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    */
   private requireIssuerAccount(): void {
     if (!this.issuerAccount) {
-      throw new Error('Issuer account not set!')
+      throw CAHError.issuerAccountNotDefined()
     }
   }
 }

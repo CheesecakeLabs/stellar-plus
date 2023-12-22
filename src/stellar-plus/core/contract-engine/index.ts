@@ -1,4 +1,4 @@
-import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr, } from '@stellar/stellar-sdk'
+import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import { ContractEngineConstructorArgs, TransactionCosts } from 'stellar-plus/core/contract-engine/types'
 import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
@@ -9,22 +9,24 @@ import {
 } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 
+import { CEError } from './errors'
+
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
   private options: {
-    debug: boolean;
-    costHandler: (methodName: string, costs: TransactionCosts) => void;
-    txTimeHandler: (methodName: string, elapsedTime: number) => void;
+    debug: boolean
+    costHandler: (methodName: string, costs: TransactionCosts) => void
+    txTimeHandler: (methodName: string, elapsedTime: number) => void
     // preInvokeContract?: () => void;
     // postInvokeContract?: () => void;
   } = {
-      debug: false,
-      costHandler: defaultCostHandler,
-      txTimeHandler: defaultTxTimeHandler,
-    };
+    debug: false,
+    costHandler: defaultCostHandler,
+    txTimeHandler: defaultTxTimeHandler,
+  }
 
   /**
    *
@@ -69,7 +71,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     this.contractId = args.contractId
     this.wasm = args.wasm
     this.wasmHash = args.wasmHash
-    this.options = { ...this.options, ...args.options };
+    this.options = { ...this.options, ...args.options }
   }
 
   public getContractId(): string | undefined {
@@ -111,20 +113,20 @@ export class ContractEngine extends SorobanTransactionProcessor {
   protected async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
     this.requireContractId()
 
-    const startTime = Date.now();
+    const startTime = Date.now()
 
     const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
     const simulated = await this.simulateTransaction(builtTx)
 
     if (this.options.debug) {
       const costs = await this.parseTransactionCosts(simulated)
-      this.options.costHandler?.(args.method, costs);
+      this.options.costHandler?.(args.method, costs)
     }
 
     const output = this.extractOutputFromSimulation(simulated, args.method)
 
     if (this.options.debug) {
-      this.options.txTimeHandler?.(args.method, Date.now() - startTime);
+      this.options.txTimeHandler?.(args.method, Date.now() - startTime)
     }
 
     return output
@@ -165,13 +167,13 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     // this.options.preInvokeContract?.();
 
-    const startTime = Date.now();
+    const startTime = Date.now()
 
     const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
 
     if (this.options.debug) {
       const costs = await this.parseTransactionCosts(builtTx)
-      this.options.costHandler?.(args.method, costs);
+      this.options.costHandler?.(args.method, costs)
     }
 
     const prepared = await this.prepareTransaction(builtTx)
@@ -187,31 +189,33 @@ export class ContractEngine extends SorobanTransactionProcessor {
     // this.options.postInvokeContract?.();
 
     if (this.options.debug) {
-      this.options.txTimeHandler?.(args.method, Date.now() - startTime);
+      this.options.txTimeHandler?.(args.method, Date.now() - startTime)
     }
 
     return output
   }
 
   private async parseTransactionCosts(
-    tx: Transaction | SorobanRpcNamespace.Api.SimulateTransactionResponse,
+    tx: Transaction | SorobanRpcNamespace.Api.SimulateTransactionResponse
   ): Promise<TransactionCosts> {
-    let simulated = (tx instanceof Transaction) ? await this.simulateTransaction(tx as Transaction) : tx;
+    const unverifiedSimulation = tx instanceof Transaction ? await this.simulateTransaction(tx as Transaction) : tx
 
-    simulated = this.verifySimulationResponse(simulated as SorobanRpcNamespace.Api.SimulateTransactionResponse);
+    const simulated = this.verifySimulationResponse(
+      unverifiedSimulation as SorobanRpcNamespace.Api.SimulateTransactionResponse
+    )
 
-    const calculateEventSize = (event: xdr.DiagnosticEvent) => {
+    const calculateEventSize = (event: xdr.DiagnosticEvent): number => {
       if (event.event()?.type().name === 'diagnostic') {
-        return 0;
+        return 0
       }
-      return event.toXDR().length;
-    };
+      return event.toXDR().length
+    }
 
-    const sorobanTransactionData = simulated.transactionData.build();
-    const events = simulated.events?.map((event) => calculateEventSize(event));
-    const returnValueSize = simulated.result?.retval.toXDR().length;
-    const transactionDataSize = sorobanTransactionData.toXDR().length;
-    const eventsSize = events?.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+    const sorobanTransactionData = simulated.transactionData.build()
+    const events = simulated.events?.map((event) => calculateEventSize(event))
+    const returnValueSize = simulated.result?.retval.toXDR().length
+    const transactionDataSize = sorobanTransactionData.toXDR().length
+    const eventsSize = events?.reduce((accumulator, currentValue) => accumulator + currentValue, 0)
 
     return {
       cpuInstructions: Number(simulated.cost?.cpuInsns),
@@ -224,14 +228,14 @@ export class ContractEngine extends SorobanTransactionProcessor {
       eventSize: eventsSize,
       returnValueSize: returnValueSize,
       transactionSize: transactionDataSize,
-    };
+    }
   }
 
   private async extractOutputFromSimulation(
     simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse,
     method: string
   ): Promise<unknown> {
-    const simulationResult = this.verifySimulationResponse(simulated).result;
+    const simulationResult = this.verifySimulationResponse(simulated).result
     if (simulationResult) {
       const output = this.spec.funcResToNative(method, simulationResult.retval) as unknown
       return output
@@ -254,20 +258,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
   private verifySimulationResponse(
     simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse
   ): SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse {
-    if (SorobanRpcNamespace.Api.isSimulationError(simulated)) {
-      throw new Error('Transaction Simulation Failed!')
-    }
-    if (SorobanRpcNamespace.Api.isSimulationRestore(simulated)) {
-      throw new Error('Transaction simulation indicates a restore is required!')
-    }
-    if (!SorobanRpcNamespace.Api.isSimulationSuccess(simulated)) {
-      throw new Error('Transaction Simulation not successful!')
-    }
-    if (!simulated.result) {
-      throw new Error('No result in the simulation!')
+    if (SorobanRpcNamespace.Api.isSimulationSuccess(simulated) && simulated.result) {
+      return simulated as SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
     }
 
-    return simulated as SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
+    throw CEError.simulationFailed(simulated)
   }
 
   //==========================================
@@ -321,29 +316,28 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
   private requireContractId(): void {
     if (!this.contractId) {
-      throw new Error('Contract id not set!')
+      throw CEError.missingContractId()
     }
   }
 
   private requireWasm(): void {
     if (!this.wasm) {
-      throw new Error('Wasm not set!')
+      throw CEError.missingWasm()
     }
   }
 
   private requireWasmHash(): void {
     if (!this.wasmHash) {
-      throw new Error('Wasm hash not set!')
+      throw CEError.missingWasmHash()
     }
   }
 }
 
 function defaultCostHandler(methodName: string, costs: TransactionCosts): void {
-  console.log("Debugging method: ", methodName)
-  console.log(costs);
+  console.log('Debugging method: ', methodName)
+  console.log(costs)
 }
 
 function defaultTxTimeHandler(methodName: string, elapsedTime: number): void {
-  console.log("Elapsed time: ", elapsedTime)
+  console.log('Elapsed time: ', elapsedTime)
 }
-

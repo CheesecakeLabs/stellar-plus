@@ -4,7 +4,7 @@ import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { AssetType, AssetTypes } from 'stellar-plus/asset/types'
 import { TransactionSubmitter } from 'stellar-plus/core/transaction-submitter/classic/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
-import { Network, i128 } from 'stellar-plus/types'
+import { Network } from 'stellar-plus/types'
 
 export type ClassicAsset = AssetType & {
   code: string
@@ -44,7 +44,7 @@ export type ClassicTokenInterfaceManagement = {
   mint: (
     args: {
       to: string
-      amount: i128
+      amount: number
     } & TransactionInvocation
   ) => Promise<HorizonApi.SubmitTransactionResponse>
 

@@ -3,8 +3,8 @@ import { AccountHelpers } from 'stellar-plus/account/helpers'
 import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
 
 export class AccountBaseClient extends AccountHelpers implements AccountBase {
-  publicKey: string
-  helpers: AccountHelpers
+  protected publicKey: string
+  // helpers: AccountHelpers
   private transactionProcessor?: TransactionProcessor
   /**
    *
@@ -17,7 +17,7 @@ export class AccountBaseClient extends AccountHelpers implements AccountBase {
   constructor(payload: AccountBasePayload) {
     super(payload)
     const { publicKey } = payload as { publicKey: string }
-    this.helpers = new AccountHelpers(payload)
+    // this.helpers = new AccountHelpers(payload)
     this.publicKey = publicKey
 
     // if (payload.network) {
