@@ -36,5 +36,4 @@ export class AccountDataViewerClient implements AccountDataViewer {
 
     throw new Error('Account has no valid public key!')
   }
-
 }
