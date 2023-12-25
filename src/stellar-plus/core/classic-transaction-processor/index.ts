@@ -7,12 +7,15 @@ import {
 } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
+import { TransactionProcessorConstructor } from 'stellar-plus/core/classic-transaction-processor/types'
 import { DefaultTransactionSubmitter } from 'stellar-plus/core/transaction-submitter/classic/default'
 import { TransactionSubmitter } from 'stellar-plus/core/transaction-submitter/classic/types'
 import { FeeBumpHeader, TransactionInvocation } from 'stellar-plus/core/types'
 import { HorizonHandlerClient } from 'stellar-plus/horizon/index'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
 import { Network, TransactionXdr } from 'stellar-plus/types'
+
+import { CTPError } from './errors'
 
 export class TransactionProcessor {
   protected horizonHandler: HorizonHandler
@@ -24,10 +27,10 @@ export class TransactionProcessor {
    * @param {Network} network
    * @param {TransactionSubmitter=} transactionSubmitter
    */
-  constructor(network: Network, transactionSubmitter?: TransactionSubmitter) {
-    this.network = network
-    this.horizonHandler = new HorizonHandlerClient(network)
-    this.transactionSubmitter = transactionSubmitter || new DefaultTransactionSubmitter(network)
+  constructor(args: TransactionProcessorConstructor) {
+    this.network = args.network
+    this.horizonHandler = new HorizonHandlerClient(args.network)
+    this.transactionSubmitter = args.transactionSubmitter || new DefaultTransactionSubmitter(args.network)
   }
 
   /**
@@ -63,19 +66,22 @@ export class TransactionProcessor {
     const innerTx = TransactionBuilder.fromXDR(envelopeXdr, this.network.networkPassphrase)
 
     if (innerTx instanceof FeeBumpTransaction) {
-      throw new Error('Cannot wrap fee bump transaction with fee bump transaction')
+      throw CTPError.wrappingFeeBumpWithFeeBump()
     }
+    try {
+      const feeBumpTx = TransactionBuilder.buildFeeBumpTransaction(
+        feeBump.header.source,
+        feeBump.header.fee,
+        innerTx,
+        this.network.networkPassphrase
+      )
 
-    const feeBumpTx = TransactionBuilder.buildFeeBumpTransaction(
-      feeBump.header.source,
-      feeBump.header.fee,
-      innerTx,
-      this.network.networkPassphrase
-    )
+      const signedFeeBumpXDR = await this.signEnvelope(feeBumpTx, feeBump.signers)
 
-    const signedFeeBumpXDR = await this.signEnvelope(feeBumpTx, feeBump.signers)
-
-    return TransactionBuilder.fromXDR(signedFeeBumpXDR, this.network.networkPassphrase) as FeeBumpTransaction
+      return TransactionBuilder.fromXDR(signedFeeBumpXDR, this.network.networkPassphrase) as FeeBumpTransaction
+    } catch (error) {
+      throw CTPError.failedToWrapFeeBump(error as Error, feeBump)
+    }
   }
 
   /**
@@ -117,8 +123,8 @@ export class TransactionProcessor {
    */
   protected verifySigners(publicKeys: string[], signers: AccountHandler[]): void {
     publicKeys.forEach((publicKey) => {
-      if (!signers.find((signer) => signer.publicKey === publicKey)) {
-        throw new Error(`Missing signer for public key: ${publicKey}`)
+      if (!signers.find((signer) => signer.getPublicKey() === publicKey)) {
+        throw CTPError.missingSignerPublicKey(publicKey)
       }
     })
   }

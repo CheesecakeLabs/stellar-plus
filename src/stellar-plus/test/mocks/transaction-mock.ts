@@ -28,7 +28,6 @@ export function mockAccountHandler(accountKey = mockAccount): AccountHandler {
     sign(tx: any) {
       return 'success'
     },
-    publicKey: accountKey,
     getPublicKey() {
       return accountKey
     },
@@ -50,19 +49,21 @@ export function mockTransactionInvocation(signerKey = mockAccount) {
   }
 }
 
-export const mockTransactionSubmitter: TransactionSubmitter = {
-  async createEnvelope(txInvocation: any): Promise<{
-    envelope: any
-    updatedTxInvocation: any
-  }> {
-    return { envelope: mockTransactionBuilder, updatedTxInvocation: mockTransactionInvocation() }
-  },
-  postProcessTransaction(response?: any): any {
-    return MockSubmitTransaction
-  },
-  async submit(envelope: any): Promise<any> {
-    return Promise<void>
-  },
+export function mockTransactionSubmitter(signerKey?: string): TransactionSubmitter {
+  return {
+    async createEnvelope(txInvocation: any): Promise<{
+      envelope: any
+      updatedTxInvocation: any
+    }> {
+      return { envelope: mockTransactionBuilder, updatedTxInvocation: mockTransactionInvocation(signerKey) }
+    },
+    postProcessTransaction(response?: any): any {
+      return MockSubmitTransaction
+    },
+    async submit(envelope: any): Promise<any> {
+      return Promise<void>
+    },
+  }
 }
 
 export const mockTransactionBuilder = {

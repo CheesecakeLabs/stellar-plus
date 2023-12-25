@@ -4,8 +4,10 @@ import { DefaultAccountHandler, DefaultAccountHandlerPayload } from 'stellar-plu
 import { AccountBaseClient } from 'stellar-plus/account/base'
 import { TransactionXdr } from 'stellar-plus/types'
 
+import { DAHError } from './errors'
+
 export class DefaultAccountHandlerClient extends AccountBaseClient implements DefaultAccountHandler {
-  public secretKey: string
+  protected secretKey: string
 
   /**
    *
@@ -16,12 +18,15 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
    */
   constructor(payload: DefaultAccountHandlerPayload) {
     const secretKey = payload.secretKey as string
-    const keypair = secretKey ? Keypair.fromSecret(secretKey) : Keypair.random()
+    try {
+      const keypair = secretKey ? Keypair.fromSecret(secretKey) : Keypair.random()
+      const publicKey = keypair.publicKey()
+      super({ ...payload, publicKey })
 
-    const publicKey = keypair.publicKey()
-    super({ ...payload, publicKey })
-
-    this.secretKey = keypair.secret()
+      this.secretKey = keypair.secret()
+    } catch (e) {
+      throw DAHError.failedToLoadSecretKeyError(e as Error)
+    }
   }
 
   /**
@@ -29,7 +34,11 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
    * @returns {string} The public key of the account.
    */
   public getPublicKey(): string {
-    return Keypair.fromSecret(this.secretKey).publicKey()
+    try {
+      return Keypair.fromSecret(this.secretKey).publicKey()
+    } catch (e) {
+      throw DAHError.failedToLoadSecretKeyError(e as Error)
+    }
   }
 
   /**
@@ -41,8 +50,13 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
    * @returns {TransactionXdr} The signed transaction in xdr format.
    */
   public sign(tx: Transaction | FeeBumpTransaction): TransactionXdr {
-    const keypair = Keypair.fromSecret(this.secretKey)
-    tx.sign(keypair)
-    return tx.toXDR() as TransactionXdr
+    try {
+      const keypair = Keypair.fromSecret(this.secretKey)
+      tx.sign(keypair)
+
+      return tx.toXDR() as TransactionXdr
+    } catch (e) {
+      throw DAHError.failedToSignTransactionError(e as Error)
+    }
   }
 }

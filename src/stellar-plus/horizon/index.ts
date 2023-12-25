@@ -1,5 +1,6 @@
 import { Horizon } from '@stellar/stellar-sdk'
 
+import { StellarPlusError } from 'stellar-plus/error'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
 import { Network } from 'stellar-plus/types'
 
@@ -32,7 +33,11 @@ export class HorizonHandlerClient implements HorizonHandler {
       return await this.server.loadAccount(accountId)
     } catch (error) {
       // console.log(error)
-      throw new Error('Could not load account from horizon')
+      throw StellarPlusError.unexpectedError({
+        error: error as Error,
+        message: 'Failed to load account from Horizon server.',
+        source: 'HorizonHandlerClient',
+      })
     }
   }
 }

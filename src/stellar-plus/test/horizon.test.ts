@@ -52,6 +52,6 @@ describe('Horizon handler client test', () => {
     Stellar.Horizon.Server = mockServer
     const horizonHandlerClient = new HorizonHandlerClient(Constants.testnet)
 
-    expect(horizonHandlerClient.loadAccount(accountId)).rejects.toThrow('Could not load account from horizon')
+    expect(horizonHandlerClient.loadAccount(accountId)).rejects.toThrow('Failed to load account from Horizon server.')
   })
 })

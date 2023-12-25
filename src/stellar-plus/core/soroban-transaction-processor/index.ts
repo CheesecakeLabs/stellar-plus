@@ -14,22 +14,21 @@ import {
   xdr,
 } from '@stellar/stellar-sdk'
 
-
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
-
 import {
   SorobanDeployArgs,
   SorobanSimulateArgs,
   SorobanUploadArgs,
   WrapClassicAssetArgs,
-
 } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { FeeBumpHeader } from 'stellar-plus/core/types'
+import { StellarPlusError } from 'stellar-plus/error'
 import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network, TransactionXdr } from 'stellar-plus/types'
 
+import { STPError } from './errors'
 
 export class SorobanTransactionProcessor extends TransactionProcessor {
   private rpcHandler: RpcHandler
@@ -43,7 +42,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    *
    */
   constructor(network: Network, rpcHandler?: RpcHandler) {
-    super(network)
+    super({ network })
     this.rpcHandler = rpcHandler || new DefaultRpcHandler(network)
   }
 
@@ -81,8 +80,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         .build()
 
       return txEnvelope
-    } catch (error) {
-      throw new Error('Failed to build transaction!')
+    } catch (e) {
+      throw STPError.failedToBuildTransaction(e as Error, header)
     }
   }
 
@@ -98,8 +97,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     try {
       const response = await this.rpcHandler.simulateTransaction(tx)
       return response
-    } catch (error) {
-      throw new Error('Failed to simulate transaction!')
+    } catch (e) {
+      throw STPError.failedToSimulateTransaction(e as Error, tx)
     }
   }
 
@@ -116,9 +115,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     try {
       const response = await this.rpcHandler.prepareTransaction(tx)
       return response
-    } catch (error) {
-      // console.log('Error: ', error)
-      throw new Error('Failed to prepare transaction!')
+    } catch (e) {
+      throw STPError.failedToPrepareTransaction(e as Error, tx)
     }
   }
 
@@ -137,8 +135,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     try {
       const response = await this.rpcHandler.submitTransaction(tx)
       return response
-    } catch (error) {
-      throw new Error('Failed to submit transaction!')
+    } catch (e) {
+      throw STPError.failedToSubmitTransaction(e as Error, tx)
     }
   }
 
@@ -181,8 +179,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     response: SorobanRpcNamespace.Api.SendTransactionResponse
   ): Promise<SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse> {
     if (response.status === 'ERROR') {
-      // console.log('Soroban transaction submission failed!: ', response.errorResult?.toXDR('raw').toString('base64'))
-      throw new Error('Soroban transaction submission failed!')
+      throw STPError.failedToSubmitTransactionWithResponse(response)
     }
 
     if (response.status === 'PENDING' || response.status === 'TRY_AGAIN_LATER') {
@@ -190,7 +187,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       return await this.waitForTransaction(response.hash, 15) // Arbitrary 15 seconds timeout
     }
 
-    throw new Error('Soroban transaction submission failed!')
+    throw STPError.failedToVerifyTransactionSubmission(response)
   }
 
   /**
@@ -232,10 +229,10 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     if (updatedTransaction.status === SorobanRpcNamespace.Api.GetTransactionStatus.FAILED) {
       // const failedTransaction = updatedTransaction as SorobanRpcNamespace.GetFailedTransactionResponse
       // console.log("Details!: ", JSON.stringify(failedTransaction));
-      throw new Error('Transaction execution failed!')
+      throw STPError.transactionSubmittedFailed(updatedTransaction)
     }
 
-    throw new Error('Transaction execution not found!')
+    throw STPError.transactionSubmittedNotFound(updatedTransaction, timeout)
   }
 
   protected postProcessTransaction(
@@ -303,11 +300,10 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.feeBump
       )
 
-      // Not using the returnValue parameter because it may not be available depending on the rpcHandler.
+      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
       return (output.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString('hex') as string
     } catch (error) {
-      // console.log('Error: ', error)
-      throw new Error('Failed to upload contract!')
+      throw STPError.failedToUploadWasm(error as StellarPlusError)
     }
   }
 
@@ -349,19 +345,18 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
-      // Not using the returnValue parameter because it may not be available depending on the rpcHandler.
+      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
       return Address.fromScAddress(
         output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
       ).toString() as string
     } catch (error) {
-      // console.log('Error: ', error)
-      throw new Error('Failed to deploy contract instance!')
+      throw STPError.failedToDeployContract(error as StellarPlusError)
     }
   }
 
   /**
    * @args {WrapClassicAssetArgs} args - The arguments for the invocation.
-   * @param {string} args.asset - The asset to wrap.
+   * @param {Asset} args.asset - The asset to wrap.
    * @param {EnvelopeHeader} args.header - The header for the transaction.
    * @param {AccountHandler[]} args.signers - The signers for the transaction.
    * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
@@ -394,11 +389,54 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
-
-      return Address.fromScAddress(output.returnValue?.address() as xdr.ScAddress).toString()
+      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
+      return Address.fromScAddress(
+        output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
+      ).toString()
     } catch (error) {
-      // console.log('Error: ', error)
-      throw new Error('Failed to wrap asset contract!')
+      throw STPError.failedToWrapAsset(error as StellarPlusError)
     }
   }
+
+  //
+  //
+  // TODO: Implement TTL pipeline
+
+  // public async extendFootprintTTL(args: ExtendFootprintTTLArgs): Promise<string> {
+  //   const { extendTo, header, signers, feeBump } = args
+
+  //   const txInvocation = {
+  //     signers,
+  //     header,
+  //     feeBump,
+  //   }
+
+  //   const options: OperationOptions.ExtendFootprintTTL = {
+  //     extendTo,
+  //   }
+
+  //   const extendTTLOperation = [Operation.extendFootprintTtl(options)]
+
+  //   const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(extendTTLOperation, txInvocation)
+
+  //   // const envelope = TransactionBuilder.cloneFrom(builtTx)
+  //   // envelope.
+  //   // const data = xdr.SorobanTransactionData
+  //   // envelope.setSorobanData()
+
+  //   const prepared = await this.prepareTransaction(builtTx)
+
+  //   try {
+  //     const output = await this.processSorobanTransaction(
+  //       prepared,
+  //       updatedTxInvocation.signers,
+  //       updatedTxInvocation.feeBump
+  //     )
+
+  //     return output.returnValue?.value() as string
+  //   } catch (error) {
+  //     // console.log('Error: ', error)
+  //     throw new Error('Failed to wrap asset contract!')
+  //   }
+  // }
 }
