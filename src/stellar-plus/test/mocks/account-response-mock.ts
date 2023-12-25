@@ -1,3 +1,5 @@
+import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
+
 import { balances } from './balances'
 
 export class MockAccountResponse {
@@ -15,7 +17,7 @@ export class MockAccountResponse {
   readonly last_modified_time!: string
   readonly thresholds!: any
   readonly flags!: any
-  readonly balances!: any[]
+  readonly balances!: HorizonApi.BalanceLine[]
   readonly signers!: any[]
   readonly data!: (options: { value: string }) => Promise<{ value: string }>
   readonly data_attr!: Record<string, string>
