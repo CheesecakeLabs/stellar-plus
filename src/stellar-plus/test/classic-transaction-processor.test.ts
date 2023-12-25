@@ -1,7 +1,8 @@
 import Stellar from '@stellar/stellar-sdk'
-import { Constants } from '..'
+
 import { MockAccountResponse } from './mocks/account-response-mock'
 import { MockSubmitTransaction, mockTransactionInvocation, mockTransactionSubmitter } from './mocks/transaction-mock'
+import { Constants } from '..'
 import { TransactionProcessor } from '../core/classic-transaction-processor'
 
 jest.mock('@stellar/stellar-sdk')

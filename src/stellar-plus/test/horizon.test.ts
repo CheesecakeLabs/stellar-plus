@@ -1,8 +1,9 @@
 import Stellar from '@stellar/stellar-sdk'
-import { Constants } from '..'
-import { HorizonHandlerClient } from '../horizon'
+
 import { MockAccountResponse } from './mocks/account-response-mock'
 import { MockSubmitTransaction } from './mocks/transaction-mock'
+import { Constants } from '..'
+import { HorizonHandlerClient } from '../horizon'
 
 jest.mock('@stellar/stellar-sdk')
 

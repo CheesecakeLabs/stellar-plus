@@ -1,8 +1,8 @@
 import Stellar, { ContractSpec } from '@stellar/stellar-sdk'
-import { Constants, ContractEngine, Contracts, RPC } from '..'
-import { DefaultAccountHandler } from '../account'
+
 import { MockAccountResponse } from './mocks/account-response-mock'
-import { MockSubmitTransaction, mockTransactionBuilder, mockTransactionSubmitter } from './mocks/transaction-mock'
+import { MockSubmitTransaction, mockTransactionBuilder } from './mocks/transaction-mock'
+import { Constants, ContractEngine } from '..'
 
 jest.mock('@stellar/stellar-sdk')
 
@@ -60,19 +60,18 @@ describe('Test contracts engine class', () => {
   })
 
   test('upload Wasm of contract', async () => {
-
-    const specEntries = <any>["entries"]
-    const contractSpec = new ContractSpec(specEntries);
+    const specEntries = <any>['entries']
+    const contractSpec = new ContractSpec(specEntries)
 
     const contractArgs = {
       network: Constants.testnet,
       spec: contractSpec,
-      contractId: "contractId"
+      contractId: 'contractId',
     }
 
     const contract = new ContractEngine(contractArgs)
     const requireWasm = jest.spyOn(contract as any, 'requireWasm').mockResolvedValue(true)
-    const uploadContractWasm = jest.spyOn(contract as any, 'uploadContractWasm').mockResolvedValue("Success")
+    const uploadContractWasm = jest.spyOn(contract as any, 'uploadContractWasm').mockResolvedValue('Success')
 
     await contract.uploadWasm(<any>'txInvocation')
     expect(requireWasm).toHaveBeenCalled()
@@ -80,26 +79,24 @@ describe('Test contracts engine class', () => {
   })
 
   test('Deploy contract', async () => {
-
-    const specEntries = <any>["entries"]
-    const contractSpec = new ContractSpec(specEntries);
+    const specEntries = <any>['entries']
+    const contractSpec = new ContractSpec(specEntries)
 
     const contractArgs = {
       network: Constants.testnet,
       spec: contractSpec,
-      contractId: "contractId",
-      wasm: new Buffer("wasm")
+      contractId: 'contractId',
+      wasm: new Buffer('wasm'),
     }
 
     const contract = new ContractEngine(contractArgs)
     jest.spyOn(contract as any, 'requireWasm').mockResolvedValue(true)
-    jest.spyOn(contract as any, 'uploadContractWasm').mockResolvedValue("Success")
+    jest.spyOn(contract as any, 'uploadContractWasm').mockResolvedValue('Success')
     await contract.uploadWasm(<any>'txInvocation')
 
-    const deployContract = jest.spyOn(contract as any, 'deployContract').mockResolvedValue("contractId")
+    const deployContract = jest.spyOn(contract as any, 'deployContract').mockResolvedValue('contractId')
     await contract.deploy(<any>'txInvocation')
 
     expect(deployContract).toHaveBeenCalled()
   })
-
 })

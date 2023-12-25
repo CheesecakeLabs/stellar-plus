@@ -1,11 +1,13 @@
+import Freighter from '@stellar/freighter-api'
 import Stellar from '@stellar/stellar-sdk'
-import Freighter from "@stellar/freighter-api"
 import axios from 'axios'
-import { Constants } from '..'
-import { Base, DefaultAccountHandler, FreighterAccountHandler } from '../account'
+
+import { FreighterAccountHandlerClient } from 'stellar-plus/account/account-handler/freighter'
+
 import { MockAccountResponse } from './mocks/account-response-mock'
 import { MockSubmitTransaction } from './mocks/transaction-mock'
-import { FreighterAccountHandlerClient } from 'stellar-plus/account/account-handler/freighter'
+import { Constants } from '..'
+import { Base, DefaultAccountHandler, FreighterAccountHandler } from '../account'
 
 jest.mock('@stellar/stellar-sdk')
 jest.mock('@stellar/freighter-api', () => {
@@ -75,13 +77,13 @@ describe('Test account handler', () => {
   test('create and sing base account handler', async function () {
     const userSecret = 'SCA6IAHZA53NVVOYVUQQI3YCNVUUBNJ4WMNQHFLKI4AKPXFGCU5NCXOV'
     const account = new DefaultAccountHandler({ network: Constants.testnet, secretKey: userSecret })
-    const mockTransaction: any = ({
-      sign: jest.fn().mockReturnValue("sign"),
-      toXDR: jest.fn().mockReturnValue("toXDR"),
-    })
+    const mockTransaction: any = {
+      sign: jest.fn().mockReturnValue('sign'),
+      toXDR: jest.fn().mockReturnValue('toXDR'),
+    }
     const result = account.sign(mockTransaction)
 
-    expect(result).toBe("toXDR")
+    expect(result).toBe('toXDR')
     expect(mockTransaction.sign).toHaveBeenCalled()
   })
 
@@ -138,10 +140,11 @@ describe('Test account handler', () => {
     const network = Constants.testnet
     const account = new FreighterAccountHandler({ network })
     const isFreighterInstalled = jest.spyOn(account, 'isFreighterInstalled')
-    const isApplicationAuthorized = jest.spyOn(account, "isApplicationAuthorized")
+    const isApplicationAuthorized = jest.spyOn(account, 'isApplicationAuthorized')
 
-    jest.spyOn(Freighter, "getNetworkDetails").mockResolvedValue(
-      { networkPassphrase: 'Error network', network: "network", networkUrl: "url" })
+    jest
+      .spyOn(Freighter, 'getNetworkDetails')
+      .mockResolvedValue({ networkPassphrase: 'Error network', network: 'network', networkUrl: 'url' })
     const isConnected = await account.isFreighterConnected()
 
     expect(isConnected).toBeFalsy()
@@ -151,7 +154,7 @@ describe('Test account handler', () => {
 
   test('Application is not allowed', async function () {
     const account = new FreighterAccountHandler({ network: Constants.testnet })
-    jest.spyOn(Freighter, "isAllowed").mockResolvedValue(false)
+    jest.spyOn(Freighter, 'isAllowed').mockResolvedValue(false)
 
     const isConnected = await account.isApplicationAuthorized()
 
@@ -162,7 +165,7 @@ describe('Test account handler', () => {
     const network = Constants.testnet
     const account = new FreighterAccountHandler({ network })
     const isFreighterInstalled = jest.spyOn(account, 'isFreighterInstalled')
-    const isApplicationAuthorized = jest.spyOn(account, "isApplicationAuthorized").mockResolvedValueOnce(false)
+    const isApplicationAuthorized = jest.spyOn(account, 'isApplicationAuthorized').mockResolvedValueOnce(false)
 
     const enforceConnection = true
     const freighterCallback = jest.fn()
