@@ -83,8 +83,9 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
         const publicKey = await getPublicKey()
         this.publicKey = publicKey
         if (onPublicKeyReceived) {
-          onPublicKeyReceived(publicKey)
+          return await onPublicKeyReceived(publicKey)
         }
+        return void {}
       } catch (error) {
         // console.log("Couldn't retrieve public key from Freighter! ", error)
         throw new Error("Couldn't retrieve public key from Freighter! ")
