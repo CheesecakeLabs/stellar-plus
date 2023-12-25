@@ -35,16 +35,16 @@ describe('Test account handler', () => {
     jest.restoreAllMocks()
   })
 
-  function mockKeypair(publicKey: any, secret: any) {
-    const mockKeypair = {
+  function mockKeypair(publicKey: string, secret: string): void {
+    const mockedKeypair = {
       publicKey: jest.fn().mockReturnValue(publicKey),
       secret: jest.fn().mockReturnValue(secret),
     }
-    Stellar.Keypair.fromSecret = jest.fn().mockReturnValue(mockKeypair)
-    Stellar.Keypair.random = jest.fn().mockReturnValue(mockKeypair)
+    Stellar.Keypair.fromSecret = jest.fn().mockReturnValue(mockedKeypair)
+    Stellar.Keypair.random = jest.fn().mockReturnValue(mockedKeypair)
   }
 
-  function mockServer(userKey: string, issuerKey: string) {
+  function mockServer(userKey: string, issuerKey: string): void {
     const mockAccountResponse = new MockAccountResponse(userKey, issuerKey)
     const mockLoadAccount = jest.fn().mockReturnValue(mockAccountResponse)
     const mockSubmitTransaction = jest.fn().mockResolvedValue(MockSubmitTransaction)
