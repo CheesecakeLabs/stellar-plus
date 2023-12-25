@@ -15,17 +15,12 @@ export class MockAccountResponse {
   readonly inflation_destination?: string
   readonly last_modified_ledger!: number
   readonly last_modified_time!: string
-  readonly thresholds!: any
-  readonly flags!: any
+  readonly thresholds!: HorizonApi.AccountThresholds
+  readonly flags!: HorizonApi.Flags
   readonly balances!: HorizonApi.BalanceLine[]
-  readonly signers!: any[]
+  readonly signers!: HorizonApi.AccountSigner[]
   readonly data!: (options: { value: string }) => Promise<{ value: string }>
   readonly data_attr!: Record<string, string>
-  readonly effects!: any
-  readonly offers!: any
-  readonly operations!: any
-  readonly payments!: any
-  readonly trades!: any
 
   constructor(
     account_id = 'GBDMM7FQBVQPZFQPXVS3ZKK4UMELIWPBLG2BZQSWERD2KZR44WI6PTBQ',
