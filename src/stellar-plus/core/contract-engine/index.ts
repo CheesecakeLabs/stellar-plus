@@ -20,9 +20,9 @@ export class ContractEngine extends SorobanTransactionProcessor {
     debug: boolean
     costHandler: (methodName: string, costs: TransactionCosts, elapsedTime: number) => void
   } = {
-      debug: false,
-      costHandler: defaultCostHandler,
-    }
+    debug: false,
+    costHandler: defaultCostHandler,
+  }
 
   /**
    *
@@ -114,7 +114,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
     const simulated = await this.simulateTransaction(builtTx)
 
-    const costs = this.options.debug ? await this.parseTransactionCosts(builtTx) : {};
+    const costs = this.options.debug ? await this.parseTransactionCosts(builtTx) : {}
 
     const output = this.extractOutputFromSimulation(simulated, args.method)
 
@@ -162,7 +162,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
 
-    const costs = this.options.debug ? await this.parseTransactionCosts(builtTx) : {};
+    const costs = this.options.debug ? await this.parseTransactionCosts(builtTx) : {}
 
     const prepared = await this.prepareTransaction(builtTx)
     const submitted = (await this.processSorobanTransaction(
@@ -205,7 +205,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     return {
       cpuInstructions: Number(simulated.cost?.cpuInsns),
       ram: Number(simulated.cost?.memBytes),
-      minResourceFee: simulated.minResourceFee,
+      minResourceFee: Number(simulated.minResourceFee),
       ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
       ledgerWriteBytes: sorobanTransactionData?.resources().writeBytes(),
       ledgerEntryReads: sorobanTransactionData?.resources().footprint().readOnly().length,
@@ -319,7 +319,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
 }
 
 function defaultCostHandler(methodName: string, costs: TransactionCosts, elapsedTime: number): void {
-  console.log("Debugging method: ", methodName)
+  console.log('Debugging method: ', methodName)
   console.log(costs)
-  console.log("Elapsed time: ", elapsedTime)
+  console.log('Elapsed time: ', elapsedTime)
 }

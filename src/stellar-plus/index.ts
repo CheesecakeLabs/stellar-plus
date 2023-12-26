@@ -1,6 +1,8 @@
 import { ChannelAccounts as ChannelAccountsHandler } from 'stellar-plus/channel-accounts/index'
 import { CertificateOfDepositClient } from 'stellar-plus/soroban/contracts/certificate-of-deposit'
 
+import { Profiler as SorobanProfiler } from './utils/profiler/soroban'
+
 export * as Account from 'stellar-plus/account/index'
 export * as Asset from 'stellar-plus/asset/index'
 export * as Constants from './constants'
@@ -17,6 +19,7 @@ export const Contracts = {
 
 export const Utils = {
   ChannelAccountsHandler,
+  SorobanProfiler,
 }
 
 export * as RPC from 'stellar-plus/rpc/index'
