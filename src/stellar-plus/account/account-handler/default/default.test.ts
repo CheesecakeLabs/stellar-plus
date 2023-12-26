@@ -2,29 +2,29 @@ import { Transaction } from '@stellar/stellar-sdk'
 
 import { Constants } from 'stellar-plus'
 import { DefaultAccountHandler } from 'stellar-plus/account'
+import { SimpleKeyPairMock, mockedSimpleKeyPair } from 'stellar-plus/test/mocks/accounts'
 import {
   mockSignedClassicTransactionXdr,
   mockUnsignedClassicTransaction,
 } from 'stellar-plus/test/mocks/classic-transaction'
-import { SimpleKeyPairMock, mockedSimpleKeyPair } from 'stellar-plus/test/mocks/stellar-account'
 
 describe('DefaultAccountHandler', () => {
-  let mockedKeypair: SimpleKeyPairMock
-  let mockedUnsignedTx: Transaction
-  let mockedSignedTxXdr: string
+  let mockKeypair: SimpleKeyPairMock
+  let mockUnsignedTx: Transaction
+  let mockSignedTxXdr: string
 
   const mockedNetwork = Constants.testnet
 
   beforeEach(() => {
-    mockedKeypair = mockedSimpleKeyPair
-    mockedUnsignedTx = mockUnsignedClassicTransaction
-    mockedSignedTxXdr = mockSignedClassicTransactionXdr
+    mockKeypair = mockedSimpleKeyPair
+    mockUnsignedTx = mockUnsignedClassicTransaction
+    mockSignedTxXdr = mockSignedClassicTransactionXdr
   })
 
   it('should create an instance with a provided secret key', () => {
-    const secretKey = mockedKeypair.secretKey
+    const secretKey = mockKeypair.secretKey
     const client = new DefaultAccountHandler({ secretKey })
-    expect(client.getPublicKey()).toBe(mockedKeypair.publicKey)
+    expect(client.getPublicKey()).toBe(mockKeypair.publicKey)
   })
 
   it('should create an instance with a random secret key', () => {
@@ -39,16 +39,16 @@ describe('DefaultAccountHandler', () => {
   })
 
   it('should return the public key of the account', () => {
-    const secretKey = mockedKeypair.secretKey
+    const secretKey = mockKeypair.secretKey
     const client = new DefaultAccountHandler({ secretKey })
     const publicKey = client.getPublicKey()
-    expect(publicKey).toBe(mockedKeypair.publicKey)
+    expect(publicKey).toBe(mockKeypair.publicKey)
   })
 
   it("should sign a transaction with the account's secret key", () => {
-    const secretKey = mockedKeypair.secretKey
+    const secretKey = mockKeypair.secretKey
     const client = new DefaultAccountHandler({ secretKey })
-    const signedTx = client.sign(mockedUnsignedTx)
-    expect(signedTx).toEqual(mockedSignedTxXdr)
+    const signedTx = client.sign(mockUnsignedTx)
+    expect(signedTx).toEqual(mockSignedTxXdr)
   })
 })

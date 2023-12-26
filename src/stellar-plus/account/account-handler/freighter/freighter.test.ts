@@ -17,13 +17,11 @@ jest.mock('@stellar/freighter-api', () => ({
   getNetworkDetails: jest.fn(),
 }))
 
-const mockedPublicKey = 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-const mockedNetwork = testnet as Network
+const mockPublicKey = 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+const mockNetwork = testnet as Network
 
 const mockFreighterGetPublicKey = (): void => {
-  ;(freighterApi.getPublicKey as jest.MockedFunction<typeof freighterApi.getPublicKey>).mockResolvedValue(
-    mockedPublicKey
-  )
+  ;(freighterApi.getPublicKey as jest.MockedFunction<typeof freighterApi.getPublicKey>).mockResolvedValue(mockPublicKey)
 }
 
 const mockFreighterIsConnected = (): void => {
@@ -52,7 +50,7 @@ describe('FreighterAccountHandlerClient', () => {
   let client: FreighterAccountHandlerClient
 
   beforeEach(() => {
-    client = new FreighterAccountHandlerClient({ network: mockedNetwork })
+    client = new FreighterAccountHandlerClient({ network: mockNetwork })
   })
 
   it('should initialize with provided network', () => {
@@ -62,13 +60,13 @@ describe('FreighterAccountHandlerClient', () => {
   it('should directly load and set the public key', async () => {
     mockSuccessfullyConnectedFreighter()
     await client.loadPublicKey()
-    expect(client.getPublicKey()).toBe(mockedPublicKey)
+    expect(client.getPublicKey()).toBe(mockPublicKey)
   })
 
   it('should directly load and set the public key when connecting', async () => {
     mockSuccessfullyConnectedFreighter()
     await client.connect()
-    expect(client.getPublicKey()).toBe(mockedPublicKey)
+    expect(client.getPublicKey()).toBe(mockPublicKey)
   })
 
   it('should connect to Freighter', async () => {

@@ -20,6 +20,7 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
     const secretKey = payload.secretKey as string
     try {
       const keypair = secretKey ? Keypair.fromSecret(secretKey) : Keypair.random()
+
       const publicKey = keypair.publicKey()
       super({ ...payload, publicKey })
 

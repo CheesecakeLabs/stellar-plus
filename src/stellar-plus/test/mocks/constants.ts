@@ -1,3 +1,6 @@
+import { testnet } from 'stellar-plus/constants'
+
 export const ACCOUNT_A_PK = 'GAVVRSYGWDE3N24SJRCMCXOAOXVPM7YPTEUSOVXEN344Q45UZ6DMQSR2'
 export const ACCOUNT_A_SK = 'SDZTDX3J7PGZW6PKIPODAFQ7SRBCKTQGSG7YD7QMJQDKOSN6ZZTJOSMT'
 export const NETWORK_PASSPHRASE = 'Test SDF Network ; September 2015'
+export const NETWORK = testnet

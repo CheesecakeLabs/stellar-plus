@@ -1,6 +1,7 @@
 import { Account } from '@stellar/stellar-sdk'
 
-import { ACCOUNT_A_PK, ACCOUNT_A_SK } from './constants'
+import { DefaultAccountHandlerClient as DefaultAccountHandler } from 'stellar-plus/account/account-handler/default'
+import { ACCOUNT_A_PK, ACCOUNT_A_SK, NETWORK } from 'stellar-plus/test/mocks/constants'
 
 export type SimpleKeyPairMock = {
   publicKey: string
@@ -12,7 +13,6 @@ export const mockedSimpleKeyPair: SimpleKeyPairMock = {
   secretKey: ACCOUNT_A_SK,
 }
 
-//mocked account
 export const mockedStellarAccount: Account = {
   accountId: () => ACCOUNT_A_PK,
   sequenceNumber: () => '12345',
@@ -20,3 +20,5 @@ export const mockedStellarAccount: Account = {
     return
   },
 }
+
+export const mockedDefaultAccountHandler = new DefaultAccountHandler({ network: NETWORK, secretKey: ACCOUNT_A_SK })
