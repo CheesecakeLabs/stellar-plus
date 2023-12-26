@@ -21,7 +21,7 @@ export type Options = {
 export type TransactionCosts = {
   cpuInstructions?: number
   ram?: number
-  minResourceFee?: string
+  minResourceFee?: number
   ledgerReadBytes?: number
   ledgerWriteBytes?: number
   ledgerEntryReads?: number
