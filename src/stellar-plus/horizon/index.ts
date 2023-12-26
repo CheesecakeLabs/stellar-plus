@@ -32,7 +32,6 @@ export class HorizonHandlerClient implements HorizonHandler {
     try {
       return await this.server.loadAccount(accountId)
     } catch (error) {
-      // console.log(error)
       throw StellarPlusError.unexpectedError({
         error: error as Error,
         message: 'Failed to load account from Horizon server.',

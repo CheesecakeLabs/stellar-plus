@@ -15,4 +15,4 @@ export type FreighterAccHandlerPayload = AccountHandlerPayload & {
   network: Network
 }
 
-export type FreighterCallback = (pk: string) => void
+export type FreighterCallback = (pk: string) => Promise<void>

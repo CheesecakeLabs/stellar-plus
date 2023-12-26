@@ -66,9 +66,9 @@ export class DefaultTransactionSubmitter implements TransactionSubmitter {
     try {
       // stellar-base vs stellar-sdk conversion
       // TODO: Review post lib update to stellar-sdk v11
+
       const envelopeXdr = envelope.toXDR()
       const classicEnvelope = TransactionBuilder.fromXDR(envelopeXdr, this.network.networkPassphrase) as Transaction
-
       return (await this.horizonHandler.server.submitTransaction(
         classicEnvelope
       )) as HorizonNamespace.HorizonApi.SubmitTransactionResponse
