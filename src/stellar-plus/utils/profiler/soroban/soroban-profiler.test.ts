@@ -113,9 +113,6 @@ describe('Profiler', () => {
   })
 
   it('should return the entire log without options', () => {
-    // Populate the log first (indirectly via the costHandler)
-    // ...
-
     const log = profiler.getLog()
     expect(log).toEqual(mockLogs)
   })
