@@ -113,7 +113,6 @@ describe('Profiler', () => {
   })
 
   it('should return the entire log without options', () => {
-
     const log = profiler.getLog()
     expect(log).toEqual(mockLogs)
   })
