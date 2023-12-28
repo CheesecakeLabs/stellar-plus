@@ -34,3 +34,5 @@
   * [Default RPC Handler](reference/rpc/default-rpc-handler.md)
   * [Validation Cloud RPC Handler](reference/rpc/validation-cloud-rpc-handler.md)
 * [Soroban Handler](reference/soroban-handler.md)
+* [Utils](reference/utils/README.md)
+  * [Soroban Profiler](reference/utils/soroban-profiler.md)
