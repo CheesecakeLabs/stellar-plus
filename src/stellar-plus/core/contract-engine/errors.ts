@@ -12,6 +12,7 @@ export enum ContractEngineErrorCodes {
   CE001 = 'CE001',
   CE002 = 'CE002',
   CE003 = 'CE003',
+  CE004 = 'CE004',
 
   // CE1 Simulation
   CE100 = 'CE100',
@@ -47,6 +48,16 @@ const missingWasmHash = (): StellarPlusError => {
     source: 'ContractEngine',
     details:
       "Missing wasm hash! This function requires a wasm hash to be defined in this instance. You can either initialize the contract engine with a wasm hash or use the 'uploadWasm' function to upload a new wasm file, which will automatically set the new wasm hash for this instance.",
+  })
+}
+
+const contractIdAlreadySet = (): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE004,
+    message: 'Contract ID already set!',
+    source: 'ContractEngine',
+    details:
+      'Contract ID already set! This function requires a contract Id to be defined in this instance. You can initialize the contract engine with a contract ID or use the "deploy" function to deploy a new instance of the contract, or user the wrapAndDeployClassicAsset to wrap a classic asset with the Stellar Asset Contract.',
   })
 }
 
@@ -101,4 +112,5 @@ export const CEError = {
   missingWasm,
   missingWasmHash,
   simulationFailed,
+  contractIdAlreadySet,
 }

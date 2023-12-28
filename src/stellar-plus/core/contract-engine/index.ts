@@ -76,10 +76,12 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 
   public getWasm(): Buffer | undefined {
+    this.requireWasm()
     return this.wasm
   }
 
   public getWasmHash(): string | undefined {
+    this.requireWasmHash()
     return this.wasmHash
   }
 
@@ -290,6 +292,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 
   public async wrapAndDeployClassicAsset(args: WrapClassicAssetArgs): Promise<void> {
+    this.requireNoContractId()
     const contractId = await this.wrapClassicAsset(args)
     this.contractId = contractId
   }
@@ -299,10 +302,14 @@ export class ContractEngine extends SorobanTransactionProcessor {
   //==========================================
   //
   //
-
   private requireContractId(): void {
     if (!this.contractId) {
       throw CEError.missingContractId()
+    }
+  }
+  private requireNoContractId(): void {
+    if (this.contractId) {
+      throw CEError.contractIdAlreadySet()
     }
   }
 
