@@ -13,13 +13,7 @@ The `ContractEngine` class serves as a base for building clients that interact w
   * `wasmHash`: Optional. Hash of the deployed wasm code.
   * `options`: Optional. Additional parameters to tweak specific behavior.
 
-{% hint style="info" %}
-You can initialize a contract engine or child client contract in different ways. Since the contract id, wasm and wasm hash are all optional, choose whichever initialization is best for your use case.\
-\
-When executing the methods, a validation will take place to throw an error in case a requirement is not met.\
-\
-E.g. Attempting to deploy a contract instance without having a wasmHash. It would've been necessary to either initiate the instance with this argument or, to have performed a <mark style="color:blue;">`uploadWasm`</mark> so that the wasm hash would've been updated in the instance.
-{% endhint %}
+
 
 ## Core Methods
 
@@ -43,6 +37,25 @@ E.g. Attempting to deploy a contract instance without having a wasmHash. It woul
 * **Returns**: The output of the contract invocation after the transaction is processed.
 
 
+
+## Contract Initialization with Contract Engine
+
+You can initialize a contract engine or child client contract in different ways. Since the contract id, wasm and wasm hash are all optional, choose whichever initialization is best for your use case.\
+\
+When executing the methods, a validation will take place to throw an error in case a requirement is not met.\
+\
+E.g. Attempting to deploy a contract instance without having a wasmHash. It would've been necessary to either initiate the instance with this argument or, to have performed a `uploadWasm` so that the wasm hash would've been updated in the instance.
+
+This is the full sequence of initialization. You can start at any point depending on your contract's state:
+
+1. Initialize the ContractEngine by loading the WASM file into a Buffer and providing it as the `wasm` parameter.
+2. Execute the `uploadWasm` function so the contract code is uploaded to the blockchain. This will generate a WASM Hash and automatically store it in the instance of the ContractEngine
+3. Initialize the ContractEngine by providing a `wasmHash` or come from the previous steps.
+4. Execute the `deploy` function so a new instance of the contract is deployed on-chain. This will generate a unique contract id and automatically store it in the instance of the ContractEngine.
+5. Initialize the ContractEngine by providing a `contractId` or come from the previous steps.
+6. If your contract needs to be initialized with an initial state, then invoke its `initialize` function with its arguments so this instance of the contract gets its initial state.&#x20;
+
+After these steps, you should be able to fully utilize your contract.
 
 ## **Meta Management Methods**
 

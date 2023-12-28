@@ -6,8 +6,11 @@ description: Profiling Smart Contract Interactions with the Soroban Profiler
 
 The Soroban Profiler is a utility tool included in the Utils section of the Stellar Plus library, aimed at profiling smart contract interactions on the Stellar network. It serves as a pre-built option for tracking and analyzing contract performance metrics. The flexibility in the ContractEngine class of Stellar Plus allows users to either utilize this built-in profiler or develop custom profiling methods according to their specific needs.
 
-\
 
+
+{% hint style="info" %}
+For an example implementation of this tool, refer to Cheesecake Lab's profiling example under&#x20;
+{% endhint %}
 
 ## Core Features
 
