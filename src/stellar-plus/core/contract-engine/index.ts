@@ -71,6 +71,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 
   public getContractId(): string | undefined {
+    this.requireContractId()
     return this.contractId
   }
 
