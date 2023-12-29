@@ -1,5 +1,3 @@
-import { randomBytes } from 'crypto'
-
 import {
   Address,
   Contract,
@@ -27,6 +25,7 @@ import { StellarPlusError } from 'stellar-plus/error'
 import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network, TransactionXdr } from 'stellar-plus/types'
+import { generateRandomSalt } from 'stellar-plus/utils/functions'
 
 import { STPError } from './errors'
 
@@ -330,7 +329,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     const options: OperationOptions.CreateCustomContract = {
       address: new Address(header.source),
       wasmHash: Buffer.from(wasmHash, 'hex'),
-      salt: randomBytes(32),
+      salt: generateRandomSalt(),
     }
 
     const deployOperation = [Operation.createCustomContract(options)]

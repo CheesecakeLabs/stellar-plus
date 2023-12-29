@@ -83,12 +83,13 @@ export class ChannelAccounts {
    *
    * @returns {void}
    */
-  public static async closeChannels(
-    channels: DefaultAccountHandler[],
-    sponsor: DefaultAccountHandler,
-    network: Network,
+  public static async closeChannels(args: {
+    channels: DefaultAccountHandler[]
+    sponsor: AccountHandler
+    network: Network
     txInvocation: TransactionInvocation
-  ): Promise<void> {
+  }): Promise<void> {
+    const { channels, sponsor, network, txInvocation } = args
     const txProcessor = new TransactionProcessor({ network })
     const operations: ClassicXdrNamespace.Operation[] = []
 
