@@ -56,7 +56,7 @@ export type SorobanTokenInterfaceManagement = {
 export type SorobanTokenInterfaceUser = {
   allowance: (args: { from: string; spender: string } & SorobanSimulationInvocation) => Promise<i128>
   approve: (
-    args: { from: string; spender: string; amount: i128; live_until_ledger: u32 } & TransactionInvocation
+    args: { from: string; spender: string; amount: i128; expiration_ledger: u32 } & TransactionInvocation
   ) => Promise<void>
   balance: (args: { id: string } & SorobanSimulationInvocation) => Promise<i128>
   spendableBalance: (args: { id: string } & SorobanSimulationInvocation) => Promise<i128>
