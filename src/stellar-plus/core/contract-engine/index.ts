@@ -20,9 +20,9 @@ export class ContractEngine extends SorobanTransactionProcessor {
     debug: boolean
     costHandler: (methodName: string, costs: TransactionCosts, elapsedTime: number) => void
   } = {
-      debug: false,
-      costHandler: defaultCostHandler,
-    }
+    debug: false,
+    costHandler: defaultCostHandler,
+  }
 
   /**
    *
