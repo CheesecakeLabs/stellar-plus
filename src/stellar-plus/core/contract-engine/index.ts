@@ -115,7 +115,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
     const simulatedTransaction = await this.simulateTransaction(builtTx)
 
-    const successfullSimulation = this.verifySimulationResponse(simulatedTransaction)
+    const successfullSimulation = await this.verifySimulationResponse(simulatedTransaction)
 
     const costs = this.options.debug ? await this.parseTransactionCosts(successfullSimulation) : {}
 
@@ -167,7 +167,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const simulatedTransaction = await this.simulateTransaction(builtTx)
 
-    const successfullSimulation = this.verifySimulationResponse(simulatedTransaction)
+    const successfullSimulation = await this.verifySimulationResponse(simulatedTransaction)
 
     const costs = this.options.debug ? await this.parseTransactionCosts(successfullSimulation) : {}
 
@@ -219,14 +219,15 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 
   private async extractOutputFromSimulation(
-    simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse,
+    simulated: SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse,
     method: string
   ): Promise<unknown> {
-    const simulationResult = this.verifySimulationResponse(simulated).result
-    if (simulationResult) {
-      const output = this.spec.funcResToNative(method, simulationResult.retval) as unknown
-      return output
+    if (!simulated.result) {
+      throw CEError.simulationMissingResult(simulated)
     }
+
+    const output = this.spec.funcResToNative(method, simulated.result.retval) as unknown
+    return output
   }
 
   private async extractOutputFromProcessedInvocation(
