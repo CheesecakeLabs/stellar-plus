@@ -523,4 +523,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       throw STPError.failedToRestoreFootprintWithError(error as StellarPlusError, assembledTransaction)
     }
   }
+
+  protected getRpcHandler(): RpcHandler {
+    return this.rpcHandler
+  }
 }

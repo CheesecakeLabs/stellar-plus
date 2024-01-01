@@ -94,6 +94,36 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 
   /**
+   * 
+   * @param {void} args - No arguments.
+   * 
+   * @returns {Promise<number>} The 'liveUntilLedgerSeq' value representing the ledger sequence number until which the contract instance is live.
+   * 
+   * @description - Returns the ledger sequence number until which the contract instance is live. When the contract instance is live, it can be invoked. When the liveUntilLedgerSeq is reached, the contract instance is archived and can no longer be invoked until a restore is performed.
+   
+   */
+  public async getContractInstanceLiveUntilLedgerSeq(): Promise<number> {
+    this.requireContractId()
+
+    const footprint = this.getContractFootprint()
+
+    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
+      footprint
+    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
+
+    const contractInstance = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractData')
+
+    if (!contractInstance) {
+      throw CEError.contractInstanceNotFound(ledgerEntries)
+    }
+    if (!contractInstance.liveUntilLedgerSeq) {
+      throw CEError.contractInstanceMissingLiveUntilLedgerSeq(ledgerEntries)
+    }
+
+    return contractInstance.liveUntilLedgerSeq
+  }
+
+  /**
    *
    * @args {SorobanSimulateArgs<object>} args - The arguments for the invocation.
    * @param {string} args.method - The method to invoke as it is identified in the contract.
@@ -128,7 +158,6 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const successfullSimulation = await this.verifySimulationResponse(simulatedTransaction)
 
     const costs = this.options.debug ? await this.parseTransactionResources(successfullSimulation) : {}
-
 
     const output = this.extractOutputFromSimulation(successfullSimulation, args.method)
 
@@ -177,7 +206,6 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
 
     const txInvocation = { ...args } as TransactionInvocation
-
 
     const { response, transactionResources } = await this.processBuiltTransaction({
       builtTx,
@@ -458,7 +486,6 @@ export class ContractEngine extends SorobanTransactionProcessor {
     }
   }
 }
-
 
 function defaultCostHandler(methodName: string, costs: TransactionResources, elapsedTime: number): void {
   console.log('Debugging method: ', methodName)

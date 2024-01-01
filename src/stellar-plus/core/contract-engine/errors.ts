@@ -13,6 +13,8 @@ export enum ContractEngineErrorCodes {
   CE002 = 'CE002',
   CE003 = 'CE003',
   CE004 = 'CE004',
+  CE005 = 'CE005',
+  CE006 = 'CE006',
 
   // CE1 Simulation
   CE100 = 'CE100',
@@ -64,6 +66,30 @@ const contractIdAlreadySet = (): StellarPlusError => {
     source: 'ContractEngine',
     details:
       'Contract ID already set! This function requires a contract Id to be defined in this instance. You can initialize the contract engine with a contract ID or use the "deploy" function to deploy a new instance of the contract, or user the wrapAndDeployClassicAsset to wrap a classic asset with the Stellar Asset Contract.',
+  })
+}
+
+const contractInstanceNotFound = (ledgerEntries: SorobanRpc.Api.GetLedgerEntriesResponse): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE005,
+    message: 'Contract instance not found!',
+    source: 'ContractEngine',
+    details:
+      'Contract instance not found! The contract instance could not be found on the Stellar network. Please verify the contract ID and make sure the contract instance has been deployed to the Stellar network.',
+    meta: { data: { ledgerEntries } },
+  })
+}
+
+const contractInstanceMissingLiveUntilLedgerSeq = (
+  ledgerEntries: SorobanRpc.Api.GetLedgerEntriesResponse
+): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE006,
+    message: 'Contract instance missing live_until_ledger_seq!',
+    source: 'ContractEngine',
+    details:
+      'Contract instance missing live_until_ledger_seq! The contract instance is missing the live_until_ledger_seq property. Please verify the contract ID and make sure the contract instance has been deployed to the Stellar network.',
+    meta: { data: { ledgerEntries } },
   })
 }
 
@@ -166,6 +192,8 @@ export const CEError = {
   couldntVerifyTransactionSimulation,
   simulationFailed,
   contractIdAlreadySet,
+  contractInstanceNotFound,
+  contractInstanceMissingLiveUntilLedgerSeq,
   transactionNeedsRestore,
   simulationMissingResult,
   restoreOptionNotSet,
