@@ -11,14 +11,9 @@ The `ContractEngine` class serves as a base for building clients that interact w
   * `contractId`: Optional. Unique identifier of the deployed contract.
   * `wasm`: Optional. Buffer of the loaded wasm file with compiled contract code.
   * `wasmHash`: Optional. Hash of the deployed wasm code.
+  * `options`: Optional. Additional parameters to tweak specific behavior.
 
-{% hint style="info" %}
-You can initialize a contract engine or child client contract in different ways. Since the contract id, wasm and wasm hash are all optional, choose whichever initialization is best for your use case.\
-\
-When executing the methods, a validation will take place to throw an error in case a requirement is not met.\
-\
-E.g. Attempting to deploy a contract instance without having a wasmHash. It would've been necessary to either initiate the instance with this argument or, to have performed a <mark style="color:blue;">`uploadWasm`</mark> so that the wasm hash would've been updated in the instance.
-{% endhint %}
+
 
 ## Core Methods
 
@@ -42,6 +37,25 @@ E.g. Attempting to deploy a contract instance without having a wasmHash. It woul
 * **Returns**: The output of the contract invocation after the transaction is processed.
 
 
+
+## Contract Initialization with Contract Engine
+
+You can initialize a contract engine or child client contract in different ways. Since the contract id, wasm and wasm hash are all optional, choose whichever initialization is best for your use case.\
+\
+When executing the methods, a validation will take place to throw an error in case a requirement is not met.\
+\
+E.g. Attempting to deploy a contract instance without having a wasmHash. It would've been necessary to either initiate the instance with this argument or, to have performed a `uploadWasm` so that the wasm hash would've been updated in the instance.
+
+This is the full sequence of initialization. You can start at any point depending on your contract's state:
+
+1. Initialize the ContractEngine by loading the WASM file into a Buffer and providing it as the `wasm` parameter.
+2. Execute the `uploadWasm` function so the contract code is uploaded to the blockchain. This will generate a WASM Hash and automatically store it in the instance of the ContractEngine
+3. Initialize the ContractEngine by providing a `wasmHash` or come from the previous steps.
+4. Execute the `deploy` function so a new instance of the contract is deployed on-chain. This will generate a unique contract id and automatically store it in the instance of the ContractEngine.
+5. Initialize the ContractEngine by providing a `contractId` or come from the previous steps.
+6. If your contract needs to be initialized with an initial state, then invoke its `initialize` function with its arguments so this instance of the contract gets its initial state.&#x20;
+
+After these steps, you should be able to fully utilize your contract.
 
 ## **Meta Management Methods**
 
@@ -69,8 +83,42 @@ These methods in the ContractEngine facilitate the necessary steps for contract 
 * **Returns**: No direct return. Updates contract ID in the engine.
 * **Usage**: Critical for deploying contracts to the Soroban network, enabling interactions with the contract instance.
 
-\
 
+
+## Options
+
+The `ContractEngine` class in Stellar Plus provides a set of configurable options that allow developers to customize its behavior according to specific requirements. These options enhance the flexibility and debugging capabilities of contract interactions. The `options` parameter in the `ContractEngine` constructor supports the following properties:
+
+1. **Debug (boolean)**:
+   * **Default**: `false`
+   * **Purpose**: Toggles debugging mode. When `true`, it provides detailed information on transaction costs and method execution time. If no `CostHandler` function is provided, these resource consumption details will be logged directly to the console.\
+
+2.  **CostHandler (function)**:
+
+    * **Default**: `defaultCostHandler`
+    * **Purpose**: A callback function for handling transaction cost details and execution time. Receives `methodName`, `costs`, and `elapsedTime`. When this function is provided, the transaction cost data will be passed through this function instead of being logged directly to the console.
+    * **Integration**: Can be combined with the `Profiler` class from Stellar Plus for in-depth analysis (see the dedicated section on the [soroban-profiler.md](../utils/soroban-profiler.md "mention") class).
+
+    ####
+
+**Example**
+
+{% code lineNumbers="true" %}
+```typescript
+const contractEngine = new ContractEngine({
+  network: myNetworkConfig,
+  spec: myContractSpec,
+  options: {
+    debug: true,
+    costHandler: (methodName, costs, elapsedTime) => {
+      // Custom logic for handling costs and metrics
+    },
+  },
+});
+```
+{% endcode %}
+
+This configuration enables debugging and allows for custom handling of performance metrics, aiding in the development and optimization of contract interactions.
 
 ## Example Usage
 

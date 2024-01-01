@@ -18,6 +18,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
+
   private options: Options = {
     debug: false,
     costHandler: defaultCostHandler,
@@ -125,6 +126,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const costs = this.options.debug ? await this.parseTransactionResources(successfullSimulation) : {}
 
+
     const output = this.extractOutputFromSimulation(successfullSimulation, args.method)
 
     if (this.options.debug) {
@@ -172,6 +174,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
 
     const txInvocation = { ...args } as TransactionInvocation
+
 
     const { response, transactionResources } = await this.processBuiltTransaction({
       builtTx,
@@ -452,6 +455,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     }
   }
 }
+
 
 function defaultCostHandler(methodName: string, costs: TransactionResources, elapsedTime: number): void {
   console.log('Debugging method: ', methodName)

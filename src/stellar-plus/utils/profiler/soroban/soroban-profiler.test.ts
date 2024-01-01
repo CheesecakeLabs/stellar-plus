@@ -1,4 +1,6 @@
+
 import { TransactionResources } from 'stellar-plus/core/contract-engine/types'
+
 
 import { Profiler } from '.'
 
@@ -83,7 +85,9 @@ transfer | 7761         | 142179   | 52145          | 48761           | 708     
 transfer | 12226        | 142550   | 52145          | 48765           | 708              | 232              | 1                 | 2         | 252             | 4               | 248`
 
 const populateLogEntries = (
+
   costHandler: (methodName: string, costs: TransactionResources, elapsedTime: number) => void
+
 ): void => {
   mockLogs.forEach((log) => {
     costHandler(log.methodName, log.costs, log.elapsedTime)
@@ -108,11 +112,13 @@ describe('Profiler', () => {
     const options = profiler.getOptionsArgs()
     expect(options).toEqual({
       debug: true,
+
       costHandler: expect.any(Function) as (
         methodName: string,
         costs: TransactionResources,
         elapsedTime: number
       ) => void,
+
     })
   })
 
