@@ -1,6 +1,6 @@
-import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
+import { Address, ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
 
-import { ContractEngineConstructorArgs, Options, TransactionCosts } from 'stellar-plus/core/contract-engine/types'
+import { ContractEngineConstructorArgs, Options, TransactionResources } from 'stellar-plus/core/contract-engine/types'
 import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
 import {
   RestoreFootprintArgs,
@@ -9,6 +9,7 @@ import {
   WrapClassicAssetArgs,
 } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
+import { StellarPlusError } from 'stellar-plus/error'
 
 import { CEError } from './errors'
 
@@ -117,7 +118,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const successfullSimulation = await this.verifySimulationResponse(simulatedTransaction)
 
-    const costs = this.options.debug ? await this.parseTransactionCosts(successfullSimulation) : {}
+    const costs = this.options.debug ? await this.parseTransactionResources(successfullSimulation) : {}
 
     const output = this.extractOutputFromSimulation(successfullSimulation, args.method)
 
@@ -165,32 +166,34 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
 
-    const simulatedTransaction = await this.simulateTransaction(builtTx)
+    const txInvocation = { ...args } as TransactionInvocation
 
-    const successfullSimulation = await this.verifySimulationResponse(simulatedTransaction)
+    const { response, transactionResources } = await this.processBuiltTransaction({
+      builtTx,
+      updatedTxInvocation: txInvocation,
+    })
 
-    const costs = this.options.debug ? await this.parseTransactionCosts(successfullSimulation) : {}
-
-    const assembledTransaction = await this.assembleTransaction(builtTx, successfullSimulation)
-
-    const submitted = (await this.processSorobanTransaction(
-      assembledTransaction,
-      args.signers,
-      args.feeBump
-    )) as SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
-
-    const output = this.extractOutputFromProcessedInvocation(submitted, args.method)
+    const output = this.extractOutputFromProcessedInvocation(response, args.method)
 
     if (this.options.debug) {
-      this.options.costHandler?.(args.method, costs, Date.now() - startTime)
+      this.options.costHandler?.(args.method, transactionResources as TransactionResources, Date.now() - startTime)
     }
 
     return output
   }
 
-  private async parseTransactionCosts(
+  /**
+   *
+   * @param {SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse} simulatedTransaction - The simulated transaction response to parse.
+   *
+   * @returns {Promise<TransactionCosts>} The parsed transaction costs.
+   *
+   * @description - Parses the transaction costs from the simulated transaction response.
+   *
+   */
+  private async parseTransactionResources(
     simulatedTransaction: SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
-  ): Promise<TransactionCosts> {
+  ): Promise<TransactionResources> {
     const calculateEventSize = (event: xdr.DiagnosticEvent): number => {
       if (event.event()?.type().name === 'diagnostic') {
         return 0
@@ -292,6 +295,32 @@ export class ContractEngine extends SorobanTransactionProcessor {
   //
   //
 
+  private async processBuiltTransaction(args: {
+    builtTx: Transaction
+    updatedTxInvocation: TransactionInvocation
+  }): Promise<{
+    response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
+    transactionResources?: TransactionResources
+  }> {
+    const { builtTx, updatedTxInvocation } = args
+    const simulatedTransaction = await this.simulateTransaction(builtTx)
+
+    const successfullSimulation = await this.verifySimulationResponse(simulatedTransaction)
+
+    const transactionResources = this.options.debug ? await this.parseTransactionResources(successfullSimulation) : {}
+
+    const assembledTransaction = await this.assembleTransaction(builtTx, successfullSimulation)
+
+    return {
+      response: await this.processSorobanTransaction(
+        assembledTransaction,
+        updatedTxInvocation.signers,
+        updatedTxInvocation.feeBump
+      ),
+      transactionResources,
+    }
+  }
+
   /**
    * @param {TransactionInvocation} txInvocation - The transaction invocation object to use in this transaction.
    *
@@ -303,9 +332,27 @@ export class ContractEngine extends SorobanTransactionProcessor {
   public async uploadWasm(txInvocation: TransactionInvocation): Promise<void> {
     this.requireWasm()
 
-    const wasmHash = await this.uploadContractWasm({ wasm: this.wasm!, ...txInvocation }) // Wasm verified in requireWasm
+    const startTime = Date.now()
+    const builtTransactionObjectToProcess = await this.buildUploadContractWasmTransaction({
+      wasm: this.wasm!, // Wasm verified in requireWasm
+      ...txInvocation,
+    })
 
-    this.wasmHash = wasmHash
+    try {
+      const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
+      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
+      const wasmHash = (response.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString(
+        'hex'
+      ) as string
+
+      this.wasmHash = wasmHash
+
+      if (this.options.debug) {
+        this.options.costHandler?.('uploadWasm', transactionResources as TransactionResources, Date.now() - startTime)
+      }
+    } catch (error) {
+      throw CEError.failedToUploadWasm(error as StellarPlusError)
+    }
   }
 
   /**
@@ -318,16 +365,51 @@ export class ContractEngine extends SorobanTransactionProcessor {
    * */
   public async deploy(txInvocation: TransactionInvocation): Promise<void> {
     this.requireWasmHash()
+    const startTime = Date.now()
 
-    const contractId = await this.deployContract({ wasmHash: this.wasmHash!, ...txInvocation }) // Wasm hash verified in requireWasmHash
+    const builtTransactionObjectToProcess = await this.buildDeployContractTransaction({
+      wasmHash: this.wasmHash!, // Wasm hash verified in requireWasmHash
+      ...txInvocation,
+    })
 
-    this.contractId = contractId
+    try {
+      const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
+      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
+      const contractId = Address.fromScAddress(
+        response.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
+      ).toString() as string
+
+      this.contractId = contractId
+
+      if (this.options.debug) {
+        this.options.costHandler?.('uploadWasm', transactionResources as TransactionResources, Date.now() - startTime)
+      }
+    } catch (error) {
+      throw CEError.failedToDeployContract(error as StellarPlusError)
+    }
   }
 
   public async wrapAndDeployClassicAsset(args: WrapClassicAssetArgs): Promise<void> {
     this.requireNoContractId()
-    const contractId = await this.wrapClassicAsset(args)
-    this.contractId = contractId
+    const startTime = Date.now()
+
+    const builtTransactionObjectToProcess = await this.buildWrapClassicAssetTransaction(args)
+
+    try {
+      const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
+      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
+      const contractId = Address.fromScAddress(
+        response.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
+      ).toString()
+
+      this.contractId = contractId
+
+      if (this.options.debug) {
+        this.options.costHandler?.('uploadWasm', transactionResources as TransactionResources, Date.now() - startTime)
+      }
+    } catch (error) {
+      throw CEError.failedToWrapAsset(error as StellarPlusError)
+    }
   }
 
   //==========================================
@@ -359,7 +441,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 }
 
-function defaultCostHandler(methodName: string, costs: TransactionCosts, elapsedTime: number): void {
+function defaultCostHandler(methodName: string, costs: TransactionResources, elapsedTime: number): void {
   console.log('Debugging method: ', methodName)
   console.log(costs)
   console.log('Elapsed time: ', elapsedTime)
