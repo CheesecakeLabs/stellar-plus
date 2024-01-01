@@ -18,8 +18,6 @@ import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
 import {
   RestoreFootprintArgs,
-  RestoreFootprintWithLedgerKeys,
-  RestoreFootprintWithRestorePreamble,
   SorobanDeployArgs,
   SorobanSimulateArgs,
   SorobanUploadArgs,

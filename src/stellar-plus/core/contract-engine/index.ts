@@ -342,7 +342,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
       const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
       const wasmHash = this.extractWasmHashFromUploadWasmResponse(response)
-
+      console.log('Wasm hash: ', wasmHash)
       this.wasmHash = wasmHash
 
       if (this.options.debug) {
