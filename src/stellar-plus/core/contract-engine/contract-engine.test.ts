@@ -4,7 +4,7 @@ import { spec } from 'stellar-plus/asset/soroban-token/constants'
 import { testnet } from 'stellar-plus/constants'
 import { ContractEngine } from 'stellar-plus/core/contract-engine'
 import { CEError } from 'stellar-plus/core/contract-engine/errors'
-import { ContractEngineConstructorArgs, TransactionCosts } from 'stellar-plus/core/contract-engine/types'
+import { ContractEngineConstructorArgs, TransactionResources } from 'stellar-plus/core/contract-engine/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { mockUnsignedClassicTransaction } from 'stellar-plus/test/mocks/classic-transaction'
 import { mockTransactionInvocation } from 'stellar-plus/test/mocks/transaction-mock'
@@ -25,7 +25,7 @@ class TestableContractEngine extends ContractEngine {
   }
 }
 
-const mockTransactionCosts: TransactionCosts = {
+const mockTransactionResources: TransactionResources = {
   cpuInstructions: 10,
   ram: 10,
   minResourceFee: 10,
@@ -92,6 +92,12 @@ describe('ContractEngine', () => {
       // uploadContractWasm which is protected and and would required a more complex approach
       // to mock it.
       //
+      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(mockContractEngineWithWasm as any, 'buildUploadContractWasmTransaction')
+        .mockResolvedValueOnce(mockUnsignedClassicTransaction)
+      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(mockContractEngineWithWasm as any, 'processBuiltTransaction')
+        .mockResolvedValueOnce({ response: 'mock-success-response', transactionResources: mockTransactionResources })
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(mockContractEngineWithWasm as any, 'uploadContractWasm').mockResolvedValueOnce('mock-wasm-hash')
 
@@ -187,14 +193,11 @@ describe('ContractEngine', () => {
         .spyOn(mockContractEngineWithContractId as any, 'buildTransaction')
         .mockResolvedValueOnce(mockUnsignedClassicTransaction)
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'prepareTransaction')
-        .mockResolvedValueOnce(mockUnsignedClassicTransaction)
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'processSorobanTransaction')
-        .mockResolvedValueOnce('mock-output-unprocessed')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromProcessedInvocation')
         .mockResolvedValueOnce('mock-output')
+      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(mockContractEngineWithContractId as any, 'processBuiltTransaction')
+        .mockResolvedValueOnce({ response: 'mock-success-response', transactionResources: mockTransactionResources })
 
       expect(
         await mockContractEngineWithContractId.invokeContractTest({
@@ -237,6 +240,9 @@ describe('ContractEngine', () => {
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .spyOn(mockContractEngineWithContractId as any, 'simulateTransaction')
         .mockResolvedValueOnce('mock-output-unprocessed')
+      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(mockContractEngineWithContractId as any, 'verifySimulationResponse')
+        .mockResolvedValueOnce('mock-output-verified')
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromSimulation')
         .mockResolvedValueOnce('mock-output')
@@ -286,17 +292,11 @@ describe('ContractEngine', () => {
         .spyOn(mockContractEngineWithContractId as any, 'buildTransaction')
         .mockResolvedValueOnce(mockUnsignedClassicTransaction)
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'prepareTransaction')
-        .mockResolvedValueOnce(mockUnsignedClassicTransaction)
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'processSorobanTransaction')
-        .mockResolvedValueOnce('mock-output-unprocessed')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromProcessedInvocation')
         .mockResolvedValueOnce('mock-output')
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'parseTransactionCosts')
-        .mockResolvedValueOnce(mockTransactionCosts)
+        .spyOn(mockContractEngineWithContractId as any, 'processBuiltTransaction')
+        .mockResolvedValueOnce({ response: 'mock-success-response', transactionResources: mockTransactionResources })
 
       await mockContractEngineWithContractId.invokeContractTest({
         method: 'mock-method',
@@ -305,7 +305,7 @@ describe('ContractEngine', () => {
       })
 
       expect(mockCostHandler).toHaveBeenCalledTimes(1)
-      expect(mockCostHandler).toHaveBeenCalledWith('mock-method', mockTransactionCosts, expect.any(Number))
+      expect(mockCostHandler).toHaveBeenCalledWith('mock-method', mockTransactionResources, expect.any(Number))
     })
 
     it('should not invoke costHandler if provided when debug is false - invoke contract', async () => {
@@ -328,17 +328,11 @@ describe('ContractEngine', () => {
         .spyOn(mockContractEngineWithContractId as any, 'buildTransaction')
         .mockResolvedValueOnce(mockUnsignedClassicTransaction)
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'prepareTransaction')
-        .mockResolvedValueOnce(mockUnsignedClassicTransaction)
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'processSorobanTransaction')
-        .mockResolvedValueOnce('mock-output-unprocessed')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromProcessedInvocation')
         .mockResolvedValueOnce('mock-output')
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'parseTransactionCosts')
-        .mockResolvedValueOnce(mockTransactionCosts)
+        .spyOn(mockContractEngineWithContractId as any, 'processBuiltTransaction')
+        .mockResolvedValueOnce({ response: 'mock-success-response', transactionResources: mockTransactionResources })
 
       await mockContractEngineWithContractId.invokeContractTest({
         method: 'mock-method',
@@ -347,7 +341,7 @@ describe('ContractEngine', () => {
       })
 
       expect(mockCostHandler).toHaveBeenCalledTimes(0)
-      expect(mockCostHandler).not.toHaveBeenCalledWith('mock-method', mockTransactionCosts, expect.any(Number))
+      expect(mockCostHandler).not.toHaveBeenCalledWith('mock-method', mockTransactionResources, expect.any(Number))
     })
 
     it('should invoke costHandler if provided when debug is true and return the transaction costs - read from contract', async () => {
@@ -370,14 +364,11 @@ describe('ContractEngine', () => {
         .spyOn(mockContractEngineWithContractId as any, 'buildTransaction')
         .mockResolvedValueOnce(mockUnsignedClassicTransaction)
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'simulateTransaction')
-        .mockResolvedValueOnce('mock-output-unprocessed')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromSimulation')
+        .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromProcessedInvocation')
         .mockResolvedValueOnce('mock-output')
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'parseTransactionCosts')
-        .mockResolvedValueOnce(mockTransactionCosts)
+        .spyOn(mockContractEngineWithContractId as any, 'processBuiltTransaction')
+        .mockResolvedValueOnce({ response: 'mock-success-response', transactionResources: mockTransactionResources })
 
       await mockContractEngineWithContractId.readFromContractTest({
         method: 'mock-method',
@@ -386,7 +377,7 @@ describe('ContractEngine', () => {
       })
 
       expect(mockCostHandler).toHaveBeenCalledTimes(1)
-      expect(mockCostHandler).toHaveBeenCalledWith('mock-method', mockTransactionCosts, expect.any(Number))
+      expect(mockCostHandler).toHaveBeenCalledWith('mock-method', mockTransactionResources, expect.any(Number))
     })
 
     it('should not invoke costHandler if provided when debug is false - read from contract', async () => {
@@ -412,11 +403,11 @@ describe('ContractEngine', () => {
         .spyOn(mockContractEngineWithContractId as any, 'simulateTransaction')
         .mockResolvedValueOnce('mock-output-unprocessed')
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(mockContractEngineWithContractId as any, 'verifySimulationResponse')
+        .mockResolvedValueOnce('mock-output-verified')
+      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromSimulation')
         .mockResolvedValueOnce('mock-output')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'parseTransactionCosts')
-        .mockResolvedValueOnce(mockTransactionCosts)
 
       await mockContractEngineWithContractId.readFromContractTest({
         method: 'mock-method',
@@ -425,7 +416,7 @@ describe('ContractEngine', () => {
       })
 
       expect(mockCostHandler).toHaveBeenCalledTimes(0)
-      expect(mockCostHandler).not.toHaveBeenCalledWith('mock-method', mockTransactionCosts, expect.any(Number))
+      expect(mockCostHandler).not.toHaveBeenCalledWith('mock-method', mockTransactionResources, expect.any(Number))
     })
   })
 })

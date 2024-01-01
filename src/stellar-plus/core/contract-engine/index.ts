@@ -1,4 +1,4 @@
-import { Address, ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
+import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import { ContractEngineConstructorArgs, Options, TransactionResources } from 'stellar-plus/core/contract-engine/types'
 import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
@@ -341,9 +341,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     try {
       const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      const wasmHash = (response.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString(
-        'hex'
-      ) as string
+      const wasmHash = this.extractWasmHashFromUploadWasmResponse(response)
 
       this.wasmHash = wasmHash
 
@@ -375,9 +373,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     try {
       const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      const contractId = Address.fromScAddress(
-        response.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
-      ).toString() as string
+      const contractId = this.extractContractIdFromDeployContractResponse(response)
 
       this.contractId = contractId
 
@@ -398,9 +394,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     try {
       const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      const contractId = Address.fromScAddress(
-        response.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
-      ).toString()
+      const contractId = this.extractContractIdFromWrapClassicAssetResponse(response)
 
       this.contractId = contractId
 

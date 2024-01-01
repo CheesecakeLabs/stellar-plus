@@ -18,6 +18,8 @@ import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
 import {
   RestoreFootprintArgs,
+  RestoreFootprintWithLedgerKeys,
+  RestoreFootprintWithRestorePreamble,
   SorobanDeployArgs,
   SorobanSimulateArgs,
   SorobanUploadArgs,
@@ -318,10 +320,16 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       )
 
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      return (output.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString('hex') as string
+      return this.extractWasmHashFromUploadWasmResponse(output)
     } catch (error) {
       throw STPError.failedToUploadWasm(error as StellarPlusError)
     }
+  }
+
+  protected extractWasmHashFromUploadWasmResponse(
+    response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
+  ): string {
+    return (response.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString('hex') as string
   }
 
   protected async buildDeployContractTransaction(
@@ -370,12 +378,17 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.feeBump
       )
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      return Address.fromScAddress(
-        output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
-      ).toString() as string
+      return this.extractContractIdFromDeployContractResponse(output)
     } catch (error) {
       throw STPError.failedToDeployContract(error as StellarPlusError)
     }
+  }
+  protected extractContractIdFromDeployContractResponse(
+    response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
+  ): string {
+    return Address.fromScAddress(
+      response.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
+    ).toString() as string
   }
 
   /**
@@ -432,29 +445,38 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.feeBump
       )
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      return Address.fromScAddress(
-        output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
-      ).toString()
+      return this.extractContractIdFromWrapClassicAssetResponse(output)
     } catch (error) {
       throw STPError.failedToWrapAsset(error as StellarPlusError)
     }
   }
 
-  //
-  //
-  // TODO: Implement TTL pipeline
+  protected extractContractIdFromWrapClassicAssetResponse(
+    response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
+  ): string {
+    return Address.fromScAddress(
+      response.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
+    ).toString()
+  }
 
-  //
-  //
-  // RECEBER UM TX INVOCATION NO CE E USAR PRA FAZER O RESTORE AUTOMATICO
-  // QUANDO NAO TIVER, CHECAR E LANCAR ERRO
-  // REMOVER TODOS PREPARE
-  //
-
-  // protected checkFailedSubmissionForArchivedFootprint(error: StellarPlusErrorObject, callback: function): void {
-
-  // }
-
+  // This functions can be invoked with two different sets of arguments. The first set is when the keys are provided directly.
+  /**
+   * @args {RestoreFootprintArgs} args - The arguments for the invocation.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   *
+   * Option 1: Provide the keys directly.
+   * @param {xdr.LedgerKey[]} args.keys - The keys to restore.
+   * Option 2: Provide the restore preamble.
+   * @param { RestoreFootprintWithRestorePreamble} args.restorePreamble - The restore preamble.
+   * @param {string} args.restorePreamble.minResourceFee - The minimum resource fee.
+   * @param {SorobanDataBuilder} args.restorePreamble.transactionData - The transaction data.
+   *
+   * @returns {Promise<void>}
+   *
+   * @description - Execute a transaction to restore a given footprint.
+   */
   public async restoreFootprint(args: RestoreFootprintArgs): Promise<void> {
     const { header, signers, feeBump } = args
 
