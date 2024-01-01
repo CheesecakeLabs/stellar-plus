@@ -1,8 +1,9 @@
 import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
 
-import { ContractEngineConstructorArgs, TransactionCosts } from 'stellar-plus/core/contract-engine/types'
+import { ContractEngineConstructorArgs, Options, TransactionCosts } from 'stellar-plus/core/contract-engine/types'
 import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
 import {
+  RestoreFootprintArgs,
   SorobanInvokeArgs,
   SorobanSimulateArgs,
   WrapClassicAssetArgs,
@@ -16,10 +17,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
-  private options: {
-    debug: boolean
-    costHandler: (methodName: string, costs: TransactionCosts, elapsedTime: number) => void
-  } = {
+  private options: Options = {
     debug: false,
     costHandler: defaultCostHandler,
   }
@@ -115,11 +113,13 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const startTime = Date.now()
 
     const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
-    const simulated = await this.simulateTransaction(builtTx)
+    const simulatedTransaction = await this.simulateTransaction(builtTx)
 
-    const costs = this.options.debug ? await this.parseTransactionCosts(simulated) : {}
+    const successfullSimulation = this.verifySimulationResponse(simulatedTransaction)
 
-    const output = this.extractOutputFromSimulation(simulated, args.method)
+    const costs = this.options.debug ? await this.parseTransactionCosts(successfullSimulation) : {}
+
+    const output = this.extractOutputFromSimulation(successfullSimulation, args.method)
 
     if (this.options.debug) {
       this.options.costHandler?.(args.method, costs, Date.now() - startTime)
@@ -167,9 +167,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const simulatedTransaction = await this.simulateTransaction(builtTx)
 
-    const costs = this.options.debug ? await this.parseTransactionCosts(simulatedTransaction) : {}
+    const successfullSimulation = this.verifySimulationResponse(simulatedTransaction)
 
-    const assembledTransaction = await this.assembleTransaction(builtTx, simulatedTransaction)
+    const costs = this.options.debug ? await this.parseTransactionCosts(successfullSimulation) : {}
+
+    const assembledTransaction = await this.assembleTransaction(builtTx, successfullSimulation)
 
     const submitted = (await this.processSorobanTransaction(
       assembledTransaction,
@@ -187,12 +189,8 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 
   private async parseTransactionCosts(
-    simulatedTransaction: SorobanRpcNamespace.Api.SimulateTransactionResponse
+    simulatedTransaction: SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
   ): Promise<TransactionCosts> {
-    const verifiedSimulationResponse = this.verifySimulationResponse(
-      simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionResponse
-    )
-
     const calculateEventSize = (event: xdr.DiagnosticEvent): number => {
       if (event.event()?.type().name === 'diagnostic') {
         return 0
@@ -200,16 +198,16 @@ export class ContractEngine extends SorobanTransactionProcessor {
       return event.toXDR().length
     }
 
-    const sorobanTransactionData = verifiedSimulationResponse.transactionData.build()
-    const events = verifiedSimulationResponse.events?.map((event) => calculateEventSize(event))
-    const returnValueSize = verifiedSimulationResponse.result?.retval.toXDR().length
+    const sorobanTransactionData = simulatedTransaction.transactionData.build()
+    const events = simulatedTransaction.events?.map((event) => calculateEventSize(event))
+    const returnValueSize = simulatedTransaction.result?.retval.toXDR().length
     const transactionDataSize = sorobanTransactionData.toXDR().length
     const eventsSize = events?.reduce((accumulator, currentValue) => accumulator + currentValue, 0)
 
     return {
-      cpuInstructions: Number(verifiedSimulationResponse.cost?.cpuInsns),
-      ram: Number(verifiedSimulationResponse.cost?.memBytes),
-      minResourceFee: Number(verifiedSimulationResponse.minResourceFee),
+      cpuInstructions: Number(simulatedTransaction.cost?.cpuInsns),
+      ram: Number(simulatedTransaction.cost?.memBytes),
+      minResourceFee: Number(simulatedTransaction.minResourceFee),
       ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
       ledgerWriteBytes: sorobanTransactionData?.resources().writeBytes(),
       ledgerEntryReads: sorobanTransactionData?.resources().footprint().readOnly().length,
@@ -244,14 +242,47 @@ export class ContractEngine extends SorobanTransactionProcessor {
     return output
   }
 
-  private verifySimulationResponse(
+  private async verifySimulationResponse(
     simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse
-  ): SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse {
+  ): Promise<SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse> {
+    if (SorobanRpcNamespace.Api.isSimulationError(simulated)) {
+      throw CEError.simulationFailed(simulated)
+    }
+
+    // Simulated transactions with restore status are simulated as if
+    // the restore was done already. This means that the simulation
+    // result will come as successfull. Therefore, we need to restore
+    // the footprint and proceed as if it was successfull.
+    // Here, if no auto restor is set, we throw an error as the
+    // execution cannot proceed.
+    if (SorobanRpcNamespace.Api.isSimulationRestore(simulated)) {
+      if (this.options.restoreTxInvocation) {
+        await this.autoRestoreFootprinyFromFromSimulation(simulated)
+      } else {
+        throw CEError.transactionNeedsRestore(simulated)
+      }
+    }
+
     if (SorobanRpcNamespace.Api.isSimulationSuccess(simulated) && simulated.result) {
       return simulated as SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
     }
 
-    throw CEError.simulationFailed(simulated)
+    if (SorobanRpcNamespace.Api.isSimulationSuccess(simulated) && !simulated.result) {
+      throw CEError.simulationMissingResult(simulated)
+    }
+
+    throw CEError.couldntVerifyTransactionSimulation(simulated)
+  }
+
+  private async autoRestoreFootprinyFromFromSimulation(
+    simulation: SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse
+  ): Promise<void> {
+    if (!this.options.restoreTxInvocation) {
+      throw CEError.restoreOptionNotSet(simulation)
+    }
+    const restorePreamble = simulation.restorePreamble
+
+    await this.restoreFootprint({ restorePreamble, ...this.options.restoreTxInvocation } as RestoreFootprintArgs)
   }
 
   //==========================================

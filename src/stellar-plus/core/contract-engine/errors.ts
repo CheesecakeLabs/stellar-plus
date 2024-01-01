@@ -19,6 +19,9 @@ export enum ContractEngineErrorCodes {
   CE101 = 'CE101',
   CE102 = 'CE102',
   CE103 = 'CE103',
+
+  // CE2 Restore
+  CE200 = 'CE200',
 }
 
 const missingContractId = (): StellarPlusError => {
@@ -61,42 +64,45 @@ const contractIdAlreadySet = (): StellarPlusError => {
   })
 }
 
-const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionResponse): StellarPlusError => {
-  if (SorobanRpc.Api.isSimulationError(simulation)) {
-    return new StellarPlusError({
-      code: ContractEngineErrorCodes.CE101,
-      message: 'Transaction simulation failed!',
-      source: 'ContractEngine',
-      details:
-        'Transaction simulation failed! The transaction simulation returned a failure status. Review the meta data for further information about this error.',
-      meta: {
-        sorobanSimulationData: extractSimulationErrorData(simulation),
-        data: { simulation },
-      },
-    })
-  }
-  if (SorobanRpc.Api.isSimulationRestore(simulation)) {
-    return new StellarPlusError({
-      code: ContractEngineErrorCodes.CE102,
-      message: 'Transaction simulation failed!',
-      source: 'ContractEngine',
-      details:
-        'Transaction simulation failed! The transaction simulation returned a restore status. This usually indicates the contract instance or the storage data has reached its limit. Review the meta data for further information about this error. It might be possible to restore the contract state by extending the contract instance or the storage data TTL.',
-      meta: { sorobanSimulationData: extractSimulationRestoreData(simulation), data: { simulation } },
-    })
-  }
+const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionErrorResponse): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE101,
+    message: 'Transaction simulation failed!',
+    source: 'ContractEngine',
+    details:
+      'Transaction simulation failed! The transaction simulation returned a failure status. Review the meta data for further information about this error.',
+    meta: {
+      sorobanSimulationData: extractSimulationErrorData(simulation),
+      data: { simulation },
+    },
+  })
+}
 
-  if (SorobanRpc.Api.isSimulationSuccess(simulation) && !simulation.result) {
-    return new StellarPlusError({
-      code: ContractEngineErrorCodes.CE103,
-      message: 'Transaction simulation is missing the result data!',
-      source: 'ContractEngine',
-      details:
-        'Transaction simulation is missing the result data! The transaction simulation returned a success status, but the result data is missing. Review the simulated transaction parameters for further for troubleshooting.',
-      meta: { data: { simulation } },
-    })
-  }
+const simulationMissingResult = (simulation: SorobanRpc.Api.SimulateTransactionSuccessResponse): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE103,
+    message: 'Transaction simulation is missing the result data!',
+    source: 'ContractEngine',
+    details:
+      'Transaction simulation is missing the result data! The transaction simulation returned a success status, but the result data is missing. Review the simulated transaction parameters for further for troubleshooting.',
+    meta: { data: { simulation } },
+  })
+}
 
+const transactionNeedsRestore = (simulation: SorobanRpc.Api.SimulateTransactionRestoreResponse): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE102,
+    message: 'A footprint restore is required!',
+    source: 'ContractEngine',
+    details:
+      'The transaction simulation returned a restore status. This usually indicates the contract instance or the storage data has reached its limit. Review the meta data for further information about this error. It might be possible to restore the contract state by extending the contract instance or the storage data TTL.',
+    meta: { sorobanSimulationData: extractSimulationRestoreData(simulation), data: { simulation } },
+  })
+}
+
+const couldntVerifyTransactionSimulation = (
+  simulation: SorobanRpc.Api.SimulateTransactionResponse
+): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE100,
     message: 'Unexpected error in transaction simulation!',
@@ -107,10 +113,25 @@ const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionResponse
   })
 }
 
+const restoreOptionNotSet = (simulation: SorobanRpc.Api.SimulateTransactionRestoreResponse): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE200,
+    message: 'Restore option not set!',
+    source: 'ContractEngine',
+    details:
+      'Restore option not set! This function requires a restore option to be defined in this instance. You can either initialize the contract engine with a restore option or use the "restore" function to restore the contract state from a previous transaction.',
+    meta: { sorobanSimulationData: extractSimulationRestoreData(simulation), data: { simulation } },
+  })
+}
+
 export const CEError = {
   missingContractId,
   missingWasm,
   missingWasmHash,
+  couldntVerifyTransactionSimulation,
   simulationFailed,
   contractIdAlreadySet,
+  transactionNeedsRestore,
+  simulationMissingResult,
+  restoreOptionNotSet,
 }

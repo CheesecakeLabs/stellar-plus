@@ -1,5 +1,6 @@
 import { ContractSpec } from '@stellar/stellar-sdk'
 
+import { TransactionInvocation } from 'stellar-plus/core/types'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network } from 'stellar-plus/types'
 
@@ -16,6 +17,7 @@ export type ContractEngineConstructorArgs = {
 export type Options = {
   debug?: boolean
   costHandler?: (methodName: string, costs: TransactionCosts, elapsedTime: number) => void
+  restoreTxInvocation?: TransactionInvocation
 }
 
 export type TransactionCosts = {

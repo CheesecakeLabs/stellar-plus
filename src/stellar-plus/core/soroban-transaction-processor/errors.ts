@@ -24,6 +24,8 @@ export enum SorobanTransactionProcessorErrorCodes {
   STP008 = 'STP008',
   STP009 = 'STP009',
   STP010 = 'STP010',
+  STP011 = 'STP011',
+  STP012 = 'STP012',
 
   // STP1 Transaction Operation Error codes
   STP100 = 'STP100',
@@ -192,6 +194,40 @@ const failedToWrapAsset = (error: StellarPlusError): StellarPlusError => {
   })
 }
 
+const failedToRestoreFootprintWithError = (error: StellarPlusError, transaction: Transaction): StellarPlusError => {
+  return new StellarPlusError({
+    code: SorobanTransactionProcessorErrorCodes.STP011,
+    message: 'Failed to restore footprint!',
+    source: 'SorobanTransactionProcessor',
+    details:
+      'The footprint could not be restored. Review the meta error to identify the underlying cause for this issue.',
+    meta: {
+      message: error.message,
+      ...error.meta,
+      transactionData: extractTransactionData(transaction),
+      transactionXDR: transaction.toXDR(),
+    },
+  })
+}
+
+const failedToRestoreFootprintWithResponse = (
+  response: SorobanRpc.Api.GetTransactionResponse,
+  transaction: Transaction
+): StellarPlusError => {
+  return new StellarPlusError({
+    code: SorobanTransactionProcessorErrorCodes.STP012,
+    message: 'Failed to restore footprint!',
+    source: 'SorobanTransactionProcessor',
+    details:
+      'The footprint could not be restored. Review the meta error to identify the underlying cause for this issue.',
+    meta: {
+      sorobanGetTransactionData: extractGetTransactionData(response),
+      transactionData: extractTransactionData(transaction),
+      transactionXDR: transaction.toXDR(),
+    },
+  })
+}
+
 export const STPError = {
   failedToBuildTransaction,
   failedToSimulateTransaction,
@@ -204,4 +240,6 @@ export const STPError = {
   failedToUploadWasm,
   failedToDeployContract,
   failedToWrapAsset,
+  failedToRestoreFootprintWithError,
+  failedToRestoreFootprintWithResponse,
 }

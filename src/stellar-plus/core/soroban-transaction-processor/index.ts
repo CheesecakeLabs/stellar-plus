@@ -22,6 +22,7 @@ import {
   SorobanSimulateArgs,
   SorobanUploadArgs,
   WrapClassicAssetArgs,
+  isRestoreFootprintWithLedgerKeys,
 } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { FeeBumpHeader } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
@@ -473,8 +474,12 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
   // }
 
-  public async restoreFootprint(args: RestoreFootprintArgs): Promise<boolean> {
-    const { header, signers, feeBump, keys } = args
+  public async restoreFootprint(args: RestoreFootprintArgs): Promise<void> {
+    const { header, signers, feeBump } = args
+
+    const sorobanData = isRestoreFootprintWithLedgerKeys(args)
+      ? new SorobanDataBuilder().setReadWrite(args.keys).build()
+      : args.restorePreamble.transactionData.build()
 
     const txInvocation = {
       signers,
@@ -492,9 +497,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
     const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(restoreFootprintOperation, txInvocation)
 
-    const builtTxWithFootprint = TransactionBuilder.cloneFrom(builtTx)
-      .setSorobanData(new SorobanDataBuilder().setReadWrite(keys).build())
-      .build()
+    const builtTxWithFootprint = TransactionBuilder.cloneFrom(builtTx).setSorobanData(sorobanData).build()
 
     const simulatedTransaction = await this.simulateTransaction(builtTxWithFootprint)
     const assembledTransaction = await this.assembleTransaction(builtTxWithFootprint, simulatedTransaction)
@@ -511,12 +514,12 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         (extractGetTransactionData(output) as GetTransactionSuccessErrorInfo).opCode ===
         SorobanOpCodes.restoreFootprintSuccess
       ) {
-        return true
+        return // Success
       }
 
-      throw new Error('Failed to restore footprint!')
+      throw STPError.failedToRestoreFootprintWithResponse(output, assembledTransaction)
     } catch (error) {
-      throw new Error('Failed to restore footprint!')
+      throw STPError.failedToRestoreFootprintWithError(error as StellarPlusError, assembledTransaction)
     }
   }
 }
