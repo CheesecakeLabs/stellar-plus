@@ -5,16 +5,19 @@ import {
   FeeBumpTransaction,
   Operation,
   OperationOptions,
+  SorobanDataBuilder,
   SorobanRpc as SorobanRpcNamespace,
   Account as StellarAccount,
   Transaction,
   TransactionBuilder,
   xdr,
 } from '@stellar/stellar-sdk'
+import { assembleTransaction } from '@stellar/stellar-sdk/lib/soroban'
 
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
 import {
+  RestoreFootprintArgs,
   SorobanDeployArgs,
   SorobanSimulateArgs,
   SorobanUploadArgs,
@@ -22,6 +25,8 @@ import {
 } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { FeeBumpHeader } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
+import { SorobanOpCodes } from 'stellar-plus/error/helpers/result-meta-xdr'
+import { GetTransactionSuccessErrorInfo, extractGetTransactionData } from 'stellar-plus/error/helpers/soroban-rpc'
 import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network, TransactionXdr } from 'stellar-plus/types'
@@ -110,12 +115,24 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    *
    * @returns {Promise<Transaction>} Transaction prepared for submission.
    */
-  protected async prepareTransaction(tx: Transaction): Promise<Transaction> {
+  // protected async prepareTransaction(tx: Transaction): Promise<Transaction> {
+  //   try {
+  //     const response = await this.rpcHandler.prepareTransaction(tx)
+  //     return response
+  //   } catch (e) {
+  //     throw STPError.failedToPrepareTransaction(e as Error, tx)
+  //   }
+  // }
+
+  protected async assembleTransaction(
+    rawTransaction: Transaction,
+    simulatedTransaction: SorobanRpcNamespace.Api.SimulateTransactionResponse
+  ): Promise<Transaction> {
     try {
-      const response = await this.rpcHandler.prepareTransaction(tx)
-      return response
+      const response = assembleTransaction(rawTransaction, simulatedTransaction)
+      return response.build()
     } catch (e) {
-      throw STPError.failedToPrepareTransaction(e as Error, tx)
+      throw STPError.failedToAssembleTransaction(e as Error, rawTransaction, simulatedTransaction)
     }
   }
 
@@ -287,22 +304,64 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     }
 
     const uploadOperation = [Operation.uploadContractWasm({ wasm })]
-
     const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(uploadOperation, txInvocation)
 
-    const prepared = await this.prepareTransaction(builtTx)
+    const simulatedTransaction = await this.simulateTransaction(builtTx)
+    const assembledTransaction = await this.assembleTransaction(builtTx, simulatedTransaction)
 
     try {
       const output = await this.processSorobanTransaction(
-        prepared,
+        assembledTransaction,
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
 
+      //====================
+      // console.log('restore')
+      // const ennvelope = output.envelopeXdr
+      // const footprint = ennvelope.v1().tx().ext().sorobanData().resources().footprint()
+      // const extendResult = await this.restoreFootprint({ keys: footprint.readOnly(), ...txInvocation })
+
+      // console.log('EXTENDED RESULT : ', extendResult)
+
+      console.log('OUTPUT: ', output.resultXdr.toXDR('base64'))
+
+      //====================
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
       return (output.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString('hex') as string
     } catch (error) {
+      // const spError = error as StellarPlusErrorObject
+
+      // this.checkFailedSubmissionForArchivedFootprint(spError, async () => {
+      //   this
+      // })
       throw STPError.failedToUploadWasm(error as StellarPlusError)
+
+      // Is the entry archived and requires footprint restore?
+      // if (spError.code === SorobanTransactionProcessorErrorCodes.STP101) {
+      //   // console.log(
+      //   //   (spError.meta?.sorobanGetTransactionData as GetTransactionFailedErrorInfo).envelopeXdr.toXDR('base64')
+      //   // )
+      //   const txEnvelop = (spError.meta?.sorobanGetTransactionData as GetTransactionFailedErrorInfo).envelopeXdr
+
+      //   // console.log('txEnvelop: ', txEnvelop.toXDR('base64'))
+      //   const footprint = txEnvelop.v1().tx().ext().sorobanData().resources().footprint()
+
+      //   console.log('Extending Footprint: ', footprint)
+      //   try {
+      //     // const extendResult = await this.restoreFootprint({ keys: footprint.readOnly(), ...txInvocation })
+      //     // if (!extendResult) {
+      //     //   console.log('failed Extended Footprint: ', extendResult)
+      //     //   throw new Error('Failed to extend footprint!')
+      //     // }
+      //     console.log('Extended Footprint: ') //, extendResult)
+      //   } catch (error) {
+      //     console.log('Error: ', error)
+      //   }
+      //   return await this.uploadContractWasm(args)
+      // } else {
+      //   throw STPError.failedToUploadWasm(error as StellarPlusError)
+      // }
     }
   }
 
@@ -336,11 +395,12 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
     const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(deployOperation, txInvocation)
 
-    const prepared = await this.prepareTransaction(builtTx)
+    const simulatedTransaction = await this.simulateTransaction(builtTx)
+    const assembledTransaction = await this.assembleTransaction(builtTx, simulatedTransaction)
 
     try {
       const output = await this.processSorobanTransaction(
-        prepared,
+        assembledTransaction,
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
@@ -380,11 +440,12 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
     const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(wrapOperation, txInvocation)
 
-    const prepared = await this.prepareTransaction(builtTx)
+    const simulatedTransaction = await this.simulateTransaction(builtTx)
+    const assembledTransaction = await this.assembleTransaction(builtTx, simulatedTransaction)
 
     try {
       const output = await this.processSorobanTransaction(
-        prepared,
+        assembledTransaction,
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
@@ -401,41 +462,61 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
   //
   // TODO: Implement TTL pipeline
 
-  // public async extendFootprintTTL(args: ExtendFootprintTTLArgs): Promise<string> {
-  //   const { extendTo, header, signers, feeBump } = args
+  //
+  //
+  // RECEBER UM TX INVOCATION NO CE E USAR PRA FAZER O RESTORE AUTOMATICO
+  // QUANDO NAO TIVER, CHECAR E LANCAR ERRO
+  // REMOVER TODOS PREPARE
+  //
 
-  //   const txInvocation = {
-  //     signers,
-  //     header,
-  //     feeBump,
-  //   }
+  // protected checkFailedSubmissionForArchivedFootprint(error: StellarPlusErrorObject, callback: function): void {
 
-  //   const options: OperationOptions.ExtendFootprintTTL = {
-  //     extendTo,
-  //   }
-
-  //   const extendTTLOperation = [Operation.extendFootprintTtl(options)]
-
-  //   const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(extendTTLOperation, txInvocation)
-
-  //   // const envelope = TransactionBuilder.cloneFrom(builtTx)
-  //   // envelope.
-  //   // const data = xdr.SorobanTransactionData
-  //   // envelope.setSorobanData()
-
-  //   const prepared = await this.prepareTransaction(builtTx)
-
-  //   try {
-  //     const output = await this.processSorobanTransaction(
-  //       prepared,
-  //       updatedTxInvocation.signers,
-  //       updatedTxInvocation.feeBump
-  //     )
-
-  //     return output.returnValue?.value() as string
-  //   } catch (error) {
-  //     // console.log('Error: ', error)
-  //     throw new Error('Failed to wrap asset contract!')
-  //   }
   // }
+
+  public async restoreFootprint(args: RestoreFootprintArgs): Promise<boolean> {
+    const { header, signers, feeBump, keys } = args
+
+    const txInvocation = {
+      signers,
+      header,
+      feeBump,
+    }
+
+    // const options: OperationOptions.ExtendFootprintTTL = {
+    //   extendTo,
+    // }
+
+    const options: OperationOptions.RestoreFootprint = {}
+    // const extendTTLOperation = [Operation.extendFootprintTtl(options)]
+    const restoreFootprintOperation = [Operation.restoreFootprint(options)]
+
+    const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(restoreFootprintOperation, txInvocation)
+
+    const builtTxWithFootprint = TransactionBuilder.cloneFrom(builtTx)
+      .setSorobanData(new SorobanDataBuilder().setReadWrite(keys).build())
+      .build()
+
+    const simulatedTransaction = await this.simulateTransaction(builtTxWithFootprint)
+    const assembledTransaction = await this.assembleTransaction(builtTxWithFootprint, simulatedTransaction)
+
+    try {
+      const output = await this.processSorobanTransaction(
+        assembledTransaction,
+        updatedTxInvocation.signers,
+        updatedTxInvocation.feeBump
+      )
+
+      // Verify if successfully restored. The returnValue parameter is not trustworthy because it can carry a false flag even with success restore.
+      if (
+        (extractGetTransactionData(output) as GetTransactionSuccessErrorInfo).opCode ===
+        SorobanOpCodes.restoreFootprintSuccess
+      ) {
+        return true
+      }
+
+      throw new Error('Failed to restore footprint!')
+    } catch (error) {
+      throw new Error('Failed to restore footprint!')
+    }
+  }
 }

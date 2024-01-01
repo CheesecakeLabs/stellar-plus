@@ -117,7 +117,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
     const simulated = await this.simulateTransaction(builtTx)
 
-    const costs = this.options.debug ? await this.parseTransactionCosts(builtTx) : {}
+    const costs = this.options.debug ? await this.parseTransactionCosts(simulated) : {}
 
     const output = this.extractOutputFromSimulation(simulated, args.method)
 
@@ -165,11 +165,14 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
 
-    const costs = this.options.debug ? await this.parseTransactionCosts(builtTx) : {}
+    const simulatedTransaction = await this.simulateTransaction(builtTx)
 
-    const prepared = await this.prepareTransaction(builtTx)
+    const costs = this.options.debug ? await this.parseTransactionCosts(simulatedTransaction) : {}
+
+    const assembledTransaction = await this.assembleTransaction(builtTx, simulatedTransaction)
+
     const submitted = (await this.processSorobanTransaction(
-      prepared,
+      assembledTransaction,
       args.signers,
       args.feeBump
     )) as SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
@@ -184,12 +187,10 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 
   private async parseTransactionCosts(
-    tx: Transaction | SorobanRpcNamespace.Api.SimulateTransactionResponse
+    simulatedTransaction: SorobanRpcNamespace.Api.SimulateTransactionResponse
   ): Promise<TransactionCosts> {
-    const unverifiedSimulation = tx instanceof Transaction ? await this.simulateTransaction(tx as Transaction) : tx
-
-    const simulated = this.verifySimulationResponse(
-      unverifiedSimulation as SorobanRpcNamespace.Api.SimulateTransactionResponse
+    const verifiedSimulationResponse = this.verifySimulationResponse(
+      simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionResponse
     )
 
     const calculateEventSize = (event: xdr.DiagnosticEvent): number => {
@@ -199,16 +200,16 @@ export class ContractEngine extends SorobanTransactionProcessor {
       return event.toXDR().length
     }
 
-    const sorobanTransactionData = simulated.transactionData.build()
-    const events = simulated.events?.map((event) => calculateEventSize(event))
-    const returnValueSize = simulated.result?.retval.toXDR().length
+    const sorobanTransactionData = verifiedSimulationResponse.transactionData.build()
+    const events = verifiedSimulationResponse.events?.map((event) => calculateEventSize(event))
+    const returnValueSize = verifiedSimulationResponse.result?.retval.toXDR().length
     const transactionDataSize = sorobanTransactionData.toXDR().length
     const eventsSize = events?.reduce((accumulator, currentValue) => accumulator + currentValue, 0)
 
     return {
-      cpuInstructions: Number(simulated.cost?.cpuInsns),
-      ram: Number(simulated.cost?.memBytes),
-      minResourceFee: Number(simulated.minResourceFee),
+      cpuInstructions: Number(verifiedSimulationResponse.cost?.cpuInsns),
+      ram: Number(verifiedSimulationResponse.cost?.memBytes),
+      minResourceFee: Number(verifiedSimulationResponse.minResourceFee),
       ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
       ledgerWriteBytes: sorobanTransactionData?.resources().writeBytes(),
       ledgerEntryReads: sorobanTransactionData?.resources().footprint().readOnly().length,

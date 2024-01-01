@@ -1,4 +1,4 @@
-import { Asset as StellarAsset } from '@stellar/stellar-sdk'
+import { Asset as StellarAsset, xdr } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { EnvelopeHeader, FeeBumpHeader, TransactionInvocation } from 'stellar-plus/core/types'
@@ -28,4 +28,9 @@ export type WrapClassicAssetArgs = TransactionInvocation & {
 
 export type ExtendFootprintTTLArgs = TransactionInvocation & {
   extendTo: number
+  footprint: xdr.LedgerFootprint
+}
+
+export type RestoreFootprintArgs = TransactionInvocation & {
+  keys: xdr.LedgerKey[]
 }
