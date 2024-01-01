@@ -28,8 +28,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
    * @param {Network} network - The network to use.
    * @param {ContractSpec} spec - The contract specification.
    * @param {string=} contractId - The contract id.
-   * @param {RpcHandler=} rpcHandler - The rpc handler to use.
-   *
+   * @param {RpcHandler=} rpcHandler - A custom RPC handler to use when interacting with the network RPC server.
+   * @param {Options=}  options - A set of custom options to modify the behavior of the contract engine.
+   * @param {boolean=} options.debug - A flag to enable debug mode. This will toggle the extraction of transaction resources consumed with each transaction/simiulation.
+   * @param {CostHandler=} options.costHandler - A custom function to handle the transaction resources consumed with each transaction/simulation. Whn not provided, the default cost handler will be used and the resources will be logged to the console.
+   * @param {TransactionInvocation=} options.restoreTxInvocation - The transaction invocation object to use when automatically restoring the contract footprint. When this parameter is provided, whenever a simulation indicates that the contract footprint needs to be restored, the contract engine will automatically restore the footprint using the provided transaction invocation object.
    * @description - The contract engine is used for interacting with contracts on the network. This class can be extended to create a contract client, abstracting away the Soroban integration.
    *
    * @example - The following example shows how to invoke a contract method that alters the state of the contract.
