@@ -214,7 +214,7 @@ export class ValidationCloudRpcHandler implements RpcHandler {
       id: this.id,
       method: 'getLedgerEntries',
       params: {
-        keys: keys.map((key) => key.toXDR()),
+        keys: keys.map((key) => key.toXDR('base64')),
       },
     }
 
