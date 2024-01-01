@@ -475,7 +475,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    *
    * @description - Execute a transaction to restore a given footprint.
    */
-  public async restoreFootprint(args: RestoreFootprintArgs): Promise<void> {
+  protected async restoreFootprint(args: RestoreFootprintArgs): Promise<void> {
     const { header, signers, feeBump } = args
 
     const sorobanData = isRestoreFootprintWithLedgerKeys(args)
@@ -515,7 +515,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         (extractGetTransactionData(output) as GetTransactionSuccessErrorInfo).opCode ===
         SorobanOpCodes.restoreFootprintSuccess
       ) {
-        return // Success
+        return Promise.resolve() // success
       }
 
       throw STPError.failedToRestoreFootprintWithResponse(output, assembledTransaction)

@@ -1,4 +1,4 @@
-import { ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
+import { Contract, ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import { ContractEngineConstructorArgs, Options, TransactionResources } from 'stellar-plus/core/contract-engine/types'
 import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
@@ -82,6 +82,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
   public getWasmHash(): string {
     this.requireWasmHash()
     return this.wasmHash as string
+  }
+
+  public getContractFootprint(): xdr.LedgerKey {
+    this.requireContractId()
+    return new Contract(this.contractId!).getFootprint()
   }
 
   /**
@@ -403,6 +408,20 @@ export class ContractEngine extends SorobanTransactionProcessor {
     } catch (error) {
       throw CEError.failedToWrapAsset(error as StellarPlusError)
     }
+  }
+
+  /**
+   *
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object to use in this transaction.
+   *
+   * @returns {Promise<void>} - The output of the invocation.
+   *
+   * @description - Restores the contract instance footprint.
+   */
+  public async restoreContractFootprint(txInvocation: TransactionInvocation): Promise<void> {
+    const footprint = this.getContractFootprint()
+
+    return await this.restoreFootprint({ ...txInvocation, keys: [footprint] }) // Contract Id verified in requireContractId
   }
 
   //==========================================

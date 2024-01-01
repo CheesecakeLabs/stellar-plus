@@ -203,7 +203,7 @@ const failedToRestoreFootprintWithError = (error: StellarPlusError, transaction:
       'The footprint could not be restored. Review the meta error to identify the underlying cause for this issue.',
     meta: {
       message: error.message,
-      ...error.meta,
+      error: error,
       transactionData: extractTransactionData(transaction),
       transactionXDR: transaction.toXDR(),
     },
