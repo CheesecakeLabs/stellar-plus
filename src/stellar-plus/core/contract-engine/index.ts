@@ -69,19 +69,19 @@ export class ContractEngine extends SorobanTransactionProcessor {
     this.options = { ...this.options, ...args.options }
   }
 
-  public getContractId(): string | undefined {
+  public getContractId(): string {
     this.requireContractId()
-    return this.contractId
+    return this.contractId as string
   }
 
-  public getWasm(): Buffer | undefined {
+  public getWasm(): Buffer {
     this.requireWasm()
-    return this.wasm
+    return this.wasm as Buffer
   }
 
-  public getWasmHash(): string | undefined {
+  public getWasmHash(): string {
     this.requireWasmHash()
-    return this.wasmHash
+    return this.wasmHash as string
   }
 
   /**
@@ -342,7 +342,6 @@ export class ContractEngine extends SorobanTransactionProcessor {
       const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
       const wasmHash = this.extractWasmHashFromUploadWasmResponse(response)
-      console.log('Wasm hash: ', wasmHash)
       this.wasmHash = wasmHash
 
       if (this.options.debug) {
@@ -378,7 +377,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
       this.contractId = contractId
 
       if (this.options.debug) {
-        this.options.costHandler?.('uploadWasm', transactionResources as TransactionResources, Date.now() - startTime)
+        this.options.costHandler?.('deployWasm', transactionResources as TransactionResources, Date.now() - startTime)
       }
     } catch (error) {
       throw CEError.failedToDeployContract(error as StellarPlusError)
@@ -399,7 +398,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
       this.contractId = contractId
 
       if (this.options.debug) {
-        this.options.costHandler?.('uploadWasm', transactionResources as TransactionResources, Date.now() - startTime)
+        this.options.costHandler?.('wrapSAC', transactionResources as TransactionResources, Date.now() - startTime)
       }
     } catch (error) {
       throw CEError.failedToWrapAsset(error as StellarPlusError)
