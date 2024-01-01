@@ -20,6 +20,7 @@
 * [Asset](reference/asset/README.md)
   * [Classic Asset Handler](reference/asset/classic-asset-handler.md)
   * [Stellar Asset Contract Handler](reference/asset/stellar-asset-contract-handler.md)
+  * [Soroban Token Handler](reference/asset/soroban-token-handler.md)
 * [Constants](reference/constants.md)
 * [Contracts](reference/contracts/README.md)
   * [Contract Engine](reference/contracts/contract-engine.md)
@@ -34,3 +35,5 @@
   * [Default RPC Handler](reference/rpc/default-rpc-handler.md)
   * [Validation Cloud RPC Handler](reference/rpc/validation-cloud-rpc-handler.md)
 * [Soroban Handler](reference/soroban-handler.md)
+* [Utils](reference/utils/README.md)
+  * [Soroban Profiler](reference/utils/soroban-profiler.md)
