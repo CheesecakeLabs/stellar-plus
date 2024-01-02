@@ -1,5 +1,5 @@
-import { ClassicAssetHandler } from 'stellar-plus/asset/classic'
-import { SorobanTokenHandler } from 'stellar-plus/asset/soroban-token'
+import { ClassicAssetHandler as _ClassicAssetHandler } from 'stellar-plus/asset/classic'
+import { SorobanTokenHandler as _SorobanTokenHandler } from 'stellar-plus/asset/soroban-token'
 import { SACHandler } from 'stellar-plus/asset/stellar-asset-contract'
 
 export enum AssetTypes {
@@ -15,6 +15,6 @@ export type AssetType = {
   type: AssetTypes
 }
 
-export type ClassicAssetHandlerType = typeof ClassicAssetHandler
-export type SorobanTokenHandlerType = typeof SorobanTokenHandler
-export type SACAssetHandlerType = typeof SACHandler
+export type ClassicAssetHandler = typeof _ClassicAssetHandler
+export type SorobanTokenHandler = typeof _SorobanTokenHandler
+export type SACAssetHandler = typeof SACHandler
