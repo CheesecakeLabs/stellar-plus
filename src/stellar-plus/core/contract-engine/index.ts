@@ -121,6 +121,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     }
 
     return contractInstance.liveUntilLedgerSeq
+
   }
 
   /**

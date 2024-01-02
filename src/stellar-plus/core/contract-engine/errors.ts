@@ -16,6 +16,7 @@ export enum ContractEngineErrorCodes {
   CE005 = 'CE005',
   CE006 = 'CE006',
 
+
   // CE1 Simulation
   CE100 = 'CE100',
   CE101 = 'CE101',
@@ -129,6 +130,7 @@ const transactionNeedsRestore = (simulation: SorobanRpc.Api.SimulateTransactionR
   })
 }
 
+
 const couldntVerifyTransactionSimulation = (
   simulation: SorobanRpc.Api.SimulateTransactionResponse
 ): StellarPlusError => {
@@ -200,4 +202,5 @@ export const CEError = {
   failedToUploadWasm,
   failedToDeployContract,
   failedToWrapAsset,
+
 }
