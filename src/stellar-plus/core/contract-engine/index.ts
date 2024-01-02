@@ -121,7 +121,6 @@ export class ContractEngine extends SorobanTransactionProcessor {
     }
 
     return contractInstance.liveUntilLedgerSeq
-
   }
 
   /**
@@ -156,11 +155,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
     const simulatedTransaction = await this.simulateTransaction(builtTx)
 
-    const successfullSimulation = await this.verifySimulationResponse(simulatedTransaction)
+    const successfulSimulation = await this.verifySimulationResponse(simulatedTransaction)
 
-    const costs = this.options.debug ? await this.parseTransactionResources(successfullSimulation) : {}
+    const costs = this.options.debug ? await this.parseTransactionResources(successfulSimulation) : {}
 
-    const output = this.extractOutputFromSimulation(successfullSimulation, args.method)
+    const output = this.extractOutputFromSimulation(successfulSimulation, args.method)
 
     if (this.options.debug) {
       this.options.costHandler?.(args.method, costs, Date.now() - startTime)
