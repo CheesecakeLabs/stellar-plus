@@ -10,8 +10,9 @@ import {
 } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
+import { StellarPlusErrorObject } from 'stellar-plus/error/types'
 
-import { CEError } from './errors'
+import { CEError, ContractEngineErrorCodes } from './errors'
 
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
@@ -121,7 +122,6 @@ export class ContractEngine extends SorobanTransactionProcessor {
     }
 
     return contractInstance.liveUntilLedgerSeq
-
   }
 
   /**
@@ -300,11 +300,13 @@ export class ContractEngine extends SorobanTransactionProcessor {
     // Here, if no auto restor is set, we throw an error as the
     // execution cannot proceed.
     if (SorobanRpcNamespace.Api.isSimulationRestore(simulated)) {
-      if (this.options.restoreTxInvocation) {
-        await this.autoRestoreFootprinyFromFromSimulation(simulated)
-      } else {
-        throw CEError.transactionNeedsRestore(simulated)
-      }
+      throw CEError.transactionNeedsRestore(simulated)
+      // if (this.options.restoreTxInvocation) {
+      //   await this.autoRestoreFootprintFromFromSimulation(simulated, originalTx)
+      //   // Bump sequence number if same account is used for restore
+      // } else {
+
+      // }
     }
 
     if (SorobanRpcNamespace.Api.isSimulationSuccess(simulated) && simulated.result) {
@@ -318,15 +320,21 @@ export class ContractEngine extends SorobanTransactionProcessor {
     throw CEError.couldntVerifyTransactionSimulation(simulated)
   }
 
-  private async autoRestoreFootprinyFromFromSimulation(
-    simulation: SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse
-  ): Promise<void> {
+  private async autoRestoreFootprintFromFromSimulation(
+    simulation: SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse,
+    originalTx: Transaction
+  ): Promise<Transaction> {
     if (!this.options.restoreTxInvocation) {
       throw CEError.restoreOptionNotSet(simulation)
     }
     const restorePreamble = simulation.restorePreamble
 
     await this.restoreFootprint({ restorePreamble, ...this.options.restoreTxInvocation } as RestoreFootprintArgs)
+
+    if (originalTx.source === this.options.restoreTxInvocation.header.source) {
+      originalTx.sequence = (BigInt(originalTx.sequence) + BigInt(1)).toString()
+    }
+    return originalTx
   }
 
   //==========================================
@@ -342,14 +350,40 @@ export class ContractEngine extends SorobanTransactionProcessor {
     response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
     transactionResources?: TransactionResources
   }> {
-    const { builtTx, updatedTxInvocation } = args
+    const { updatedTxInvocation } = args
+
+    let { builtTx } = args
+
     const simulatedTransaction = await this.simulateTransaction(builtTx)
 
-    const successfullSimulation = await this.verifySimulationResponse(simulatedTransaction)
+    let successfulSimulation: SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
 
-    const transactionResources = this.options.debug ? await this.parseTransactionResources(successfullSimulation) : {}
+    try {
+      successfulSimulation = await this.verifySimulationResponse(simulatedTransaction)
+    } catch (error: unknown) {
+      const spError = error as StellarPlusErrorObject
+      if (spError.code === ContractEngineErrorCodes.CE102) {
+        // Transaction needs Restore
+        if (this.options.restoreTxInvocation) {
+          builtTx = await this.autoRestoreFootprintFromFromSimulation(
+            simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse,
+            builtTx
+          )
 
-    const assembledTransaction = await this.assembleTransaction(builtTx, successfullSimulation)
+          successfulSimulation = simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
+        } else {
+          throw CEError.restoreOptionNotSet(
+            simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse
+          )
+        }
+      } else {
+        throw error
+      }
+    }
+
+    const transactionResources = this.options.debug ? await this.parseTransactionResources(successfulSimulation) : {}
+
+    const assembledTransaction = await this.assembleTransaction(builtTx, successfulSimulation)
 
     return {
       response: await this.processSorobanTransaction(
