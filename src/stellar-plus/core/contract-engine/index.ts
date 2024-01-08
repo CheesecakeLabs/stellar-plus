@@ -18,7 +18,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
   private wasmHash?: string
   private options: {
     debug: boolean
-    costHandler: (methodName: string, costs: TransactionCosts, elapsedTime: number) => void
+    costHandler: (methodName: string, costs: TransactionCosts, elapsedTime: number, feeCharged: number) => void
   } = {
     debug: false,
     costHandler: defaultCostHandler,
@@ -122,7 +122,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const output = this.extractOutputFromSimulation(simulated, args.method)
 
     if (this.options.debug) {
-      this.options.costHandler?.(args.method, costs, Date.now() - startTime)
+      this.options.costHandler?.(args.method, costs, Date.now() - startTime, 0)
     }
 
     return output
@@ -177,7 +177,8 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const output = this.extractOutputFromProcessedInvocation(submitted, args.method)
 
     if (this.options.debug) {
-      this.options.costHandler?.(args.method, costs, Date.now() - startTime)
+      const feeCharged = Number(submitted.resultXdr.feeCharged())
+      this.options.costHandler?.(args.method, costs, Date.now() - startTime, feeCharged)
     }
 
     return output
@@ -326,8 +327,14 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 }
 
-function defaultCostHandler(methodName: string, costs: TransactionCosts, elapsedTime: number): void {
+function defaultCostHandler(
+  methodName: string,
+  costs: TransactionCosts,
+  elapsedTime: number,
+  feeCharged: number
+): void {
   console.log('Debugging method: ', methodName)
   console.log(costs)
+  console.log('Fee charged: ', feeCharged)
   console.log('Elapsed time: ', elapsedTime)
 }

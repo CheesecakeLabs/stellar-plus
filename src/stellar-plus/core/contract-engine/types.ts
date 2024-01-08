@@ -15,7 +15,7 @@ export type ContractEngineConstructorArgs = {
 
 export type Options = {
   debug?: boolean
-  costHandler?: (methodName: string, costs: TransactionCosts, elapsedTime: number) => void
+  costHandler?: (methodName: string, costs: TransactionCosts, elapsedTime: number, feeCharged: number) => void
 }
 
 export type TransactionCosts = {
