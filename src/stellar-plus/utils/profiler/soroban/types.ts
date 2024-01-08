@@ -3,6 +3,7 @@ import { TransactionCosts } from 'stellar-plus/core/contract-engine/types'
 export type LogEntry = {
   methodName: string
   costs: TransactionCosts
+  feeCharged: number
   elapsedTime?: number
 }
 
@@ -39,6 +40,7 @@ export type ResourcesList<T> = {
 export type AggregateType = ResourcesList<AggregationMethod> & {
   all?: AggregationMethod
   elapsedTime?: AggregationMethod
+  feeCharged?: AggregationMethod
 }
 
 export type AggregationMethod = {
