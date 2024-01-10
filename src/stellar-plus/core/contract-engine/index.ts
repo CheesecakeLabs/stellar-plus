@@ -207,7 +207,8 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const eventsSize = events?.reduce((accumulator, currentValue) => accumulator + currentValue, 0)
 
     return {
-      cpuInstructions: Number(simulated.cost?.cpuInsns),
+      // cpuInstructions: Number(simulated.cost?.cpuInsns),
+      cpuInstructions: Number(sorobanTransactionData?.resources().instructions()),
       ram: Number(simulated.cost?.memBytes),
       minResourceFee: Number(simulated.minResourceFee),
       ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
