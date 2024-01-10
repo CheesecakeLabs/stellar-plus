@@ -295,8 +295,11 @@ describe('ContractEngine', () => {
         .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromProcessedInvocation')
         .mockResolvedValueOnce('mock-output')
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'parseTransactionCosts')
+        .spyOn(mockContractEngineWithContractId as any, 'extractTransactionCosts')
         .mockResolvedValueOnce(mockTransactionCosts)
+      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(mockContractEngineWithContractId as any, 'extractFeeCharged')
+        .mockResolvedValueOnce(10)
 
       await mockContractEngineWithContractId.invokeContractTest({
         method: 'mock-method',
@@ -305,7 +308,12 @@ describe('ContractEngine', () => {
       })
 
       expect(mockCostHandler).toHaveBeenCalledTimes(1)
-      expect(mockCostHandler).toHaveBeenCalledWith('mock-method', mockTransactionCosts, expect.any(Number))
+      expect(mockCostHandler).toHaveBeenCalledWith(
+        'mock-method',
+        mockTransactionCosts,
+        expect.any(Number),
+        expect.any(Number)
+      )
     })
 
     it('should not invoke costHandler if provided when debug is false - invoke contract', async () => {
@@ -337,7 +345,7 @@ describe('ContractEngine', () => {
         .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromProcessedInvocation')
         .mockResolvedValueOnce('mock-output')
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'parseTransactionCosts')
+        .spyOn(mockContractEngineWithContractId as any, 'extractTransactionCosts')
         .mockResolvedValueOnce(mockTransactionCosts)
 
       await mockContractEngineWithContractId.invokeContractTest({
@@ -376,8 +384,11 @@ describe('ContractEngine', () => {
         .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromSimulation')
         .mockResolvedValueOnce('mock-output')
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'parseTransactionCosts')
+        .spyOn(mockContractEngineWithContractId as any, 'extractTransactionCosts')
         .mockResolvedValueOnce(mockTransactionCosts)
+      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(mockContractEngineWithContractId as any, 'extractFeeCharged')
+        .mockResolvedValueOnce(10)
 
       await mockContractEngineWithContractId.readFromContractTest({
         method: 'mock-method',
@@ -386,7 +397,12 @@ describe('ContractEngine', () => {
       })
 
       expect(mockCostHandler).toHaveBeenCalledTimes(1)
-      expect(mockCostHandler).toHaveBeenCalledWith('mock-method', mockTransactionCosts, expect.any(Number))
+      expect(mockCostHandler).toHaveBeenCalledWith(
+        'mock-method',
+        mockTransactionCosts,
+        expect.any(Number),
+        expect.any(Number)
+      )
     })
 
     it('should not invoke costHandler if provided when debug is false - read from contract', async () => {
@@ -415,7 +431,7 @@ describe('ContractEngine', () => {
         .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromSimulation')
         .mockResolvedValueOnce('mock-output')
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'parseTransactionCosts')
+        .spyOn(mockContractEngineWithContractId as any, 'extractTransactionCosts')
         .mockResolvedValueOnce(mockTransactionCosts)
 
       await mockContractEngineWithContractId.readFromContractTest({
@@ -425,7 +441,12 @@ describe('ContractEngine', () => {
       })
 
       expect(mockCostHandler).toHaveBeenCalledTimes(0)
-      expect(mockCostHandler).not.toHaveBeenCalledWith('mock-method', mockTransactionCosts, expect.any(Number))
+      expect(mockCostHandler).not.toHaveBeenCalledWith(
+        'mock-method',
+        mockTransactionCosts,
+        expect.any(Number),
+        expect.any(Number)
+      )
     })
   })
 })
