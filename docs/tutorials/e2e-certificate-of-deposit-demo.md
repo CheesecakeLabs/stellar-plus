@@ -41,7 +41,7 @@ Our target with this demo is to exemplify a direct workflow to how the Stellar P
 
 In this first step, we'll start by defining which network we'll be operating in this demo, which for now is the `testnet`. Then we'll start a new account handler to manage the Opex account and initialize it with friendbot.\
 \
-Once the account is fully created and funded, we'll then creat a `TransactionInvocation` object for transactions made by the Opex account. This object will also be used to define the Fee Bump strategy for the subsequent transactions processed.
+Once the account is fully created and funded, we'll then create a `TransactionInvocation` object for transactions made by the Opex account. This object will also be used to define the Fee Bump strategy for the subsequent transactions processed.
 
 {% code lineNumbers="true" %}
 ```typescript
