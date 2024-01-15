@@ -55,10 +55,6 @@ export class DefaultRpcHandler implements RpcHandler {
    * @description - Prepares the transaction on the Soroban server.
    */
   async prepareTransaction(tx: Transaction): Promise<Transaction> {
-    const sim = await this.simulateTransaction(tx)
-
-    console.log('sim', sim)
-
     const response = await this.server.prepareTransaction(tx)
     return response as Transaction
   }
