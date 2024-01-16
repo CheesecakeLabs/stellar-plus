@@ -269,7 +269,6 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 
   private async extractFeeCharged(tx: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse): Promise<number> {
-    console.log('tx: ', tx.resultXdr)
     return Number(tx.resultXdr.feeCharged())
   }
 
