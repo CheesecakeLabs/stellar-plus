@@ -156,11 +156,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
     const simulatedTransaction = await this.simulateTransaction(builtTx)
 
-    const successfullSimulation = await this.verifySimulationResponse(simulatedTransaction)
+    const successfulSimulation = await this.verifySimulationResponse(simulatedTransaction)
 
-    const costs = this.options.debug ? await this.parseTransactionResources(successfullSimulation) : {}
+    const costs = this.options.debug ? await this.parseTransactionResources(successfulSimulation) : {}
 
-    const output = this.extractOutputFromSimulation(successfullSimulation, args.method)
+    const output = this.extractOutputFromSimulation(successfulSimulation, args.method)
 
     if (this.options.debug) {
       this.options.costHandler?.(args.method, costs, Date.now() - startTime, 0)
@@ -306,8 +306,8 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     // Simulated transactions with restore status are simulated as if
     // the restore was done already. This means that the simulation
-    // result will come as successfull. Therefore, we need to restore
-    // the footprint and proceed as if it was successfull.
+    // result will come as successful. Therefore, we need to restore
+    // the footprint and proceed as if it was successful.
     // Here, if no auto restor is set, we throw an error as the
     // execution cannot proceed.
     if (SorobanRpcNamespace.Api.isSimulationRestore(simulated)) {
