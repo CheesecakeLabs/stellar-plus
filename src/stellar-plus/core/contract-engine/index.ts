@@ -19,8 +19,15 @@ export class ContractEngine extends SorobanTransactionProcessor {
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
+<<<<<<< HEAD
 
   private options: Options = {
+=======
+  private options: {
+    debug: boolean
+    costHandler: (methodName: string, costs: TransactionCosts, elapsedTime: number, feeCharged: number) => void
+  } = {
+>>>>>>> 06a9f5645630741cf91ad4a7b932f46a906a2088
     debug: false,
     costHandler: defaultCostHandler,
   }
@@ -156,14 +163,18 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
     const simulatedTransaction = await this.simulateTransaction(builtTx)
 
+<<<<<<< HEAD
     const successfullSimulation = await this.verifySimulationResponse(simulatedTransaction)
+=======
+    const costs = this.options.debug ? await this.extractTransactionCosts(builtTx) : {}
+>>>>>>> 06a9f5645630741cf91ad4a7b932f46a906a2088
 
     const costs = this.options.debug ? await this.parseTransactionResources(successfullSimulation) : {}
 
     const output = this.extractOutputFromSimulation(successfullSimulation, args.method)
 
     if (this.options.debug) {
-      this.options.costHandler?.(args.method, costs, Date.now() - startTime)
+      this.options.costHandler?.(args.method, costs, Date.now() - startTime, 0)
     }
 
     return output
@@ -206,7 +217,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
 
+<<<<<<< HEAD
     const txInvocation = { ...args } as TransactionInvocation
+=======
+    const costs = this.options.debug ? await this.extractTransactionCosts(builtTx) : {}
+>>>>>>> 06a9f5645630741cf91ad4a7b932f46a906a2088
 
     const { response, transactionResources } = await this.processBuiltTransaction({
       builtTx,
@@ -216,12 +231,18 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const output = this.extractOutputFromProcessedInvocation(response, args.method)
 
     if (this.options.debug) {
+<<<<<<< HEAD
       this.options.costHandler?.(args.method, transactionResources as TransactionResources, Date.now() - startTime)
+=======
+      const feeCharged = await this.extractFeeCharged(submitted)
+      this.options.costHandler?.(args.method, costs, Date.now() - startTime, feeCharged)
+>>>>>>> 06a9f5645630741cf91ad4a7b932f46a906a2088
     }
 
     return output
   }
 
+<<<<<<< HEAD
   /**
    *
    * @param {SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse} simulatedTransaction - The simulated transaction response to parse.
@@ -234,6 +255,17 @@ export class ContractEngine extends SorobanTransactionProcessor {
   private async parseTransactionResources(
     simulatedTransaction: SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
   ): Promise<TransactionResources> {
+=======
+  private async extractTransactionCosts(
+    tx: Transaction | SorobanRpcNamespace.Api.SimulateTransactionResponse
+  ): Promise<TransactionCosts> {
+    const unverifiedSimulation = tx instanceof Transaction ? await this.simulateTransaction(tx as Transaction) : tx
+
+    const simulated = this.verifySimulationResponse(
+      unverifiedSimulation as SorobanRpcNamespace.Api.SimulateTransactionResponse
+    )
+
+>>>>>>> 06a9f5645630741cf91ad4a7b932f46a906a2088
     const calculateEventSize = (event: xdr.DiagnosticEvent): number => {
       if (event.event()?.type().name === 'diagnostic') {
         return 0
@@ -248,9 +280,16 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const eventsSize = events?.reduce((accumulator, currentValue) => accumulator + currentValue, 0)
 
     return {
+<<<<<<< HEAD
       cpuInstructions: Number(simulatedTransaction.cost?.cpuInsns),
       ram: Number(simulatedTransaction.cost?.memBytes),
       minResourceFee: Number(simulatedTransaction.minResourceFee),
+=======
+      // cpuInstructions: Number(simulated.cost?.cpuInsns),
+      cpuInstructions: Number(sorobanTransactionData?.resources().instructions()),
+      ram: Number(simulated.cost?.memBytes),
+      minResourceFee: Number(simulated.minResourceFee),
+>>>>>>> 06a9f5645630741cf91ad4a7b932f46a906a2088
       ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
       ledgerWriteBytes: sorobanTransactionData?.resources().writeBytes(),
       ledgerEntryReads: sorobanTransactionData?.resources().footprint().readOnly().length,
@@ -259,6 +298,10 @@ export class ContractEngine extends SorobanTransactionProcessor {
       returnValueSize: returnValueSize,
       transactionSize: transactionDataSize,
     }
+  }
+
+  private async extractFeeCharged(tx: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse): Promise<number> {
+    return Number(tx.resultXdr.feeCharged())
   }
 
   private async extractOutputFromSimulation(
@@ -522,8 +565,18 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 }
 
+<<<<<<< HEAD
 function defaultCostHandler(methodName: string, costs: TransactionResources, elapsedTime: number): void {
+=======
+function defaultCostHandler(
+  methodName: string,
+  costs: TransactionCosts,
+  elapsedTime: number,
+  feeCharged: number
+): void {
+>>>>>>> 06a9f5645630741cf91ad4a7b932f46a906a2088
   console.log('Debugging method: ', methodName)
   console.log(costs)
+  console.log('Fee charged: ', feeCharged)
   console.log('Elapsed time: ', elapsedTime)
 }
