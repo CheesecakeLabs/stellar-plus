@@ -126,6 +126,34 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
   /**
    *
+   * @param {void} args - No arguments.
+   *
+   * @returns {Promise<number>} The 'liveUntilLedgerSeq' value representing the ledger sequence number until which the contract code is live.
+   *
+   * @description - Returns the ledger sequence number until which the contract code is live. When the contract code is live, it can be deployed into new instances, generating a new unique contract id for each. When the liveUntilLedgerSeq is reached, the contract code is archived and can no longer be deployed until a restore is performed.
+   *
+   * */
+  public async getContractCodeLiveUntilLedgerSeq(): Promise<number> {
+    this.requireWasmHash()
+
+    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
+      xdr.LedgerKey.contractCode(new xdr.LedgerKeyContractCode({ hash: Buffer.from(this.getWasmHash(), 'hex') }))
+    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
+
+    const contractCode = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractCode')
+
+    if (!contractCode) {
+      throw CEError.contractCodeNotFound(ledgerEntries)
+    }
+    if (!contractCode.liveUntilLedgerSeq) {
+      throw CEError.contractCodeMissingLiveUntilLedgerSeq(ledgerEntries)
+    }
+
+    return contractCode.liveUntilLedgerSeq
+  }
+
+  /**
+   *
    * @args {SorobanSimulateArgs<object>} args - The arguments for the invocation.
    * @param {string} args.method - The method to invoke as it is identified in the contract.
    * @param {object} args.methodArgs - The arguments for the method invocation.
