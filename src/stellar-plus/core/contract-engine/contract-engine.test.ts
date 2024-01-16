@@ -5,7 +5,6 @@ import { testnet } from 'stellar-plus/constants'
 import { ContractEngine } from 'stellar-plus/core/contract-engine'
 import { CEError } from 'stellar-plus/core/contract-engine/errors'
 import { ContractEngineConstructorArgs, TransactionResources } from 'stellar-plus/core/contract-engine/types'
-
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { mockUnsignedClassicTransaction } from 'stellar-plus/test/mocks/classic-transaction'
 import { mockTransactionInvocation } from 'stellar-plus/test/mocks/transaction-mock'
@@ -397,7 +396,7 @@ describe('ContractEngine', () => {
         .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromSimulation')
         .mockResolvedValueOnce('mock-output')
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'extractTransactionResources')
+        .spyOn(mockContractEngineWithContractId as any, 'parseTransactionResources')
         .mockResolvedValueOnce(mockTransactionResources)
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .spyOn(mockContractEngineWithContractId as any, 'extractFeeCharged')
@@ -447,8 +446,8 @@ describe('ContractEngine', () => {
         .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromSimulation')
         .mockResolvedValueOnce('mock-output')
       jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'extractTransactionCosts')
-        .mockResolvedValueOnce(mockTransactionCosts)
+        .spyOn(mockContractEngineWithContractId as any, 'parseTransactionResources')
+        .mockResolvedValueOnce(mockTransactionResources)
 
       await mockContractEngineWithContractId.readFromContractTest({
         method: 'mock-method',

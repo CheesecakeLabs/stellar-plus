@@ -1,8 +1,8 @@
-import { TransactionCosts } from 'stellar-plus/core/contract-engine/types'
+import { TransactionResources } from 'stellar-plus/core/contract-engine/types'
 
 export type LogEntry = {
   methodName: string
-  costs: TransactionCosts
+  costs: TransactionResources
   feeCharged: number
   elapsedTime?: number
 }
