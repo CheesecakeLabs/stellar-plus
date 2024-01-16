@@ -5,23 +5,29 @@ import {
   FeeBumpTransaction,
   Operation,
   OperationOptions,
+  SorobanDataBuilder,
   SorobanRpc as SorobanRpcNamespace,
   Account as StellarAccount,
   Transaction,
   TransactionBuilder,
   xdr,
 } from '@stellar/stellar-sdk'
+import { assembleTransaction } from '@stellar/stellar-sdk/lib/soroban'
 
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
 import {
+  RestoreFootprintArgs,
   SorobanDeployArgs,
   SorobanSimulateArgs,
   SorobanUploadArgs,
   WrapClassicAssetArgs,
+  isRestoreFootprintWithLedgerKeys,
 } from 'stellar-plus/core/soroban-transaction-processor/types'
-import { FeeBumpHeader } from 'stellar-plus/core/types'
+import { FeeBumpHeader, TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
+import { SorobanOpCodes } from 'stellar-plus/error/helpers/result-meta-xdr'
+import { GetTransactionSuccessErrorInfo, extractGetTransactionData } from 'stellar-plus/error/helpers/soroban-rpc'
 import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network, TransactionXdr } from 'stellar-plus/types'
@@ -101,21 +107,15 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     }
   }
 
-  /**
-   *
-   * @param {SorobanRpcNamespace.SimulateTransactionResponse} simulationResponse - The simulation response.
-   * @param {string} method - The method that was invoked.
-   *
-   * @description - Simulates the given transaction and assembles the output of the simulation for later submission.
-   *
-   * @returns {Promise<Transaction>} Transaction prepared for submission.
-   */
-  protected async prepareTransaction(tx: Transaction): Promise<Transaction> {
+  protected async assembleTransaction(
+    rawTransaction: Transaction,
+    simulatedTransaction: SorobanRpcNamespace.Api.SimulateTransactionResponse
+  ): Promise<Transaction> {
     try {
-      const response = await this.rpcHandler.prepareTransaction(tx)
-      return response
+      const response = assembleTransaction(rawTransaction, simulatedTransaction)
+      return response.build()
     } catch (e) {
-      throw STPError.failedToPrepareTransaction(e as Error, tx)
+      throw STPError.failedToAssembleTransaction(e as Error, rawTransaction, simulatedTransaction)
     }
   }
 
@@ -275,9 +275,12 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
    * @returns {Promise<string>} The wasm hash of the uploaded wasm.
    *
-   * @description - Uploads a wasm file to the Soroban server and returns the wasm hash. This hash can be used to deploy new instances of the contract.
+   * @description - Builds a transaction to upload a wasm file to the Soroban server.
    */
-  protected async uploadContractWasm(args: SorobanUploadArgs): Promise<string> {
+  protected async buildUploadContractWasmTransaction(args: SorobanUploadArgs): Promise<{
+    builtTx: Transaction
+    updatedTxInvocation: TransactionInvocation
+  }> {
     const { wasm, header, signers, feeBump } = args
 
     const txInvocation = {
@@ -287,37 +290,49 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     }
 
     const uploadOperation = [Operation.uploadContractWasm({ wasm })]
+    return await this.buildCustomTransaction(uploadOperation, txInvocation)
+  }
 
-    const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(uploadOperation, txInvocation)
+  /**
+   *
+   * @args {SorobanUploadArgs} args - The arguments for the invocation.
+   * @param {Buffer} args.wasm - The Buffer of the wasm file to upload.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   * @returns {Promise<string>} The wasm hash of the uploaded wasm.
+   *
+   * @description - Uploads a wasm file to the Soroban server and returns the wasm hash. This hash can be used to deploy new instances of the contract.
+   */
+  protected async uploadContractWasm(args: SorobanUploadArgs): Promise<string> {
+    const { builtTx, updatedTxInvocation } = await this.buildUploadContractWasmTransaction(args)
 
-    const prepared = await this.prepareTransaction(builtTx)
+    const simulatedTransaction = await this.simulateTransaction(builtTx)
+    const assembledTransaction = await this.assembleTransaction(builtTx, simulatedTransaction)
 
     try {
       const output = await this.processSorobanTransaction(
-        prepared,
+        assembledTransaction,
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
 
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      return (output.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString('hex') as string
+      return this.extractWasmHashFromUploadWasmResponse(output)
     } catch (error) {
       throw STPError.failedToUploadWasm(error as StellarPlusError)
     }
   }
 
-  /**
-   *
-   * @args {SorobanDeployArgs} args - The arguments for the invocation.
-   * @param {string} args.wasmHash - The wasm hash of the contract to deploy.
-   * @param {EnvelopeHeader} args.header - The header for the transaction.
-   * @param {AccountHandler[]} args.signers - The signers for the transaction.
-   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
-   * @returns {Promise<string>} The contract Id of the deployed contract instance.
-   *
-   * @description - Deploys a new instance of the contract to the Soroban server and returns the contract id of the deployed contract instance.
-   */
-  protected async deployContract(args: SorobanDeployArgs): Promise<string> {
+  protected extractWasmHashFromUploadWasmResponse(
+    response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
+  ): string {
+    return (response.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString('hex') as string
+  }
+
+  protected async buildDeployContractTransaction(
+    args: SorobanDeployArgs
+  ): Promise<{ builtTx: Transaction; updatedTxInvocation: TransactionInvocation }> {
     const { wasmHash, header, signers, feeBump } = args
 
     const txInvocation = {
@@ -334,23 +349,44 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
     const deployOperation = [Operation.createCustomContract(options)]
 
-    const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(deployOperation, txInvocation)
+    return await this.buildCustomTransaction(deployOperation, txInvocation)
+  }
 
-    const prepared = await this.prepareTransaction(builtTx)
+  /**
+   *
+   * @args {SorobanDeployArgs} args - The arguments for the invocation.
+   * @param {string} args.wasmHash - The wasm hash of the contract to deploy.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   * @returns {Promise<string>} The contract Id of the deployed contract instance.
+   *
+   * @description - Deploys a new instance of the contract to the Soroban server and returns the contract id of the deployed contract instance.
+   */
+  protected async deployContract(args: SorobanDeployArgs): Promise<string> {
+    const { builtTx, updatedTxInvocation } = await this.buildDeployContractTransaction(args)
+
+    const simulatedTransaction = await this.simulateTransaction(builtTx)
+    const assembledTransaction = await this.assembleTransaction(builtTx, simulatedTransaction)
 
     try {
       const output = await this.processSorobanTransaction(
-        prepared,
+        assembledTransaction,
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      return Address.fromScAddress(
-        output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
-      ).toString() as string
+      return this.extractContractIdFromDeployContractResponse(output)
     } catch (error) {
       throw STPError.failedToDeployContract(error as StellarPlusError)
     }
+  }
+  protected extractContractIdFromDeployContractResponse(
+    response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
+  ): string {
+    return Address.fromScAddress(
+      response.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
+    ).toString() as string
   }
 
   /**
@@ -359,11 +395,14 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    * @param {EnvelopeHeader} args.header - The header for the transaction.
    * @param {AccountHandler[]} args.signers - The signers for the transaction.
    * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
-   * @returns {Promise<string>} The address of the wrapped asset contract.
-   * @description - Wraps a classic asset on the Stellar network and returns the address of the wrapped asset contract.
    *
-   **/
-  protected async wrapClassicAsset(args: WrapClassicAssetArgs): Promise<string> {
+   * @returns {Promise<{ builtTx: Transaction; updatedTxInvocation: TransactionInvocation }>} The built transaction and updated transaction invocation.
+   *
+   * @description - Builds a transaction to wrap a classic asset on the Stellar network.
+   * */
+  protected async buildWrapClassicAssetTransaction(
+    args: WrapClassicAssetArgs
+  ): Promise<{ builtTx: Transaction; updatedTxInvocation: TransactionInvocation }> {
     const { asset, header, signers, feeBump } = args
 
     const txInvocation = {
@@ -378,64 +417,114 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
     const wrapOperation = [Operation.createStellarAssetContract(options)]
 
-    const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(wrapOperation, txInvocation)
+    return await this.buildCustomTransaction(wrapOperation, txInvocation)
+  }
 
-    const prepared = await this.prepareTransaction(builtTx)
+  /**
+   * @args {WrapClassicAssetArgs} args - The arguments for the invocation.
+   * @param {Asset} args.asset - The asset to wrap.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   * @returns {Promise<string>} The address of the wrapped asset contract.
+   * @description - Wraps a classic asset on the Stellar network and returns the address of the wrapped asset contract.
+   *
+   **/
+  protected async wrapClassicAsset(args: WrapClassicAssetArgs): Promise<string> {
+    const { builtTx, updatedTxInvocation } = await this.buildWrapClassicAssetTransaction(args)
+
+    const simulatedTransaction = await this.simulateTransaction(builtTx)
+    const assembledTransaction = await this.assembleTransaction(builtTx, simulatedTransaction)
 
     try {
       const output = await this.processSorobanTransaction(
-        prepared,
+        assembledTransaction,
         updatedTxInvocation.signers,
         updatedTxInvocation.feeBump
       )
       // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      return Address.fromScAddress(
-        output.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
-      ).toString()
+      return this.extractContractIdFromWrapClassicAssetResponse(output)
     } catch (error) {
       throw STPError.failedToWrapAsset(error as StellarPlusError)
     }
   }
 
-  //
-  //
-  // TODO: Implement TTL pipeline
+  protected extractContractIdFromWrapClassicAssetResponse(
+    response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
+  ): string {
+    return Address.fromScAddress(
+      response.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
+    ).toString()
+  }
 
-  // public async extendFootprintTTL(args: ExtendFootprintTTLArgs): Promise<string> {
-  //   const { extendTo, header, signers, feeBump } = args
+  // This functions can be invoked with two different sets of arguments. The first set is when the keys are provided directly.
+  /**
+   * @args {RestoreFootprintArgs} args - The arguments for the invocation.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   *
+   * Option 1: Provide the keys directly.
+   * @param {xdr.LedgerKey[]} args.keys - The keys to restore.
+   * Option 2: Provide the restore preamble.
+   * @param { RestoreFootprintWithRestorePreamble} args.restorePreamble - The restore preamble.
+   * @param {string} args.restorePreamble.minResourceFee - The minimum resource fee.
+   * @param {SorobanDataBuilder} args.restorePreamble.transactionData - The transaction data.
+   *
+   * @returns {Promise<void>}
+   *
+   * @description - Execute a transaction to restore a given footprint.
+   */
+  protected async restoreFootprint(args: RestoreFootprintArgs): Promise<void> {
+    const { header, signers, feeBump } = args
 
-  //   const txInvocation = {
-  //     signers,
-  //     header,
-  //     feeBump,
-  //   }
+    const sorobanData = isRestoreFootprintWithLedgerKeys(args)
+      ? new SorobanDataBuilder().setReadWrite(args.keys).build()
+      : args.restorePreamble.transactionData.build()
 
-  //   const options: OperationOptions.ExtendFootprintTTL = {
-  //     extendTo,
-  //   }
+    const txInvocation = {
+      signers,
+      header,
+      feeBump,
+    }
 
-  //   const extendTTLOperation = [Operation.extendFootprintTtl(options)]
+    // const options: OperationOptions.ExtendFootprintTTL = {
+    //   extendTo,
+    // }
 
-  //   const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(extendTTLOperation, txInvocation)
+    const options: OperationOptions.RestoreFootprint = {}
+    // const extendTTLOperation = [Operation.extendFootprintTtl(options)]
+    const restoreFootprintOperation = [Operation.restoreFootprint(options)]
 
-  //   // const envelope = TransactionBuilder.cloneFrom(builtTx)
-  //   // envelope.
-  //   // const data = xdr.SorobanTransactionData
-  //   // envelope.setSorobanData()
+    const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(restoreFootprintOperation, txInvocation)
 
-  //   const prepared = await this.prepareTransaction(builtTx)
+    const builtTxWithFootprint = TransactionBuilder.cloneFrom(builtTx).setSorobanData(sorobanData).build()
 
-  //   try {
-  //     const output = await this.processSorobanTransaction(
-  //       prepared,
-  //       updatedTxInvocation.signers,
-  //       updatedTxInvocation.feeBump
-  //     )
+    const simulatedTransaction = await this.simulateTransaction(builtTxWithFootprint)
+    const assembledTransaction = await this.assembleTransaction(builtTxWithFootprint, simulatedTransaction)
 
-  //     return output.returnValue?.value() as string
-  //   } catch (error) {
-  //     // console.log('Error: ', error)
-  //     throw new Error('Failed to wrap asset contract!')
-  //   }
-  // }
+    try {
+      const output = await this.processSorobanTransaction(
+        assembledTransaction,
+        updatedTxInvocation.signers,
+        updatedTxInvocation.feeBump
+      )
+
+      // Verify if successfully restored. The returnValue parameter is not trustworthy because it can carry a false flag even with success restore.
+      if (
+        (extractGetTransactionData(output) as GetTransactionSuccessErrorInfo).opCode ===
+        SorobanOpCodes.restoreFootprintSuccess
+      ) {
+        return Promise.resolve() // success
+      }
+
+      throw STPError.failedToRestoreFootprintWithResponse(output, assembledTransaction)
+    } catch (error) {
+      throw STPError.failedToRestoreFootprintWithError(error as StellarPlusError, assembledTransaction)
+    }
+  }
+
+  protected getRpcHandler(): RpcHandler {
+    return this.rpcHandler
+  }
 }

@@ -1,7 +1,13 @@
 import { FeeBumpTransaction, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import { StellarPlusError } from 'stellar-plus/error'
-import { extractGetTransactionData, extractSendTransactionErrorData } from 'stellar-plus/error/helpers/soroban-rpc'
+import { SorobanOpCodes } from 'stellar-plus/error/helpers/result-meta-xdr'
+import {
+  GetTransactionFailedErrorInfo,
+  extractGetTransactionData,
+  extractSendTransactionErrorData,
+  extractSimulationBaseData,
+} from 'stellar-plus/error/helpers/soroban-rpc'
 import { extractTransactionData, extractTransactionInvocationMeta } from 'stellar-plus/error/helpers/transaction'
 
 import { EnvelopeHeader } from '../types'
@@ -18,6 +24,12 @@ export enum SorobanTransactionProcessorErrorCodes {
   STP008 = 'STP008',
   STP009 = 'STP009',
   STP010 = 'STP010',
+  STP011 = 'STP011',
+  STP012 = 'STP012',
+
+  // STP1 Transaction Operation Error codes
+  STP100 = 'STP100',
+  STP101 = 'STP101',
 }
 
 const failedToBuildTransaction = (error: Error, header: EnvelopeHeader): StellarPlusError => {
@@ -41,13 +53,23 @@ const failedToSimulateTransaction = (error: Error, tx: Transaction | FeeBumpTran
   })
 }
 
-const failedToPrepareTransaction = (error: Error, tx: Transaction | FeeBumpTransaction): StellarPlusError => {
+const failedToAssembleTransaction = (
+  error: Error,
+  tx: Transaction | FeeBumpTransaction,
+  simulatedTransaction: SorobanRpc.Api.SimulateTransactionResponse
+): StellarPlusError => {
   return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP003,
-    message: 'Failed to prepare transaction!',
+    message: 'Failed to assemble transaction!',
     source: 'SorobanTransactionProcessor',
-    details: 'The transaction could not be prepared. Review the transaction envelope and make sure that it is valid.',
-    meta: { message: error.message, transactionData: extractTransactionData(tx), transactionXDR: tx.toXDR(), error },
+    details: 'The transaction could not be assembled. Review the transaction envelope and make sure that it is valid.',
+    meta: {
+      message: error.message,
+      sorobanSimulationData: extractSimulationBaseData(simulatedTransaction),
+      transactionData: extractTransactionData(tx),
+      transactionXDR: tx.toXDR(),
+      error,
+    },
   })
 }
 
@@ -84,12 +106,46 @@ const failedToVerifyTransactionSubmission = (response: SorobanRpc.Api.SendTransa
 }
 
 const transactionSubmittedFailed = (response: SorobanRpc.Api.GetFailedTransactionResponse): StellarPlusError => {
+  const sorobanGetTransactionData = extractGetTransactionData(response)
+
+  if ((sorobanGetTransactionData as GetTransactionFailedErrorInfo).opCode) {
+    return verifyOpErrorCode(sorobanGetTransactionData as GetTransactionFailedErrorInfo)
+  }
+
   return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP006,
     message: 'Transaction failed!',
     source: 'SorobanTransactionProcessor',
     details: `The transaction submitted failed. Review the transaction envelope and make sure that it is valid. Also review the error message for further information about the failure.`,
-    meta: { sorobanGetTransactionData: extractGetTransactionData(response) },
+    meta: {
+      sorobanGetTransactionData: extractGetTransactionData(response),
+    },
+  })
+}
+
+const verifyOpErrorCode = (sorobanGetTransactionData: GetTransactionFailedErrorInfo): StellarPlusError => {
+  const opErrorCode = sorobanGetTransactionData.opCode
+
+  if (opErrorCode === SorobanOpCodes.invokeHostFunctionEntryArchived) {
+    return new StellarPlusError({
+      code: SorobanTransactionProcessorErrorCodes.STP101,
+      message: 'Transaction failed! Entry archived!',
+      source: 'SorobanTransactionProcessor',
+      details: `The transaction submitted failed with operation error code ${opErrorCode} . The entry is archived and needs to be restored. Refer to the Soroban documentation for further information about restoring footpring. `,
+      meta: {
+        sorobanGetTransactionData,
+      },
+    })
+  }
+
+  return new StellarPlusError({
+    code: SorobanTransactionProcessorErrorCodes.STP100,
+    message: 'Transaction failed!',
+    source: 'SorobanTransactionProcessor',
+    details: `The transaction submitted failed. Unknown soroban operation error code: ${opErrorCode} `,
+    meta: {
+      sorobanGetTransactionData,
+    },
   })
 }
 
@@ -113,7 +169,7 @@ const failedToUploadWasm = (error: StellarPlusError): StellarPlusError => {
     source: 'SorobanTransactionProcessor',
     details:
       'The wasm file could not be uploaded. Review the meta error to identify the underlying cause for this issue.',
-    meta: { message: error.message, ...error.meta },
+    meta: { message: error.message, error: error },
   })
 }
 
@@ -138,10 +194,44 @@ const failedToWrapAsset = (error: StellarPlusError): StellarPlusError => {
   })
 }
 
+const failedToRestoreFootprintWithError = (error: StellarPlusError, transaction: Transaction): StellarPlusError => {
+  return new StellarPlusError({
+    code: SorobanTransactionProcessorErrorCodes.STP011,
+    message: 'Failed to restore footprint!',
+    source: 'SorobanTransactionProcessor',
+    details:
+      'The footprint could not be restored. Review the meta error to identify the underlying cause for this issue.',
+    meta: {
+      message: error.message,
+      error: error,
+      transactionData: extractTransactionData(transaction),
+      transactionXDR: transaction.toXDR(),
+    },
+  })
+}
+
+const failedToRestoreFootprintWithResponse = (
+  response: SorobanRpc.Api.GetTransactionResponse,
+  transaction: Transaction
+): StellarPlusError => {
+  return new StellarPlusError({
+    code: SorobanTransactionProcessorErrorCodes.STP012,
+    message: 'Failed to restore footprint!',
+    source: 'SorobanTransactionProcessor',
+    details:
+      'The footprint could not be restored. Review the meta error to identify the underlying cause for this issue.',
+    meta: {
+      sorobanGetTransactionData: extractGetTransactionData(response),
+      transactionData: extractTransactionData(transaction),
+      transactionXDR: transaction.toXDR(),
+    },
+  })
+}
+
 export const STPError = {
   failedToBuildTransaction,
   failedToSimulateTransaction,
-  failedToPrepareTransaction,
+  failedToAssembleTransaction,
   failedToSubmitTransaction,
   failedToSubmitTransactionWithResponse,
   failedToVerifyTransactionSubmission,
@@ -150,4 +240,6 @@ export const STPError = {
   failedToUploadWasm,
   failedToDeployContract,
   failedToWrapAsset,
+  failedToRestoreFootprintWithError,
+  failedToRestoreFootprintWithResponse,
 }

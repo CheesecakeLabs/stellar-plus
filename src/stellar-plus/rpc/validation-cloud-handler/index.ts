@@ -114,6 +114,7 @@ export class ValidationCloudRpcHandler implements RpcHandler {
           Buffer.from(rawGetResponse.resultMetaXdr as string, 'base64'),
           'raw'
         ),
+        resultXdr: xdr.TransactionResult.fromXDR(Buffer.from(rawGetResponse.resultXdr as string, 'base64'), 'raw'),
       } as unknown as SorobanRpc.Api.GetSuccessfulTransactionResponse
     }
 
@@ -214,13 +215,30 @@ export class ValidationCloudRpcHandler implements RpcHandler {
       id: this.id,
       method: 'getLedgerEntries',
       params: {
-        keys: keys.map((key) => key.toXDR()),
+        keys: keys.map((key) => key.toXDR('base64')),
       },
     }
 
     const response = (await this.fetch(payload)) as ApiResponse
 
-    return response.result as SorobanRpc.Api.GetLedgerEntriesResponse
+    const rawEntries = response.result as SorobanRpc.Api.RawGetLedgerEntriesResponse
+
+    if (!rawEntries.entries) {
+      throw VCRPCError.ledgerEntriesMissingFromRpcResponse(rawEntries)
+    }
+
+    const formattedEntries: SorobanRpc.Api.GetLedgerEntriesResponse = {
+      ...rawEntries,
+      entries: rawEntries.entries.map((entry) => {
+        return {
+          ...entry,
+          key: xdr.LedgerKey.fromXDR(Buffer.from(entry.key, 'base64'), 'raw'),
+          val: xdr.LedgerEntryData.fromXDR(Buffer.from(entry.xdr, 'base64'), 'raw'),
+        } as SorobanRpc.Api.LedgerEntryResult
+      }),
+    }
+
+    return formattedEntries
   }
 
   /**

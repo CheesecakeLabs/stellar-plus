@@ -49,7 +49,7 @@ export enum GeneralErrorCodes {
 }
 
 export type Meta = {
-  error?: Error
+  error?: Error | StellarPlusErrorObject
   data?: object
   message?: string
   transactionXDR?: string

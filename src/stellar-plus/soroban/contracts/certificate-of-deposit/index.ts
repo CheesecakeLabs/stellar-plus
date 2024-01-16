@@ -30,12 +30,8 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
    */
   constructor(args: CertificateOfDepositContractConstructorArgs) {
     super({
-      network: args.network,
+      ...args,
       spec: spec as ContractSpec,
-      contractId: args.contractId,
-      rpcHandler: args.rpcHandler,
-      wasm: args.wasm,
-      wasmHash: args.wasmHash,
     })
     this.methods = Methods
   }

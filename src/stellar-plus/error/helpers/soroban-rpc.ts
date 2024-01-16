@@ -1,5 +1,7 @@
 import { SorobanDataBuilder, SorobanRpc, xdr } from '@stellar/stellar-sdk'
 
+import { extractSorobanResultXdrOpErrorCode } from './result-meta-xdr'
+
 // ====================================================================================================================
 // SimulationErrorInfo
 // ====================================================================================================================
@@ -56,6 +58,7 @@ export type SendTransactionErrorInfo = BaseSendTransactionResponse | SendTransac
 
 type SendTransactionFailed = BaseSendTransactionResponse & {
   errorResultXdr?: string
+  opErrorCode?: string
 }
 
 type BaseSendTransactionResponse = {
@@ -69,9 +72,14 @@ export const extractSendTransactionErrorData = (
   response: SorobanRpc.Api.SendTransactionResponse | SorobanRpc.Api.RawSendTransactionResponse
 ): SendTransactionErrorInfo => {
   if (response.status === 'ERROR') {
+    const errorResultXdrObject = (response as SorobanRpc.Api.SendTransactionResponse)
+      .errorResult as xdr.TransactionResult
+    const errorResultXdr = errorResultXdrObject.toXDR('base64')
+
     return {
       ...response,
-      errorResultXdr: (response as SorobanRpc.Api.SendTransactionResponse).errorResult?.toXDR('base64'),
+      errorResultXdr,
+      opErrorCode: extractSorobanResultXdrOpErrorCode(errorResultXdrObject),
     } as SendTransactionFailed
   }
 
@@ -94,7 +102,9 @@ type GetTransactionBase = {
   oldestLedgerCloseTime: number
 }
 
-type GetTransactionFailedErrorInfo = GetTransactionBase & {
+export type GetTransactionFailedErrorInfo = GetTransactionBase & {
+  status: SorobanRpc.Api.GetTransactionStatus.FAILED
+  opCode?: string
   ledger: number
   createdAt: number
   applicationOrder: number
@@ -102,6 +112,19 @@ type GetTransactionFailedErrorInfo = GetTransactionBase & {
   envelopeXdr: xdr.TransactionEnvelope
   resultXdr: xdr.TransactionResult
   resultMetaXdr: xdr.TransactionMeta
+}
+
+export type GetTransactionSuccessErrorInfo = GetTransactionBase & {
+  status: SorobanRpc.Api.GetTransactionStatus.SUCCESS
+  opCode?: string
+  ledger: number
+  createdAt: number
+  applicationOrder: number
+  feeBump: boolean
+  envelopeXdr: xdr.TransactionEnvelope
+  resultXdr: xdr.TransactionResult
+  resultMetaXdr: xdr.TransactionMeta
+  returnValue?: xdr.ScVal
 }
 
 export const extractGetTransactionData = (
@@ -112,8 +135,16 @@ export const extractGetTransactionData = (
 ): GetTransactionErrorInfo => {
   if (response.status === SorobanRpc.Api.GetTransactionStatus.FAILED) {
     return {
+      opCode: extractSorobanResultXdrOpErrorCode(response.resultXdr),
       ...response,
     } as GetTransactionFailedErrorInfo
+  }
+
+  if (response.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS) {
+    return {
+      opCode: extractSorobanResultXdrOpErrorCode(response.resultXdr),
+      ...response,
+    } as GetTransactionSuccessErrorInfo
   }
 
   return {

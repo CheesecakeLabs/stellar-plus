@@ -1,4 +1,4 @@
-import { TransactionCosts } from 'stellar-plus/core/contract-engine/types'
+import { TransactionResources } from 'stellar-plus/core/contract-engine/types'
 
 import { Profiler } from '.'
 
@@ -87,7 +87,7 @@ transfer | 7761         | 48861       | 142179          | 52145            | 487
 transfer | 12226        | 48863       | 142550          | 52145            | 48765            | 708               | 232       | 1               | 2               | 252 | 4 | 248`
 
 const populateLogEntries = (
-  costHandler: (methodName: string, costs: TransactionCosts, elapsedTime: number, feeCharged: number) => void
+  costHandler: (methodName: string, costs: TransactionResources, elapsedTime: number, feeCharged: number) => void
 ): void => {
   mockLogs.forEach((log) => {
     costHandler(log.methodName, log.costs, log.elapsedTime, log.feeCharged)
@@ -112,7 +112,12 @@ describe('Profiler', () => {
     const options = profiler.getOptionsArgs()
     expect(options).toEqual({
       debug: true,
-      costHandler: expect.any(Function) as (methodName: string, costs: TransactionCosts, elapsedTime: number) => void,
+
+      costHandler: expect.any(Function) as (
+        methodName: string,
+        costs: TransactionResources,
+        elapsedTime: number
+      ) => void,
     })
   })
 
