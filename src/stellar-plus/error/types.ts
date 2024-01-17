@@ -14,6 +14,7 @@ import { AxiosErrorInfo } from './helpers/axios'
 import { SubmitTransactionMetaInfo, TransactionDiagnostic } from './helpers/horizon'
 import { GetTransactionErrorInfo, SendTransactionErrorInfo, SimulationErrorInfo } from './helpers/soroban-rpc'
 import { TransactionData, TransactionInvocationMeta } from './helpers/transaction'
+import { CustomAccountHandlerErrorCodes } from 'stellar-plus/account/account-handler/custom/errors'
 
 export type StellarPlusErrorObject = {
   code: ErrorCodes
@@ -43,6 +44,7 @@ export type ErrorCodes =
   | ClassicTransactionProcessorErrorCodes
   | SorobanTransactionProcessorErrorCodes
   | ChannelAccountsTransactionSubmitterErrorCodes
+  | CustomAccountHandlerErrorCodes
 
 export enum GeneralErrorCodes {
   ER000 = 'ER000',

@@ -26,6 +26,7 @@ import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network, TransactionXdr } from 'stellar-plus/types'
 import { generateRandomSalt } from 'stellar-plus/utils/functions'
+import { Buffer } from 'buffer'
 
 import { STPError } from './errors'
 

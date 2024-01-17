@@ -1,5 +1,6 @@
 import { SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
 import axios from 'axios'
+import { Buffer } from 'buffer'
 // import { SorobanRpc, xdr as SorobanXdr, assembleTransaction, parseRawSimulation } from 'soroban-client'
 // import { parseRawSendTransaction } from 'soroban-client/lib/parsers'
 
