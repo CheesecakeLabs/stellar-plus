@@ -1,3 +1,5 @@
+import { SorobanRpc } from '@stellar/stellar-sdk'
+
 import { StellarPlusError } from 'stellar-plus/error'
 
 import { RequestPayload } from './types'
@@ -6,6 +8,7 @@ export enum ValidationCloudRpcHandlerErrorCodes {
   // VCRPC0 General
   VCRPC001 = 'VCRPC001',
   VCRPC002 = 'VCRPC002',
+  VCRPC003 = 'VCRPC003',
 }
 
 const invalidApiKey = (): StellarPlusError => {
@@ -30,7 +33,22 @@ const failedToInvokeVCApi = (error: Error, payload: RequestPayload): StellarPlus
   })
 }
 
+const ledgerEntriesMissingFromRpcResponse = (
+  response: SorobanRpc.Api.RawGetLedgerEntriesResponse
+): StellarPlusError => {
+  return new StellarPlusError({
+    code: ValidationCloudRpcHandlerErrorCodes.VCRPC003,
+    message: 'Ledger entries missing from RPC response!',
+    source: 'ValidationCloudRpcHandler',
+    details: `Ledger entries missing from RPC response! Please verify the meta details for the response!`,
+    meta: {
+      data: { response },
+    },
+  })
+}
+
 export const VCRPCError = {
   invalidApiKey,
   failedToInvokeVCApi,
+  ledgerEntriesMissingFromRpcResponse,
 }
