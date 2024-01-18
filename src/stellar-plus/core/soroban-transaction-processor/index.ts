@@ -14,7 +14,6 @@ import {
   TransactionBuilder,
   xdr,
 } from '@stellar/stellar-sdk'
-import { assembleTransaction } from '@stellar/stellar-sdk/lib/soroban'
 
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
@@ -114,7 +113,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
     simulatedTransaction: SorobanRpcNamespace.Api.SimulateTransactionResponse
   ): Promise<Transaction> {
     try {
-      const response = assembleTransaction(rawTransaction, simulatedTransaction)
+      const response = SorobanRpcNamespace.assembleTransaction(rawTransaction, simulatedTransaction)
       return response.build()
     } catch (e) {
       throw STPError.failedToAssembleTransaction(e as Error, rawTransaction, simulatedTransaction)
