@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer'
+
 import { Contract, ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import { ContractEngineConstructorArgs, Options, TransactionResources } from 'stellar-plus/core/contract-engine/types'
@@ -122,7 +124,6 @@ export class ContractEngine extends SorobanTransactionProcessor {
     }
 
     return contractInstance.liveUntilLedgerSeq
-
   }
 
   /**
