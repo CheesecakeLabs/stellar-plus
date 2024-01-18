@@ -1,6 +1,4 @@
-
 import { Options, TransactionResources } from 'stellar-plus/core/contract-engine/types'
-
 import {
   AggregateType,
   AggregationMethod,
@@ -14,12 +12,16 @@ import {
 export class Profiler {
   private log: LogEntry[] = []
 
-
-  private costHandler = (methodName: string, costs: TransactionResources, elapsedTime: number): void => {
-
+  private costHandler = (
+    methodName: string,
+    costs: TransactionResources,
+    elapsedTime: number,
+    feeCharged: number
+  ): void => {
     const entry: LogEntry = {
       methodName,
       costs,
+      feeCharged,
       elapsedTime,
     }
     this.log.push(entry)
@@ -84,7 +86,6 @@ export class Profiler {
         if (!resourceFilter) {
           // Rule 1 and 5: Include the resource as is
           costsAccumulator[resourceKey as keyof TransactionResources] = resourceValue
-
         } else if (resourceFilter.include === false) {
           // Rule 2: Exclude this resource from costs, but keep the log entry
           // No action needed here, as the resource is simply not added to costsAccumulator
@@ -94,18 +95,14 @@ export class Profiler {
           const withinMaxRange = resourceFilter.max === undefined || (resourceValue as number) <= resourceFilter.max
 
           if (typeof resourceValue === 'number' && withinMinRange && withinMaxRange) {
-
             costsAccumulator[resourceKey as keyof TransactionResources] = resourceValue
-
           } else {
             shouldIncludeLogEntry = false // Exclude the entire log entry
           }
         }
 
         return costsAccumulator
-
       }, {} as TransactionResources)
-
 
       if (shouldIncludeLogEntry) {
         acc.push({ ...logEntry, costs: filteredCosts })
@@ -116,9 +113,7 @@ export class Profiler {
   }
 
   private aggregateLog = (log: LogEntry[], aggregateOptions: AggregateType): LogEntry[] => {
-
     const costs: [keyof TransactionResources, number][] = []
-
 
     const resources = Object.keys(log[0]?.costs || {})
 
@@ -130,9 +125,7 @@ export class Profiler {
       if (aggregationMethod) {
         const aggregatedValue = this.performAggregation(log, resourceKey, aggregationMethod)
 
-
         costs.push([resourceKey as keyof TransactionResources, aggregatedValue])
-
       }
     })
 
@@ -141,13 +134,18 @@ export class Profiler {
       elapsedTime = this.performAggregation(log, 'elapsedTime', aggregateOptions.elapsedTime)
     }
 
+    let feeCharged: number | undefined
+    if (aggregateOptions.feeCharged) {
+      feeCharged = this.performAggregation(log, 'feeCharged', aggregateOptions.feeCharged)
+    }
+
     return [
       {
         methodName: 'aggregated',
 
         costs: Object.fromEntries(costs) as TransactionResources,
 
-        ...{ elapsedTime },
+        ...{ elapsedTime, feeCharged },
       },
     ] as LogEntry[]
   }
@@ -159,12 +157,13 @@ export class Profiler {
   ): number => {
     const values = logEntries.map((entry) => {
       const value =
-
         resourceKey === 'elapsedTime'
           ? entry.elapsedTime
-          : (entry.costs[resourceKey as keyof TransactionResources] as number | undefined)
+          : resourceKey === 'feeCharged'
+            ? entry.feeCharged
+            : (entry.costs[resourceKey as keyof TransactionResources] as number | undefined)
 
-      return typeof value === 'number' ? value : 0 // Ensuring the value is a number
+      return typeof value === 'number' ? value : 0
     })
 
     switch (aggregationMethod.method) {
@@ -194,7 +193,7 @@ export class Profiler {
 
     // Determine the column widths
     const columnWidths: number[] = []
-    const headers = ['Method Name', 'Elapsed Time', ...Object.keys(log[0]?.costs || {})]
+    const headers = ['Method Name', 'Elapsed Time', 'Fee Charged', ...Object.keys(log[0]?.costs || {})]
 
     headers.forEach((header, index) => {
       const maxLength = Math.max(
@@ -203,9 +202,9 @@ export class Profiler {
           Math.max(
             entry.methodName.length,
             (entry.elapsedTime?.toString() as string).length,
+            (entry.feeCharged.toString() as string).length,
 
             (entry.costs[header as keyof TransactionResources]?.toString() || '').length
-
           )
         )
       )
@@ -224,15 +223,13 @@ export class Profiler {
         const row = [
           entry.methodName,
           entry.elapsedTime?.toString().padEnd(columnWidths[1]),
-          ...headers
-            .slice(2)
-            .map((header) =>
+          entry.feeCharged.toString().padEnd(columnWidths[2]),
+          ...headers.slice(3).map((header) =>
+            ((entry.costs[header as keyof TransactionResources] as number | undefined) || '')
 
-              ((entry.costs[header as keyof TransactionResources] as number | undefined) || '')
-
-                .toString()
-                .padEnd(columnWidths[headers.indexOf(header) + 1])
-            ),
+              .toString()
+              .padEnd(columnWidths[headers.indexOf(header) + 3])
+          ),
         ]
         return row.join(' | ')
       })
@@ -250,7 +247,7 @@ export class Profiler {
     }
 
     // Generate the header row
-    const headers = ['Method Name', 'Elapsed Time', ...Object.keys(log[0]?.costs || {})]
+    const headers = ['Method Name', 'Elapsed Time', 'Fee Charged', ...Object.keys(log[0]?.costs || {})]
     const headerRow = headers.join(',')
 
     // Generate the data rows
@@ -259,13 +256,13 @@ export class Profiler {
         const row = [
           entry.methodName,
           entry.elapsedTime,
+          entry.feeCharged,
 
           ...headers
-            .slice(2)
+            .slice(3)
             .map((header) =>
               ((entry.costs[header as keyof TransactionResources] as number | undefined) || '').toString()
             ),
-
         ]
         return row.join(',')
       })

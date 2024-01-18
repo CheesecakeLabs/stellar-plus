@@ -114,6 +114,7 @@ export class ValidationCloudRpcHandler implements RpcHandler {
           Buffer.from(rawGetResponse.resultMetaXdr as string, 'base64'),
           'raw'
         ),
+        resultXdr: xdr.TransactionResult.fromXDR(Buffer.from(rawGetResponse.resultXdr as string, 'base64'), 'raw'),
       } as unknown as SorobanRpc.Api.GetSuccessfulTransactionResponse
     }
 

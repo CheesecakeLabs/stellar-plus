@@ -59,7 +59,7 @@ export type ClassicTokenInterfaceManagement = {
 export type ClassicTokenInterfaceUser = {
   // allowance: (args: { from: string; spender: string }) => Promise<i128>
   // approve: (
-  //   args: { from: string; spender: string; amount: i128; live_until_ledger: u32 } & TransactionInvocation
+  //   args: { from: string; spender: string; amount: i128; expiration_ledger: u32 } & TransactionInvocation
   // ) => Promise<void>
   balance: (id: string) => Promise<number>
   // spendable_balance: (args: { id: string } & SorobanSimulationInvocation) => Promise<i128>

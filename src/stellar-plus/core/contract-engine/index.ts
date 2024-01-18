@@ -10,8 +10,9 @@ import {
 } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
+import { StellarPlusErrorObject } from 'stellar-plus/error/types'
 
-import { CEError } from './errors'
+import { CEError, ContractEngineErrorCodes } from './errors'
 
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
@@ -121,6 +122,35 @@ export class ContractEngine extends SorobanTransactionProcessor {
     }
 
     return contractInstance.liveUntilLedgerSeq
+
+  }
+
+  /**
+   *
+   * @param {void} args - No arguments.
+   *
+   * @returns {Promise<number>} The 'liveUntilLedgerSeq' value representing the ledger sequence number until which the contract code is live.
+   *
+   * @description - Returns the ledger sequence number until which the contract code is live. When the contract code is live, it can be deployed into new instances, generating a new unique contract id for each. When the liveUntilLedgerSeq is reached, the contract code is archived and can no longer be deployed until a restore is performed.
+   *
+   * */
+  public async getContractCodeLiveUntilLedgerSeq(): Promise<number> {
+    this.requireWasmHash()
+
+    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
+      xdr.LedgerKey.contractCode(new xdr.LedgerKeyContractCode({ hash: Buffer.from(this.getWasmHash(), 'hex') }))
+    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
+
+    const contractCode = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractCode')
+
+    if (!contractCode) {
+      throw CEError.contractCodeNotFound(ledgerEntries)
+    }
+    if (!contractCode.liveUntilLedgerSeq) {
+      throw CEError.contractCodeMissingLiveUntilLedgerSeq(ledgerEntries)
+    }
+
+    return contractCode.liveUntilLedgerSeq
   }
 
   /**
@@ -162,7 +192,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const output = this.extractOutputFromSimulation(successfulSimulation, args.method)
 
     if (this.options.debug) {
-      this.options.costHandler?.(args.method, costs, Date.now() - startTime)
+      this.options.costHandler?.(args.method, costs, Date.now() - startTime, 0)
     }
 
     return output
@@ -215,7 +245,13 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const output = this.extractOutputFromProcessedInvocation(response, args.method)
 
     if (this.options.debug) {
-      this.options.costHandler?.(args.method, transactionResources as TransactionResources, Date.now() - startTime)
+      const feeCharged = await this.extractFeeCharged(response)
+      this.options.costHandler?.(
+        args.method,
+        transactionResources as TransactionResources,
+        Date.now() - startTime,
+        feeCharged
+      )
     }
 
     return output
@@ -247,7 +283,8 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const eventsSize = events?.reduce((accumulator, currentValue) => accumulator + currentValue, 0)
 
     return {
-      cpuInstructions: Number(simulatedTransaction.cost?.cpuInsns),
+      // cpuInstructions: Number(simulatedTransaction.cost?.cpuInsns),
+      cpuInstructions: Number(sorobanTransactionData?.resources().instructions()),
       ram: Number(simulatedTransaction.cost?.memBytes),
       minResourceFee: Number(simulatedTransaction.minResourceFee),
       ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
@@ -258,6 +295,10 @@ export class ContractEngine extends SorobanTransactionProcessor {
       returnValueSize: returnValueSize,
       transactionSize: transactionDataSize,
     }
+  }
+
+  private async extractFeeCharged(tx: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse): Promise<number> {
+    return Number(tx.resultXdr.feeCharged())
   }
 
   private async extractOutputFromSimulation(
@@ -294,16 +335,18 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
     // Simulated transactions with restore status are simulated as if
     // the restore was done already. This means that the simulation
-    // result will come as successfull. Therefore, we need to restore
-    // the footprint and proceed as if it was successfull.
+    // result will come as successful. Therefore, we need to restore
+    // the footprint and proceed as if it was successful.
     // Here, if no auto restor is set, we throw an error as the
     // execution cannot proceed.
     if (SorobanRpcNamespace.Api.isSimulationRestore(simulated)) {
-      if (this.options.restoreTxInvocation) {
-        await this.autoRestoreFootprinyFromFromSimulation(simulated)
-      } else {
-        throw CEError.transactionNeedsRestore(simulated)
-      }
+      throw CEError.transactionNeedsRestore(simulated)
+      // if (this.options.restoreTxInvocation) {
+      //   await this.autoRestoreFootprintFromFromSimulation(simulated, originalTx)
+      //   // Bump sequence number if same account is used for restore
+      // } else {
+
+      // }
     }
 
     if (SorobanRpcNamespace.Api.isSimulationSuccess(simulated) && simulated.result) {
@@ -317,15 +360,21 @@ export class ContractEngine extends SorobanTransactionProcessor {
     throw CEError.couldntVerifyTransactionSimulation(simulated)
   }
 
-  private async autoRestoreFootprinyFromFromSimulation(
-    simulation: SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse
-  ): Promise<void> {
+  private async autoRestoreFootprintFromFromSimulation(
+    simulation: SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse,
+    originalTx: Transaction
+  ): Promise<Transaction> {
     if (!this.options.restoreTxInvocation) {
       throw CEError.restoreOptionNotSet(simulation)
     }
     const restorePreamble = simulation.restorePreamble
 
     await this.restoreFootprint({ restorePreamble, ...this.options.restoreTxInvocation } as RestoreFootprintArgs)
+
+    if (originalTx.source === this.options.restoreTxInvocation.header.source) {
+      originalTx.sequence = (BigInt(originalTx.sequence) + BigInt(1)).toString()
+    }
+    return originalTx
   }
 
   //==========================================
@@ -341,14 +390,40 @@ export class ContractEngine extends SorobanTransactionProcessor {
     response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
     transactionResources?: TransactionResources
   }> {
-    const { builtTx, updatedTxInvocation } = args
+    const { updatedTxInvocation } = args
+
+    let { builtTx } = args
+
     const simulatedTransaction = await this.simulateTransaction(builtTx)
 
-    const successfullSimulation = await this.verifySimulationResponse(simulatedTransaction)
+    let successfulSimulation: SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
 
-    const transactionResources = this.options.debug ? await this.parseTransactionResources(successfullSimulation) : {}
+    try {
+      successfulSimulation = await this.verifySimulationResponse(simulatedTransaction)
+    } catch (error: unknown) {
+      const spError = error as StellarPlusErrorObject
+      if (spError.code === ContractEngineErrorCodes.CE102) {
+        // Transaction needs Restore
+        if (this.options.restoreTxInvocation) {
+          builtTx = await this.autoRestoreFootprintFromFromSimulation(
+            simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse,
+            builtTx
+          )
 
-    const assembledTransaction = await this.assembleTransaction(builtTx, successfullSimulation)
+          successfulSimulation = simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
+        } else {
+          throw CEError.restoreOptionNotSet(
+            simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse
+          )
+        }
+      } else {
+        throw error
+      }
+    }
+
+    const transactionResources = this.options.debug ? await this.parseTransactionResources(successfulSimulation) : {}
+
+    const assembledTransaction = await this.assembleTransaction(builtTx, successfulSimulation)
 
     return {
       response: await this.processSorobanTransaction(
@@ -384,7 +459,12 @@ export class ContractEngine extends SorobanTransactionProcessor {
       this.wasmHash = wasmHash
 
       if (this.options.debug) {
-        this.options.costHandler?.('uploadWasm', transactionResources as TransactionResources, Date.now() - startTime)
+        this.options.costHandler?.(
+          'uploadWasm',
+          transactionResources as TransactionResources,
+          Date.now() - startTime,
+          await this.extractFeeCharged(response)
+        )
       }
     } catch (error) {
       throw CEError.failedToUploadWasm(error as StellarPlusError)
@@ -416,7 +496,12 @@ export class ContractEngine extends SorobanTransactionProcessor {
       this.contractId = contractId
 
       if (this.options.debug) {
-        this.options.costHandler?.('deployWasm', transactionResources as TransactionResources, Date.now() - startTime)
+        this.options.costHandler?.(
+          'deployWasm',
+          transactionResources as TransactionResources,
+          Date.now() - startTime,
+          await this.extractFeeCharged(response)
+        )
       }
     } catch (error) {
       throw CEError.failedToDeployContract(error as StellarPlusError)
@@ -437,7 +522,12 @@ export class ContractEngine extends SorobanTransactionProcessor {
       this.contractId = contractId
 
       if (this.options.debug) {
-        this.options.costHandler?.('wrapSAC', transactionResources as TransactionResources, Date.now() - startTime)
+        this.options.costHandler?.(
+          'wrapSAC',
+          transactionResources as TransactionResources,
+          Date.now() - startTime,
+          await this.extractFeeCharged(response)
+        )
       }
     } catch (error) {
       throw CEError.failedToWrapAsset(error as StellarPlusError)
@@ -487,8 +577,14 @@ export class ContractEngine extends SorobanTransactionProcessor {
   }
 }
 
-function defaultCostHandler(methodName: string, costs: TransactionResources, elapsedTime: number): void {
+function defaultCostHandler(
+  methodName: string,
+  costs: TransactionResources,
+  elapsedTime: number,
+  feeCharged: number
+): void {
   console.log('Debugging method: ', methodName)
   console.log(costs)
+  console.log('Fee charged: ', feeCharged)
   console.log('Elapsed time: ', elapsedTime)
 }

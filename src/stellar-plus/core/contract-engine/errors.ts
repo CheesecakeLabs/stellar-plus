@@ -15,7 +15,8 @@ export enum ContractEngineErrorCodes {
   CE004 = 'CE004',
   CE005 = 'CE005',
   CE006 = 'CE006',
-
+  CE007 = 'CE007',
+  CE008 = 'CE008',
 
   // CE1 Simulation
   CE100 = 'CE100',
@@ -94,6 +95,30 @@ const contractInstanceMissingLiveUntilLedgerSeq = (
   })
 }
 
+const contractCodeNotFound = (ledgerEntries: SorobanRpc.Api.GetLedgerEntriesResponse): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE007,
+    message: 'Contract code not found!',
+    source: 'ContractEngine',
+    details:
+      'Contract code not found! The contract code could not be found on the Stellar network. Please verify the contract wasm hash and make sure the contract wasm has been uploaded to the Stellar network.',
+    meta: { data: { ledgerEntries } },
+  })
+}
+
+const contractCodeMissingLiveUntilLedgerSeq = (
+  ledgerEntries: SorobanRpc.Api.GetLedgerEntriesResponse
+): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE008,
+    message: 'Contract code missing live_until_ledger_seq!',
+    source: 'ContractEngine',
+    details:
+      'Contract code missing live_until_ledger_seq! The contract code is missing the live_until_ledger_seq property. Please verify the contract wasm hash and make sure the contract wasm has been uploaded to the Stellar network.',
+    meta: { data: { ledgerEntries } },
+  })
+}
+
 const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionErrorResponse): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE101,
@@ -129,7 +154,6 @@ const transactionNeedsRestore = (simulation: SorobanRpc.Api.SimulateTransactionR
     meta: { sorobanSimulationData: extractSimulationRestoreData(simulation), data: { simulation } },
   })
 }
-
 
 const couldntVerifyTransactionSimulation = (
   simulation: SorobanRpc.Api.SimulateTransactionResponse
@@ -196,11 +220,12 @@ export const CEError = {
   contractIdAlreadySet,
   contractInstanceNotFound,
   contractInstanceMissingLiveUntilLedgerSeq,
+  contractCodeNotFound,
+  contractCodeMissingLiveUntilLedgerSeq,
   transactionNeedsRestore,
   simulationMissingResult,
   restoreOptionNotSet,
   failedToUploadWasm,
   failedToDeployContract,
   failedToWrapAsset,
-
 }

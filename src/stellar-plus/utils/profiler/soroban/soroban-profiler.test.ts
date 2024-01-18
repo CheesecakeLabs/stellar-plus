@@ -1,6 +1,4 @@
-
 import { TransactionResources } from 'stellar-plus/core/contract-engine/types'
-
 
 import { Profiler } from '.'
 
@@ -20,6 +18,7 @@ const mockLogs = [
       transactionSize: 164,
     },
     elapsedTime: 2860,
+    feeCharged: 38839,
   },
   {
     methodName: 'balance',
@@ -36,6 +35,7 @@ const mockLogs = [
       transactionSize: 164,
     },
     elapsedTime: 1797,
+    feeCharged: 38839,
   },
   {
     methodName: 'transfer',
@@ -52,6 +52,7 @@ const mockLogs = [
       transactionSize: 248,
     },
     elapsedTime: 7761,
+    feeCharged: 48861,
   },
   {
     methodName: 'transfer',
@@ -68,29 +69,28 @@ const mockLogs = [
       transactionSize: 248,
     },
     elapsedTime: 12226,
+    feeCharged: 48863,
   },
 ]
 
-const mockCsvLogs = `Method Name,Elapsed Time,cpuInstructions,ram,minResourceFee,ledgerReadBytes,ledgerWriteBytes,ledgerEntryReads,ledgerEntryWrites,eventSize,returnValueSize,transactionSize
-balance,2860,105693,36575,38739,592,,2,,,20,164
-balance,1797,105693,36575,38739,592,,2,,,20,164
-transfer,7761,142179,52145,48761,708,232,1,2,252,4,248
-transfer,12226,142550,52145,48765,708,232,1,2,252,4,248`
+const mockCsvLogs = `Method Name,Elapsed Time,Fee Charged,cpuInstructions,ram,minResourceFee,ledgerReadBytes,ledgerWriteBytes,ledgerEntryReads,ledgerEntryWrites,eventSize,returnValueSize,transactionSize
+balance,2860,38839,105693,36575,38739,592,,2,,,20,164
+balance,1797,38839,105693,36575,38739,592,,2,,,20,164
+transfer,7761,48861,142179,52145,48761,708,232,1,2,252,4,248
+transfer,12226,48863,142550,52145,48765,708,232,1,2,252,4,248`
 
-const mockTableLogs = `Method Name | Elapsed Time | cpuInstructions | ram      | minResourceFee | ledgerReadBytes | ledgerWriteBytes | ledgerEntryReads | ledgerEntryWrites | eventSize | returnValueSize | transactionSize
-------------+--------------+-----------------+----------+----------------+-----------------+------------------+------------------+-------------------+-----------+-----------------+----------------
-balance | 2860         | 105693   | 36575          | 38739           | 592              |                  | 2                 |           |                 | 20              | 164
-balance | 1797         | 105693   | 36575          | 38739           | 592              |                  | 2                 |           |                 | 20              | 164
-transfer | 7761         | 142179   | 52145          | 48761           | 708              | 232              | 1                 | 2         | 252             | 4               | 248
-transfer | 12226        | 142550   | 52145          | 48765           | 708              | 232              | 1                 | 2         | 252             | 4               | 248`
+const mockTableLogs = `Method Name | Elapsed Time | Fee Charged | cpuInstructions | ram      | minResourceFee | ledgerReadBytes | ledgerWriteBytes | ledgerEntryReads | ledgerEntryWrites | eventSize | returnValueSize | transactionSize
+------------+--------------+-------------+-----------------+----------+----------------+-----------------+------------------+------------------+-------------------+-----------+-----------------+----------------
+balance | 2860         | 38839       | 105693          | 36575            | 38739            | 592               |           | 2               |                 |  | 20 | 164
+balance | 1797         | 38839       | 105693          | 36575            | 38739            | 592               |           | 2               |                 |  | 20 | 164
+transfer | 7761         | 48861       | 142179          | 52145            | 48761            | 708               | 232       | 1               | 2               | 252 | 4 | 248
+transfer | 12226        | 48863       | 142550          | 52145            | 48765            | 708               | 232       | 1               | 2               | 252 | 4 | 248`
 
 const populateLogEntries = (
-
-  costHandler: (methodName: string, costs: TransactionResources, elapsedTime: number) => void
-
+  costHandler: (methodName: string, costs: TransactionResources, elapsedTime: number, feeCharged: number) => void
 ): void => {
   mockLogs.forEach((log) => {
-    costHandler(log.methodName, log.costs, log.elapsedTime)
+    costHandler(log.methodName, log.costs, log.elapsedTime, log.feeCharged)
   })
 }
 
@@ -118,7 +118,6 @@ describe('Profiler', () => {
         costs: TransactionResources,
         elapsedTime: number
       ) => void,
-
     })
   })
 

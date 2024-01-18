@@ -237,7 +237,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    * @param {string} args.from - Account public key
    * @param {string} args.spender - Spender account public key
    * @param {i128} args.amount - Amount to approve
-   * @param {u32} args.live_until_ledger - Ledger number until the approval is valid
+   * @param {u32} args.expiration_ledger - Ledger number until the approval is valid
    *
    * @param {EnvelopeHeader} args.header - Transaction envelope header
    * @param {AccountHandler[]} args.signers - Transaction signers
@@ -248,7 +248,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    * @returns {Promise<void>}
    */
   public async approve(
-    args: { from: string; spender: string; amount: i128; live_until_ledger: u32 } & TransactionInvocation
+    args: { from: string; spender: string; amount: i128; expiration_ledger: u32 } & TransactionInvocation
   ): Promise<void> {
     return (await this.invokeContract({
       method: methods.approve,
@@ -256,7 +256,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
         from: new Address(args.from),
         spender: new Address(args.spender),
         amount: args.amount,
-        live_until_ledger: args.live_until_ledger,
+        expiration_ledger: args.expiration_ledger,
       },
       signers: args.signers,
       header: args.header,
