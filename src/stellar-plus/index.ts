@@ -1,11 +1,10 @@
 import { ChannelAccounts as ChannelAccountsHandler } from 'stellar-plus/channel-accounts/index'
 import { CertificateOfDepositClient } from 'stellar-plus/soroban/contracts/certificate-of-deposit'
-
-import { Profiler as SorobanProfiler } from './utils/profiler/soroban'
+import { Profiler as SorobanProfiler } from 'stellar-plus/utils/profiler/soroban'
 
 export * as Account from 'stellar-plus/account/index'
 export * as Asset from 'stellar-plus/asset/index'
-export * as Constants from './constants'
+export * as Constants from 'stellar-plus/constants'
 export { HorizonHandlerClient as HorizonHandler } from 'stellar-plus/horizon/index'
 export { SorobanHandlerClient as SorobanHandler } from 'stellar-plus/soroban/index'
 
@@ -23,6 +22,8 @@ export const Utils = {
 }
 
 export * as RPC from 'stellar-plus/rpc/index'
+
+export * as Types from 'stellar-plus/types'
 
 // export { TransactionInvocation } from 'stellar-plus/core/types'
 

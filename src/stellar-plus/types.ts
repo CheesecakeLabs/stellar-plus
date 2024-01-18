@@ -1,5 +1,11 @@
 import { Address as StellarAddress } from '@stellar/stellar-sdk'
 
+import {
+  EnvelopeHeader as _EnvelopeHeader,
+  FeeBumpHeader as _FeeBumpHeader,
+  TransactionInvocation as _TransactionInvocation,
+} from 'stellar-plus/core/types'
+
 export type TransactionXdr = string
 
 //
@@ -33,3 +39,9 @@ export type Typepoint = bigint
 export type Duration = bigint
 
 export type Address = StellarAddress | string
+
+export type TransactionInvocation = _TransactionInvocation
+export type EnvelopeHeader = _EnvelopeHeader
+export type FeeBumpHeader = _FeeBumpHeader
+
+export * as Errors from 'stellar-plus/error/types'
