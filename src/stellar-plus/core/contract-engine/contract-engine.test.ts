@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer'
+
 import { Asset } from '@stellar/stellar-sdk'
 
 import { spec } from 'stellar-plus/asset/soroban-token/constants'

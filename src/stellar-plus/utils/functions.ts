@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 export const generateRandomSalt = (): Buffer => {
   let salt = ''
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/' // Base64 characters
