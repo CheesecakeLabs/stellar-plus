@@ -1,4 +1,5 @@
 import { Address as StellarAddress } from '@stellar/stellar-sdk'
+import { Transaction as _Transaction, FeeBumpTransaction as _FeeBumpTransaction } from '@stellar/stellar-sdk'
 
 import {
   EnvelopeHeader as _EnvelopeHeader,
@@ -7,6 +8,10 @@ import {
 } from 'stellar-plus/core/types'
 
 export type TransactionXdr = string
+
+export type Transaction = _Transaction
+
+export type FeeBumpTransaction = _FeeBumpTransaction
 
 //
 // Networks
