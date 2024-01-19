@@ -430,7 +430,8 @@ export class ContractEngine extends SorobanTransactionProcessor {
       response: await this.processSorobanTransaction(
         assembledTransaction,
         updatedTxInvocation.signers,
-        updatedTxInvocation.feeBump
+        updatedTxInvocation.feeBump,
+        updatedTxInvocation.header.timeout
       ),
       transactionResources,
     }
