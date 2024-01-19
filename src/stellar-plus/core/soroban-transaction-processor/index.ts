@@ -153,7 +153,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
   protected async processSorobanTransaction(
     envelope: Transaction,
     signers: AccountHandler[],
-    feeBump?: FeeBumpHeader
+    feeBump?: FeeBumpHeader,
+    secondsToWait?: number
   ): Promise<SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse> {
     const signedInnerTransaction = await this.signEnvelope(envelope, signers)
 
@@ -162,7 +163,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       : (TransactionBuilder.fromXDR(signedInnerTransaction, this.network.networkPassphrase) as Transaction)
 
     const rpcResponse = await this.submitTransaction(finalEnvelope)
-    const processedTransaction = await this.postProcessSorobanSubmission(rpcResponse)
+    const processedTransaction = await this.postProcessSorobanSubmission(rpcResponse, secondsToWait)
 
     return processedTransaction
   }
@@ -176,7 +177,8 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    * @returns {Promise<SorobanRpcNamespace.GetSuccessfulTransactionResponse>} The response from the Soroban server.
    */
   protected async postProcessSorobanSubmission(
-    response: SorobanRpcNamespace.Api.SendTransactionResponse
+    response: SorobanRpcNamespace.Api.SendTransactionResponse,
+    secondsToWait?: number
   ): Promise<SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse> {
     if (response.status === 'ERROR') {
       throw STPError.failedToSubmitTransactionWithResponse(response)
@@ -184,7 +186,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
 
     if (response.status === 'PENDING' || response.status === 'TRY_AGAIN_LATER') {
       // console.log('Waiting for Transaction!: ')
-      return await this.waitForTransaction(response.hash, 15) // Arbitrary 15 seconds timeout
+      return await this.waitForTransaction(response.hash, secondsToWait ? secondsToWait : 15) // Arbitrary 15 seconds timeout default
     }
 
     throw STPError.failedToVerifyTransactionSubmission(response)
@@ -232,7 +234,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
       throw STPError.transactionSubmittedFailed(updatedTransaction)
     }
 
-    throw STPError.transactionSubmittedNotFound(updatedTransaction, timeout)
+    throw STPError.transactionSubmittedNotFound(updatedTransaction, timeout, transactionHash)
   }
 
   protected postProcessTransaction(
