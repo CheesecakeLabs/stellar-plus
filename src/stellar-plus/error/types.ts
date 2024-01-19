@@ -53,6 +53,7 @@ export type Meta = {
   data?: object
   message?: string
   transactionXDR?: string
+  transactionHash?: string
   axiosError?: AxiosErrorInfo
   transactionData?: TransactionData
   sorobanSimulationData?: SimulationErrorInfo

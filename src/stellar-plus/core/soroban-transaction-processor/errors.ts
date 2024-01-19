@@ -151,14 +151,18 @@ const verifyOpErrorCode = (sorobanGetTransactionData: GetTransactionFailedErrorI
 
 const transactionSubmittedNotFound = (
   response: SorobanRpc.Api.GetTransactionResponse,
-  waitTimeout: number
+  waitTimeout: number,
+  transactionHash: string
 ): StellarPlusError => {
   return new StellarPlusError({
     code: SorobanTransactionProcessorErrorCodes.STP007,
     message: 'Transaction not found!',
     source: 'SorobanTransactionProcessor',
     details: `The transaction submitted was not found within the waiting period of ${waitTimeout} ms. Althought the transaction was sent for processing, the subsequent attempts to verify the transaction status didn't succeed to locate it. Review the error message for further information about the failure.`,
-    meta: { sorobanGetTransactionData: extractGetTransactionData(response) },
+    meta: {
+      transactionHash,
+      sorobanGetTransactionData: extractGetTransactionData(response),
+    },
   })
 }
 
