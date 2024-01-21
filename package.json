@@ -27,6 +27,7 @@
   "devDependencies": {
     "@types/jest": "^29.5.10",
     "@types/node": "^20.10.0",
+    "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
     "eslint": "^8.55.0",
@@ -52,6 +53,7 @@
     "@stellar/freighter-api": "^1.7.1",
     "@stellar/stellar-sdk": "^11.1.0",
     "axios": "^1.6.2",
-    "stellar-base": "^10.0.1"
+    "stellar-base": "^10.0.1",
+    "uuid": "^9.0.1"
   }
 }
