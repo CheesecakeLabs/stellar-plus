@@ -1,19 +1,19 @@
 import { v4 as uuidv4 } from 'uuid'
 
-import { BeltPluginType, ConveyorBeltType, GenericPlugin } from './types'
+import { BeltPluginType, BeltProcessFunction, ConveyorBeltType } from './types'
 
 export class ConveyorBelt<Input, Output, BeltType> implements ConveyorBeltType<Input, Output, BeltType> {
   type: BeltType
   id: string
 
-  private process: <Input, Output>(item: Input, itemId: string, beltId: string) => Promise<Output>
+  private process: BeltProcessFunction<Input, Output>
 
-  private plugins: BeltPluginType<Input, Output, BeltType | GenericPlugin>[]
+  private plugins: BeltPluginType<Input, Output, BeltType>[]
 
   constructor(
     type: BeltType,
-    plugins: BeltPluginType<Input, Output, BeltType | GenericPlugin>[],
-    process: <Input, Output>(item: Input, itemId: string, beltId: string) => Promise<Output>
+    process: BeltProcessFunction<Input, Output>,
+    plugins: BeltPluginType<Input, Output, BeltType>[]
   ) {
     this.type = type
     this.id = uuidv4() as string
