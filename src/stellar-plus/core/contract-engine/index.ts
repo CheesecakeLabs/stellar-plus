@@ -550,6 +550,30 @@ export class ContractEngine extends SorobanTransactionProcessor {
     return await this.restoreFootprint({ ...txInvocation, keys: [footprint] }) // Contract Id verified in requireContractId
   }
 
+  /**
+   *
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object to use in this transaction.
+   *
+   * @returns {Promise<void>} - The output of the invocation.
+   *
+   * @description - Restores the contract code.
+   */
+  public async restoreContractCode(txInvocation: TransactionInvocation): Promise<void> {
+    this.requireWasmHash()
+
+    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
+      xdr.LedgerKey.contractCode(new xdr.LedgerKeyContractCode({ hash: Buffer.from(this.getWasmHash(), 'hex') }))
+    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
+
+    const contractCode = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractCode')
+
+    if (!contractCode) {
+      throw CEError.contractCodeNotFound(ledgerEntries)
+    }
+
+    return await this.restoreFootprint({ ...txInvocation, keys: [contractCode.key] }) // Contract Id verified in requireContractId
+  }
+
   //==========================================
   // Internal Methods
   //==========================================
