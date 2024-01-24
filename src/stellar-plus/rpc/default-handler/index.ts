@@ -41,7 +41,7 @@ export class DefaultRpcHandler implements RpcHandler {
    *
    * @description - Simulates the transaction on the Soroban server.
    */
-  async simulateTransaction(tx: Transaction): Promise<SorobanRpc.Api.SimulateTransactionResponse> {
+  async simulateTransaction(tx: Transaction | FeeBumpTransaction): Promise<SorobanRpc.Api.SimulateTransactionResponse> {
     const response = await this.server.simulateTransaction(tx)
     return response
   }
