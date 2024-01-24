@@ -6,6 +6,19 @@ import { TransactionXdr } from 'stellar-plus/types'
 
 export type AccountHandler = AccountBase & {
   sign(tx: Transaction | FeeBumpTransaction): Promise<TransactionXdr> | TransactionXdr
+  signatureSchema?: SignatureSchema
 }
 
 export type AccountHandlerPayload = AccountHelpersPayload
+
+export type SignatureSchema = {
+  threasholds: {
+    low: number
+    medium: number
+    high: number
+  }
+  signers: {
+    weight: number
+    publicKey: string
+  }[]
+}

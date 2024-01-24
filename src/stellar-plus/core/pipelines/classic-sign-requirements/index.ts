@@ -50,14 +50,17 @@ export class ClassicSignRequirementsPipeline extends ConveyorBelt<
   }
 
   private getSignatureThresholdForSource(transaction: Transaction | FeeBumpTransaction): SignatureRequirement {
-    if (transaction instanceof FeeBumpTransaction) {
+    if ((transaction as FeeBumpTransaction).innerTransaction) {
+      const fbTx = transaction as FeeBumpTransaction
       return {
-        publicKey: transaction.feeSource,
+        publicKey: fbTx.feeSource,
         thresholdLevel: SignatureThreshold.low,
       }
     }
+
+    const tx = transaction as Transaction
     return {
-      publicKey: transaction.source,
+      publicKey: tx.source,
       thresholdLevel: SignatureThreshold.medium,
     }
   }

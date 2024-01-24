@@ -17,6 +17,8 @@ import { Network } from 'stellar-plus/types'
 import { VCRPCError } from './errors'
 
 export class ValidationCloudRpcHandler implements RpcHandler {
+  readonly type = 'RpcHandler'
+
   private apiKey: string
   private network: Network
   private baseUrl: string

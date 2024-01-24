@@ -4,6 +4,7 @@ import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network } from 'stellar-plus/types'
 
 export class DefaultRpcHandler implements RpcHandler {
+  readonly type = 'RpcHandler'
   private server: SorobanRpc.Server
   private network: Network
 

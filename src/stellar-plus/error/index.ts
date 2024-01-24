@@ -40,4 +40,12 @@ export class StellarPlusError extends Error {
       meta: { ...meta, error: args?.error },
     })
   }
+
+  static fromUnkownError(error: unknown): StellarPlusError {
+    if (error instanceof StellarPlusError) {
+      return error
+    }
+
+    return StellarPlusError.unexpectedError({ error: error as Error })
+  }
 }

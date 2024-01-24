@@ -46,7 +46,6 @@ export class FeeBumpWrapperPlugin
 
     const classicSignRequirementsPipeline = new ClassicSignRequirementsPipeline()
     const classicSignRequirements = await classicSignRequirementsPipeline.execute(feeBumpEnvelope, itemId)
-    console.log('classicSignRequirements', classicSignRequirements)
     const signTransactionPipeline = new SignTransactionPipeline()
     const signedTransaction = await signTransactionPipeline.execute(
       {
