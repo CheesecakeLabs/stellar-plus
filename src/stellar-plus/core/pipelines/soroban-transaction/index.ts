@@ -20,6 +20,7 @@ import {
   SimulateTransactionPipelinePlugin,
   SimulateTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/simulate-transaction/types'
+import { SorobanGetTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-get-transaction'
 import {
   SorobanTransactionPipelineInput,
   SorobanTransactionPipelineOutput,
@@ -27,6 +28,11 @@ import {
   SorobanTransactionPipelineSupportedInnerPlugins,
   SorobanTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/soroban-transaction/types'
+import { SubmitTransactionPipeline } from 'stellar-plus/core/pipelines/submit-transaction'
+import {
+  SubmitTransactionPipelinePlugin,
+  SubmitTransactionPipelineType,
+} from 'stellar-plus/core/pipelines/submit-transaction/types'
 import { HorizonHandlerClient } from 'stellar-plus/horizon'
 import { DefaultRpcHandler } from 'stellar-plus/rpc'
 import { RpcHandler } from 'stellar-plus/rpc/types'
@@ -34,8 +40,10 @@ import { Network } from 'stellar-plus/types'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
 import { filterPluginsByType } from 'stellar-plus/utils/pipeline/plugins'
 
-import { SubmitTransactionPipeline } from '../submit-transaction'
-import { SubmitTransactionPipelinePlugin, SubmitTransactionPipelineType } from '../submit-transaction/types'
+import {
+  SorobanGetTransactionPipelinePlugin,
+  SorobanGetTransactionPipelineType,
+} from '../soroban-get-transaction/types'
 
 export class SorobanTransactionPipeline extends ConveyorBelt<
   SorobanTransactionPipelineInput,
@@ -147,11 +155,25 @@ export class SorobanTransactionPipeline extends ConveyorBelt<
       itemId
     )
 
-    console.log(submissionResult)
+    // ======================= Submission Follow Up ==========================
+    const sorobanGetTransactionPipelinePlugins = this.getInnerPlugins(
+      innerPlugins,
+      'SorobanGetTransactionPipeline' as SorobanGetTransactionPipelineType
+    ) as SorobanGetTransactionPipelinePlugin[]
+
+    const sorobanGetTransactionPipeline = new SorobanGetTransactionPipeline(sorobanGetTransactionPipelinePlugins)
+
+    const sorobanGetTransactionResult = await sorobanGetTransactionPipeline.execute(
+      {
+        sorobanSubmission: submissionResult.response as SorobanRpc.Api.SendTransactionResponse,
+        rpcHandler: this.rpcHandler,
+        transactionEnvelope: signedTransaction,
+      },
+      itemId
+    )
 
     return {
-      output: 'final',
-      status: 'success',
+      result: sorobanGetTransactionResult,
     } as SorobanTransactionPipelineOutput
   }
 

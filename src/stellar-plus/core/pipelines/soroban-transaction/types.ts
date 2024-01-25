@@ -4,6 +4,10 @@ import { BuildTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/buil
 import { ClassicSignRequirementsPipelinePlugin } from 'stellar-plus/core/pipelines/classic-sign-requirements/types'
 import { SignTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/sign-transaction/types'
 import { SimulateTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/simulate-transaction/types'
+import {
+  SorobanGetTransactionPipelineOutput,
+  SorobanGetTransactionPipelinePlugin,
+} from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
 import { SubmitTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/submit-transaction/types'
 import { Network, TransactionInvocation } from 'stellar-plus/types'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
@@ -19,8 +23,7 @@ export type SorobanTransactionPipelineInput = {
 }
 
 export type SorobanTransactionPipelineOutput = {
-  output: string
-  status: 'success' | 'error'
+  result: SorobanGetTransactionPipelineOutput
 }
 
 export type SorobanTransactionPipelineSupportedInnerPlugins =
@@ -29,6 +32,7 @@ export type SorobanTransactionPipelineSupportedInnerPlugins =
   | ClassicSignRequirementsPipelinePlugin
   | SignTransactionPipelinePlugin
   | SubmitTransactionPipelinePlugin
+  | SorobanGetTransactionPipelinePlugin
 
 export type SorobanTransactionPipelineType = 'SorobanTransactionPipeline'
 
