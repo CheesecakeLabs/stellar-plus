@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer'
 
 import {
+  Address,
   Contract,
   ContractSpec,
   Operation,
@@ -24,7 +25,8 @@ import {
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
 import { StellarPlusErrorObject } from 'stellar-plus/error/types'
-import { ExtractWrappedContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-wrapped-contract-id'
+import { generateRandomSalt } from 'stellar-plus/utils/functions'
+import { ExtractContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-contract-id'
 
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
@@ -501,28 +503,30 @@ export class ContractEngine extends SorobanTransactionProcessor {
    * */
   public async deploy(txInvocation: TransactionInvocation): Promise<void> {
     this.requireWasmHash()
-    const startTime = Date.now()
-
-    const builtTransactionObjectToProcess = await this.buildDeployContractTransaction({
-      wasmHash: this.wasmHash!, // Wasm hash verified in requireWasmHash
-      ...txInvocation,
-    })
 
     try {
-      const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
-      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      const contractId = this.extractContractIdFromDeployContractResponse(response)
+      const deployOperation = Operation.createCustomContract({
+        address: new Address(txInvocation.header.source),
+        wasmHash: Buffer.from(this.wasmHash!, 'hex'), // Wasm hash verified in requireWasmHash
+        salt: generateRandomSalt(),
+      } as OperationOptions.CreateCustomContract)
 
-      this.contractId = contractId
+      const result = await this.sorobanTransactionPipeline.execute({
+        txInvocation,
+        operations: [deployOperation],
+        networkConfig: this.network,
+        options: {
+          innerPlugins: [new ExtractContractIdPlugin()],
+        },
+      })
 
-      if (this.options.debug) {
-        this.options.costHandler?.(
-          'deployWasm',
-          transactionResources as TransactionResources,
-          Date.now() - startTime,
-          await this.extractFeeCharged(response)
-        )
-      }
+      this.contractId = (result.output as ContractIdOutput).contractId
+
+      // const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
+      // // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
+      // const contractId = this.extractContractIdFromDeployContractResponse(response)
+
+      // this.contractId = contractId
     } catch (error) {
       throw CEError.failedToDeployContract(error as StellarPlusError)
     }
@@ -543,7 +547,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
         operations: [wrapOperation],
         networkConfig: this.network,
         options: {
-          innerPlugins: [new ExtractWrappedContractIdPlugin()],
+          innerPlugins: [new ExtractContractIdPlugin()],
         },
       })
 

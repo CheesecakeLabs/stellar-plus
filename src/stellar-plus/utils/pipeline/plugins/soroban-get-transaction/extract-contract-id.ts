@@ -6,10 +6,9 @@ import {
   SorobanGetTransactionPipelineOutput,
   SorobanGetTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
+import { BeltMetadata, BeltPluginType } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
-import { BeltMetadata, BeltPluginType } from '../../conveyor-belts/types'
-
-export class ExtractWrappedContractIdPlugin
+export class ExtractContractIdPlugin
   implements
     BeltPluginType<
       SorobanGetTransactionPipelineInput,
@@ -18,7 +17,7 @@ export class ExtractWrappedContractIdPlugin
     >
 {
   readonly type: SorobanGetTransactionPipelineType = 'SorobanGetTransactionPipeline'
-  readonly name: string = 'ExtractWrappedContractIdPlugin'
+  readonly name: string = 'ExtractContractIdPlugin'
 
   public async postProcess(
     item: SorobanGetTransactionPipelineOutput,
