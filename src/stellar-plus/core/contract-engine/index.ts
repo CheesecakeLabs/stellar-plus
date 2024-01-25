@@ -1,8 +1,19 @@
 import { Buffer } from 'buffer'
 
-import { Contract, ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
+import {
+  Contract,
+  ContractSpec,
+  Operation,
+  OperationOptions,
+  SorobanRpc as SorobanRpcNamespace,
+  Transaction,
+  xdr,
+} from '@stellar/stellar-sdk'
 
+import { CEError, ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/errors'
 import { ContractEngineConstructorArgs, Options, TransactionResources } from 'stellar-plus/core/contract-engine/types'
+import { ContractIdOutput } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
+import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
 import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
 import {
   RestoreFootprintArgs,
@@ -13,14 +24,15 @@ import {
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
 import { StellarPlusErrorObject } from 'stellar-plus/error/types'
-
-import { CEError, ContractEngineErrorCodes } from './errors'
+import { ExtractWrappedContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-wrapped-contract-id'
 
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
+
+  private sorobanTransactionPipeline: SorobanTransactionPipeline
 
   private options: Options = {
     debug: false,
@@ -74,6 +86,12 @@ export class ContractEngine extends SorobanTransactionProcessor {
     this.wasm = args.wasm
     this.wasmHash = args.wasmHash
     this.options = { ...this.options, ...args.options }
+
+    this.sorobanTransactionPipeline = new SorobanTransactionPipeline({
+      networkConfig: args.network,
+      customRpcHandler: args.rpcHandler,
+      ...this.options.transactionPipeline,
+    })
   }
 
   public getContractId(): string {
@@ -512,25 +530,34 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
   public async wrapAndDeployClassicAsset(args: WrapClassicAssetArgs): Promise<void> {
     this.requireNoContractId()
-    const startTime = Date.now()
-
-    const builtTransactionObjectToProcess = await this.buildWrapClassicAssetTransaction(args)
 
     try {
-      const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
-      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      const contractId = this.extractContractIdFromWrapClassicAssetResponse(response)
+      const { asset, header, signers, feeBump } = args
+
+      const txInvocation = {
+        signers,
+        header,
+        feeBump,
+      }
+
+      const options: OperationOptions.CreateStellarAssetContract = {
+        asset,
+      }
+
+      const wrapOperation = Operation.createStellarAssetContract(options)
+
+      const result = await this.sorobanTransactionPipeline.execute({
+        txInvocation,
+        operations: [wrapOperation],
+        networkConfig: this.network,
+        options: {
+          innerPlugins: [new ExtractWrappedContractIdPlugin()],
+        },
+      })
+
+      const contractId = (result.output as ContractIdOutput).contractId
 
       this.contractId = contractId
-
-      if (this.options.debug) {
-        this.options.costHandler?.(
-          'wrapSAC',
-          transactionResources as TransactionResources,
-          Date.now() - startTime,
-          await this.extractFeeCharged(response)
-        )
-      }
     } catch (error) {
       throw CEError.failedToWrapAsset(error as StellarPlusError)
     }

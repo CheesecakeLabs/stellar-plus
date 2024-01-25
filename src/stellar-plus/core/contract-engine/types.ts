@@ -1,5 +1,6 @@
 import { ContractSpec } from '@stellar/stellar-sdk'
 
+import { SorobanTransactionPipelineOptions } from 'stellar-plus/core/pipelines/soroban-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network } from 'stellar-plus/types'
@@ -18,6 +19,7 @@ export type Options = {
   debug?: boolean
   costHandler?: (methodName: string, costs: TransactionResources, elapsedTime: number, feeCharged: number) => void
   restoreTxInvocation?: TransactionInvocation
+  transactionPipeline?: SorobanTransactionPipelineOptions
 }
 
 export type TransactionResources = {
