@@ -11,7 +11,7 @@ export type SorobanGetTransactionPipelineInput = {
 
 export type SorobanGetTransactionPipelineOutput = {
   response: SorobanRpc.Api.GetSuccessfulTransactionResponse
-  output?: number
+  output?: ContractIdOutput
 }
 
 export type SorobanGetTransactionPipelineType = 'SorobanGetTransactionPipeline'
@@ -25,4 +25,8 @@ export type SorobanGetTransactionPipelinePlugin = BeltPluginType<
 export type SorobanGetTransactionOptions = {
   defaultSecondsToWait: number // Defines the default number of seconds to wait before checking the status of a transaction
   useEnvelopeTimeout: boolean // If true, the pipeline will use the timeout defined in the transaction envelope whenever available
+}
+
+export type ContractIdOutput = {
+  contractId?: string
 }
