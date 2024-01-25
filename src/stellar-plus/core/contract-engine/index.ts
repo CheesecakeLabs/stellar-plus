@@ -532,19 +532,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
     this.requireNoContractId()
 
     try {
-      const { asset, header, signers, feeBump } = args
+      const txInvocation = args as TransactionInvocation
 
-      const txInvocation = {
-        signers,
-        header,
-        feeBump,
-      }
-
-      const options: OperationOptions.CreateStellarAssetContract = {
-        asset,
-      }
-
-      const wrapOperation = Operation.createStellarAssetContract(options)
+      const wrapOperation = Operation.createStellarAssetContract({
+        asset: args.asset,
+      } as OperationOptions.CreateStellarAssetContract)
 
       const result = await this.sorobanTransactionPipeline.execute({
         txInvocation,
@@ -555,9 +547,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
         },
       })
 
-      const contractId = (result.output as ContractIdOutput).contractId
-
-      this.contractId = contractId
+      this.contractId = (result.output as ContractIdOutput).contractId
     } catch (error) {
       throw CEError.failedToWrapAsset(error as StellarPlusError)
     }
