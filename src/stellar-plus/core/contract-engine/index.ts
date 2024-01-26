@@ -11,8 +11,8 @@ import {
   xdr,
 } from '@stellar/stellar-sdk'
 
-import { CEError, ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/errors'
-import { ContractEngineConstructorArgs, Options, TransactionResources } from 'stellar-plus/core/contract-engine/types'
+import { CEError } from 'stellar-plus/core/contract-engine/errors'
+import { ContractEngineConstructorArgs, Options } from 'stellar-plus/core/contract-engine/types'
 import { ContractIdOutput, ContractWasmHashOutput } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
 import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
 import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
@@ -24,7 +24,6 @@ import {
 } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
-import { StellarPlusErrorObject } from 'stellar-plus/error/types'
 import { generateRandomSalt } from 'stellar-plus/utils/functions'
 import { ExtractInvocationOutputFromSimulationPlugin } from 'stellar-plus/utils/pipeline/plugins/simulate-transaction/extract-invocation-output'
 import { ExtractContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-contract-id'
@@ -252,9 +251,12 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const contract = new Contract(this.contractId!) // Contract Id verified in requireContractId
     const contractCallOperation = contract.call(method, ...encodedArgs)
 
-    const executionPlugins = simulateOnly
-      ? [new ExtractInvocationOutputFromSimulationPlugin(this.spec, method)]
-      : [new ExtractInvocationOutputPlugin(this.spec, method)]
+    const executionPlugins = [
+      ...(simulateOnly
+        ? [new ExtractInvocationOutputFromSimulationPlugin(this.spec, method)]
+        : [new ExtractInvocationOutputPlugin(this.spec, method)]),
+      ...(txInvocation.executionPlugins || []),
+    ]
 
     const result = await this.sorobanTransactionPipeline.execute({
       txInvocation,

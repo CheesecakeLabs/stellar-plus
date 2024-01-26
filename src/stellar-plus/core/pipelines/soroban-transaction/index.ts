@@ -126,7 +126,8 @@ export class SorobanTransactionPipeline extends MultiBeltPipeline<
     }
 
     // ======================= Assemble ==========================
-    const assembledTransaction = SorobanRpc.assembleTransaction(builtTx, successfulSimulation.response).build()
+    // const assembledTransaction = SorobanRpc.assembleTransaction(builtTx, successfulSimulation.response).build()
+    const assembledTransaction = successfulSimulation.assembledTransaction
 
     // ======================= Calculate classic requirements ==========================
     const classicSignRequirementsPipelinePlugins = this.getInnerPluginsByType(

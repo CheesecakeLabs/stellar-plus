@@ -12,6 +12,7 @@ export type SimulateTransactionPipelineInput = {
 export type SimulateTransactionPipelineOutput = {
   response: SorobanRpc.Api.SimulateTransactionSuccessResponse | SorobanRpc.Api.SimulateTransactionRestoreResponse
   output?: SimulatedInvocationOutput & ResourcesOutput
+  assembledTransaction: Transaction
 }
 
 // export type SimulateTransactionPipelineType = 'SimulateTransactionPipeline'

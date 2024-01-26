@@ -23,7 +23,7 @@ export class ProfilerPlugin
 
   private timers: { [key: string]: { start: number; end: number } } = {}
   private logs: { [key: string]: LogEntry } = {}
-  public profiler: ProfilingHandler
+  public data: ProfilingHandler
   public plugins: InnerPlugins[] = []
 
   private costHandler: (
@@ -34,9 +34,9 @@ export class ProfilerPlugin
   ) => void
 
   constructor() {
-    this.profiler = new ProfilingHandler()
+    this.data = new ProfilingHandler()
 
-    this.costHandler = this.profiler.getOptionsArgs().costHandler as (
+    this.costHandler = this.data.getOptionsArgs().costHandler as (
       methodName: string,
       costs: TransactionResources,
       elapsedTime: number,

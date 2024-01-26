@@ -1,4 +1,4 @@
-import { Operation, SorobanDataBuilder, SorobanRpc } from '@stellar/stellar-sdk'
+import { Operation, SorobanDataBuilder, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import {
   BuildTransactionPipelineInput,
@@ -58,10 +58,19 @@ export class AutoRestorePlugin
     item: SimulateTransactionPipelineOutput,
     _meta: BeltMetadata
   ): Promise<SimulateTransactionPipelineOutput> {
-    const { response }: SimulateTransactionPipelineOutput = item
+    const { response, assembledTransaction }: SimulateTransactionPipelineOutput = item
 
     if (SorobanRpc.Api.isSimulationRestore(response)) {
       await this.restore((response as SorobanRpc.Api.SimulateTransactionRestoreResponse).restorePreamble)
+
+      if (assembledTransaction.source === this.restoreTxInvocation.header.source) {
+        const updatedTransaction = this.bumpSequence(assembledTransaction)
+
+        return {
+          ...item,
+          assembledTransaction: updatedTransaction,
+        } as SimulateTransactionPipelineOutput
+      }
     }
 
     return item
@@ -98,5 +107,10 @@ export class AutoRestorePlugin
         executionPlugins: [executionPluginToInjectSorobanData],
       },
     } as SorobanTransactionPipelineInput)
+  }
+
+  private bumpSequence(transaction: Transaction): Transaction {
+    transaction.sequence = BigInt(transaction.sequence).toString()
+    return transaction
   }
 }

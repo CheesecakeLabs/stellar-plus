@@ -1,4 +1,4 @@
-import { SorobanRpc } from '@stellar/stellar-sdk'
+import { SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import {
   SimulateTransactionPipelineInput,
@@ -40,26 +40,29 @@ export class SimulateTransactionPipeline extends ConveyorBelt<
       throw PSIError.simulationFailed(simulationResponse, extractConveyorBeltErrorMeta(item, this.getMeta(itemId)))
     }
 
-    if (SorobanRpc.Api.isSimulationRestore(simulationResponse)) {
-      return {
-        response: simulationResponse as SorobanRpc.Api.SimulateTransactionRestoreResponse,
-      } as SimulateTransactionPipelineOutput
-      // throw PSIError.transactionNeedsRestore(
-      //   simulationResponse,
-      //   extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
-      // )
-    }
-
-    if (SorobanRpc.Api.isSimulationSuccess(simulationResponse) && !simulationResponse.result) {
+    if (!simulationResponse.result) {
       throw PSIError.simulationMissingResult(
         simulationResponse,
         extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
       )
     }
 
+    if (SorobanRpc.Api.isSimulationRestore(simulationResponse) && simulationResponse.result) {
+      return {
+        response: simulationResponse as SorobanRpc.Api.SimulateTransactionRestoreResponse,
+        assembledTransaction: this.assembleTransaction(transaction, simulationResponse),
+      } as SimulateTransactionPipelineOutput
+
+      // throw PSIError.transactionNeedsRestore(
+      //   simulationResponse,
+      //   extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
+      // )
+    }
+
     if (SorobanRpc.Api.isSimulationSuccess(simulationResponse) && simulationResponse.result) {
       return {
         response: simulationResponse as SorobanRpc.Api.SimulateTransactionSuccessResponse,
+        assembledTransaction: this.assembleTransaction(transaction, simulationResponse),
       } as SimulateTransactionPipelineOutput
     }
 
@@ -67,5 +70,16 @@ export class SimulateTransactionPipeline extends ConveyorBelt<
       simulationResponse,
       extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
     )
+  }
+
+  private assembleTransaction(
+    transaction: Transaction,
+    simulationResponse: SorobanRpc.Api.SimulateTransactionSuccessResponse
+  ): Transaction {
+    try {
+      return SorobanRpc.assembleTransaction(transaction, simulationResponse).build()
+    } catch (e) {
+      throw new Error('assembleTransaction failed')
+    }
   }
 }

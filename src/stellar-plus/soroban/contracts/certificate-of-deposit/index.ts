@@ -1,6 +1,7 @@
 import { Address, ContractSpec } from '@stellar/stellar-sdk'
 
 import { ContractEngine } from 'stellar-plus/core/contract-engine'
+import { TransactionInvocation } from 'stellar-plus/core/types'
 import { i128, u32, u64 } from 'stellar-plus/types'
 
 import { Methods, spec } from './constants'
@@ -56,9 +57,10 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
     await this.invokeContract({
       method: this.methods.deposit,
       methodArgs: { amount, address },
-      signers: args.signers,
-      header: args.header,
-      feeBump: args.feeBump,
+      // signers: args.signers,
+      // header: args.header,
+      // feeBump: args.feeBump,
+      ...(args as TransactionInvocation),
     })
   }
 
@@ -204,9 +206,10 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
         penalty_rate: penaltyRate as u64,
         allowance_period: args.allowancePeriod as u32,
       },
-      signers: args.signers,
-      header: args.header,
-      feeBump: args.feeBump,
+      // signers: args.signers,
+      // header: args.header,
+      // feeBump: args.feeBump,
+      ...(args as TransactionInvocation),
     })
   }
 
