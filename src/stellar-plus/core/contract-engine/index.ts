@@ -7,36 +7,37 @@ import {
   Operation,
   OperationOptions,
   SorobanRpc as SorobanRpcNamespace,
-  Transaction,
   xdr,
 } from '@stellar/stellar-sdk'
 
 import { CEError } from 'stellar-plus/core/contract-engine/errors'
 import { ContractEngineConstructorArgs, Options } from 'stellar-plus/core/contract-engine/types'
+import { SimulatedInvocationOutput } from 'stellar-plus/core/pipelines/simulate-transaction/types'
 import { ContractIdOutput, ContractWasmHashOutput } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
 import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
-import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
 import {
-  RestoreFootprintArgs,
   SorobanInvokeArgs,
   SorobanSimulateArgs,
   WrapClassicAssetArgs,
 } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
+import { DefaultRpcHandler } from 'stellar-plus/rpc'
+import { RpcHandler } from 'stellar-plus/rpc/types'
+import { Network } from 'stellar-plus/types'
 import { generateRandomSalt } from 'stellar-plus/utils/functions'
 import { ExtractInvocationOutputFromSimulationPlugin } from 'stellar-plus/utils/pipeline/plugins/simulate-transaction/extract-invocation-output'
 import { ExtractContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-contract-id'
 import { ExtractInvocationOutputPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-invocation-output'
 import { ExtractWasmHashPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-wasm-hash'
 
-import { SimulatedInvocationOutput } from '../pipelines/simulate-transaction/types'
-
-export class ContractEngine extends SorobanTransactionProcessor {
+export class ContractEngine {
   private spec: ContractSpec
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
+  private networkConfig: Network
+  private rpcHandler: RpcHandler
 
   private sorobanTransactionPipeline: SorobanTransactionPipeline
 
@@ -83,7 +84,9 @@ export class ContractEngine extends SorobanTransactionProcessor {
    * ```
    */
   constructor(args: ContractEngineConstructorArgs) {
-    super(args.network, args.rpcHandler)
+    // super(args.network, args.rpcHandler)
+    this.networkConfig = args.network
+    this.rpcHandler = args.rpcHandler ? args.rpcHandler : new DefaultRpcHandler(this.networkConfig)
     this.spec = args.spec
     this.contractId = args.contractId
     this.wasm = args.wasm
@@ -115,6 +118,10 @@ export class ContractEngine extends SorobanTransactionProcessor {
   public getContractFootprint(): xdr.LedgerKey {
     this.requireContractId()
     return new Contract(this.contractId!).getFootprint()
+  }
+
+  public getRpcHandler(): RpcHandler {
+    return this.rpcHandler
   }
 
   /**
@@ -261,7 +268,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const result = await this.sorobanTransactionPipeline.execute({
       txInvocation,
       operations: [contractCallOperation],
-      networkConfig: this.network,
+      networkConfig: this.networkConfig,
       options: {
         executionPlugins,
         simulateOnly,
@@ -271,184 +278,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
     return result.output
   }
 
-  // /**
-  //  *
-  //  * @param {SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse} simulatedTransaction - The simulated transaction response to parse.
-  //  *
-  //  * @returns {Promise<TransactionCosts>} The parsed transaction costs.
-  //  *
-  //  * @description - Parses the transaction costs from the simulated transaction response.
-  //  *
-  //  */
-  // private async parseTransactionResources(
-  //   simulatedTransaction: SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
-  // ): Promise<TransactionResources> {
-  //   const calculateEventSize = (event: xdr.DiagnosticEvent): number => {
-  //     if (event.event()?.type().name === 'diagnostic') {
-  //       return 0
-  //     }
-  //     return event.toXDR().length
-  //   }
-
-  //   const sorobanTransactionData = simulatedTransaction.transactionData.build()
-  //   const events = simulatedTransaction.events?.map((event) => calculateEventSize(event))
-  //   const returnValueSize = simulatedTransaction.result?.retval.toXDR().length
-  //   const transactionDataSize = sorobanTransactionData.toXDR().length
-  //   const eventsSize = events?.reduce((accumulator, currentValue) => accumulator + currentValue, 0)
-
-  //   return {
-  //     // cpuInstructions: Number(simulatedTransaction.cost?.cpuInsns),
-  //     cpuInstructions: Number(sorobanTransactionData?.resources().instructions()),
-  //     ram: Number(simulatedTransaction.cost?.memBytes),
-  //     minResourceFee: Number(simulatedTransaction.minResourceFee),
-  //     ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
-  //     ledgerWriteBytes: sorobanTransactionData?.resources().writeBytes(),
-  //     ledgerEntryReads: sorobanTransactionData?.resources().footprint().readOnly().length,
-  //     ledgerEntryWrites: sorobanTransactionData?.resources().footprint().readWrite().length,
-  //     eventSize: eventsSize,
-  //     returnValueSize: returnValueSize,
-  //     transactionSize: transactionDataSize,
-  //   }
-  // }
-
-  // private async extractFeeCharged(tx: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse): Promise<number> {
-  //   return Number(tx.resultXdr.feeCharged())
-  // }
-
-  // private async extractOutputFromSimulation(
-  //   simulated: SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse,
-  //   method: string
-  // ): Promise<unknown> {
-  //   if (!simulated.result) {
-  //     throw CEError.simulationMissingResult(simulated)
-  //   }
-
-  //   const output = this.spec.funcResToNative(method, simulated.result.retval) as unknown
-  //   return output
-  // }
-
-  // private async extractOutputFromProcessedInvocation(
-  //   response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse,
-  //   method: string
-  // ): Promise<unknown> {
-  //   // console.log('Response: ', response)
-  //   const invocationResultMetaXdr = response.resultMetaXdr
-  //   const output = this.spec.funcResToNative(
-  //     method,
-  //     invocationResultMetaXdr.v3().sorobanMeta()?.returnValue().toXDR('base64') as string
-  //   ) as unknown
-  //   return output
-  // }
-
-  // private async verifySimulationResponse(
-  //   simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse
-  // ): Promise<SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse> {
-  //   if (SorobanRpcNamespace.Api.isSimulationError(simulated)) {
-  //     throw CEError.simulationFailed(simulated)
-  //   }
-
-  //   // Simulated transactions with restore status are simulated as if
-  //   // the restore was done already. This means that the simulation
-  //   // result will come as successful. Therefore, we need to restore
-  //   // the footprint and proceed as if it was successful.
-  //   // Here, if no auto restor is set, we throw an error as the
-  //   // execution cannot proceed.
-  //   if (SorobanRpcNamespace.Api.isSimulationRestore(simulated)) {
-  //     throw CEError.transactionNeedsRestore(simulated)
-  //     // if (this.options.restoreTxInvocation) {
-  //     //   await this.autoRestoreFootprintFromFromSimulation(simulated, originalTx)
-  //     //   // Bump sequence number if same account is used for restore
-  //     // } else {
-
-  //     // }
-  //   }
-
-  //   if (SorobanRpcNamespace.Api.isSimulationSuccess(simulated) && simulated.result) {
-  //     return simulated as SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
-  //   }
-
-  //   if (SorobanRpcNamespace.Api.isSimulationSuccess(simulated) && !simulated.result) {
-  //     throw CEError.simulationMissingResult(simulated)
-  //   }
-
-  //   throw CEError.couldntVerifyTransactionSimulation(simulated)
-  // }
-
-  private async autoRestoreFootprintFromFromSimulation(
-    simulation: SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse,
-    originalTx: Transaction
-  ): Promise<Transaction> {
-    if (!this.options.restoreTxInvocation) {
-      throw CEError.restoreOptionNotSet(simulation)
-    }
-    const restorePreamble = simulation.restorePreamble
-
-    await this.restoreFootprint({ restorePreamble, ...this.options.restoreTxInvocation } as RestoreFootprintArgs)
-
-    if (originalTx.source === this.options.restoreTxInvocation.header.source) {
-      originalTx.sequence = (BigInt(originalTx.sequence) + BigInt(1)).toString()
-    }
-    return originalTx
-  }
-
   //==========================================
   // Meta Management Methods
   //==========================================
   //
   //
-
-  // private async processBuiltTransaction(args: {
-  //   builtTx: Transaction
-  //   updatedTxInvocation: TransactionInvocation
-  // }): Promise<{
-  //   response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
-  //   transactionResources?: TransactionResources
-  // }> {
-  //   const { updatedTxInvocation } = args
-
-  //   let { builtTx } = args
-
-  //   const simulatedTransaction = await this.simulateTransaction(builtTx)
-
-  //   let successfulSimulation: SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
-
-  //   try {
-  //     successfulSimulation = await this.verifySimulationResponse(simulatedTransaction)
-  //   } catch (error: unknown) {
-  //     const spError = error as StellarPlusErrorObject
-  //     if (spError.code === ContractEngineErrorCodes.CE102) {
-  //       // Transaction needs Restore
-  //       if (this.options.restoreTxInvocation) {
-  //         builtTx = await this.autoRestoreFootprintFromFromSimulation(
-  //           simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse,
-  //           builtTx
-  //         )
-
-  //         successfulSimulation = simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
-  //       } else {
-  //         throw CEError.restoreOptionNotSet(
-  //           simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse
-  //         )
-  //       }
-  //     } else {
-  //       throw error
-  //     }
-  //   }
-
-  //   const transactionResources = this.options.debug ? await this.parseTransactionResources(successfulSimulation) : {}
-
-  //   const assembledTransaction = await this.assembleTransaction(builtTx, successfulSimulation)
-
-  //   return {
-  //     response: await this.processSorobanTransaction(
-  //       assembledTransaction,
-  //       updatedTxInvocation.signers,
-  //       updatedTxInvocation.feeBump,
-  //       updatedTxInvocation.header.timeout
-  //     ),
-  //     transactionResources,
-  //   }
-  // }
 
   /**
    * @param {TransactionInvocation} txInvocation - The transaction invocation object to use in this transaction.
@@ -467,7 +301,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
       const result = await this.sorobanTransactionPipeline.execute({
         txInvocation,
         operations: [uploadOperation],
-        networkConfig: this.network,
+        networkConfig: this.networkConfig,
         options: {
           executionPlugins: [new ExtractWasmHashPlugin()],
         },
@@ -500,7 +334,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
       const result = await this.sorobanTransactionPipeline.execute({
         txInvocation,
         operations: [deployOperation],
-        networkConfig: this.network,
+        networkConfig: this.networkConfig,
         options: {
           executionPlugins: [new ExtractContractIdPlugin()],
         },
@@ -525,7 +359,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
       const result = await this.sorobanTransactionPipeline.execute({
         txInvocation,
         operations: [wrapOperation],
-        networkConfig: this.network,
+        networkConfig: this.networkConfig,
         options: {
           executionPlugins: [new ExtractContractIdPlugin()],
         },
@@ -535,20 +369,6 @@ export class ContractEngine extends SorobanTransactionProcessor {
     } catch (error) {
       throw CEError.failedToWrapAsset(error as StellarPlusError)
     }
-  }
-
-  /**
-   *
-   * @param {TransactionInvocation} txInvocation - The transaction invocation object to use in this transaction.
-   *
-   * @returns {Promise<void>} - The output of the invocation.
-   *
-   * @description - Restores the contract instance footprint.
-   */
-  public async restoreContractFootprint(txInvocation: TransactionInvocation): Promise<void> {
-    const footprint = this.getContractFootprint()
-
-    return await this.restoreFootprint({ ...txInvocation, keys: [footprint] }) // Contract Id verified in requireContractId
   }
 
   //==========================================
@@ -579,15 +399,3 @@ export class ContractEngine extends SorobanTransactionProcessor {
     }
   }
 }
-
-// function defaultCostHandler(
-//   methodName: string,
-//   costs: TransactionResources,
-//   elapsedTime: number,
-//   feeCharged: number
-// ): void {
-//   console.log('Debugging method: ', methodName)
-//   console.log(costs)
-//   console.log('Fee charged: ', feeCharged)
-//   console.log('Elapsed time: ', elapsedTime)
-// }
