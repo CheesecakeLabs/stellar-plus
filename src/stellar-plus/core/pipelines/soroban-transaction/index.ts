@@ -32,6 +32,8 @@ import {
   SorobanTransactionPipelinePlugin,
   SorobanTransactionPipelineType,
   SupportedInnerPlugins,
+  TransactionExecutionOutput,
+  TransactionSimulationOutput,
 } from 'stellar-plus/core/pipelines/soroban-transaction/types'
 import { SubmitTransactionPipeline } from 'stellar-plus/core/pipelines/submit-transaction'
 import {
@@ -119,8 +121,12 @@ export class SorobanTransactionPipeline extends MultiBeltPipeline<
       itemId
     )
 
+    if (options?.simulateOnly) {
+      return successfulSimulation as TransactionSimulationOutput
+    }
+
     // ======================= Assemble ==========================
-    const assembledTransaction = SorobanRpc.assembleTransaction(builtTx, successfulSimulation).build()
+    const assembledTransaction = SorobanRpc.assembleTransaction(builtTx, successfulSimulation.response).build()
 
     // ======================= Calculate classic requirements ==========================
     const classicSignRequirementsPipelinePlugins = this.getInnerPluginsByType(
@@ -181,6 +187,6 @@ export class SorobanTransactionPipeline extends MultiBeltPipeline<
       itemId
     )
 
-    return sorobanGetTransactionResult as SorobanTransactionPipelineOutput
+    return sorobanGetTransactionResult as TransactionExecutionOutput
   }
 }

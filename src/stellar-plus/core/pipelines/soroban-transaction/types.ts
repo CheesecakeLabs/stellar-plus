@@ -3,7 +3,10 @@ import { xdr } from '@stellar/stellar-sdk'
 import { BuildTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/build-transaction/types'
 import { ClassicSignRequirementsPipelinePlugin } from 'stellar-plus/core/pipelines/classic-sign-requirements/types'
 import { SignTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/sign-transaction/types'
-import { SimulateTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/simulate-transaction/types'
+import {
+  SimulateTransactionPipelineOutput,
+  SimulateTransactionPipelinePlugin,
+} from 'stellar-plus/core/pipelines/simulate-transaction/types'
 import {
   SorobanGetTransactionPipelineOutput,
   SorobanGetTransactionPipelinePlugin,
@@ -18,16 +21,37 @@ export enum SorobanTransactionPipelineType {
   id = 'SorobanTransactionPipeline',
 }
 
+// export type SorobanTransactionPipelineInput = SorobanInvocationInputSimulateOnly | SorobanInvocationInputExecute
+
+// export type SorobanInvocationInput = SorobanInvocationInputSimulateOnly | SorobanInvocationInputExecute
+
 export type SorobanTransactionPipelineInput = {
   txInvocation: TransactionInvocation
   operations: xdr.Operation[]
   networkConfig: Network
   options?: {
     executionPlugins?: SupportedInnerPlugins[]
+    simulateOnly?: boolean
   }
 }
 
-export type SorobanTransactionPipelineOutput = SorobanGetTransactionPipelineOutput
+// Type for when we want to simulate the transaction only
+// type SorobanInvocationInputSimulateOnly = SorobanInvocationInputBase & {
+//   options?: SorobanInvocationInputBase['options'] & {
+//     simulateOnly: true
+//   }
+// }
+
+// // Type for when we want to simulate and execute the transaction
+// type SorobanInvocationInputExecute = SorobanInvocationInputBase & {
+//   options?: SorobanInvocationInputBase['options'] & {
+//     simulateOnly?: false | undefined
+//   }
+// }
+
+export type TransactionSimulationOutput = SimulateTransactionPipelineOutput
+export type TransactionExecutionOutput = SorobanGetTransactionPipelineOutput
+export type SorobanTransactionPipelineOutput = TransactionSimulationOutput | TransactionExecutionOutput
 
 export type SupportedInnerPlugins =
   | BuildTransactionPipelinePlugin

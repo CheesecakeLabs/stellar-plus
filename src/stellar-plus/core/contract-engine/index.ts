@@ -26,6 +26,7 @@ import { TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
 import { StellarPlusErrorObject } from 'stellar-plus/error/types'
 import { generateRandomSalt } from 'stellar-plus/utils/functions'
+import { ExtractInvocationOutputFromSimulationPlugin } from 'stellar-plus/utils/pipeline/plugins/simulate-transaction/extract-invocation-output'
 import { ExtractContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-contract-id'
 import { ExtractInvocationOutputPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-invocation-output'
 import { ExtractWasmHashPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-wasm-hash'
@@ -203,22 +204,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
   protected async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
     this.requireContractId()
 
-    const startTime = Date.now()
-
-    const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
-    const simulatedTransaction = await this.simulateTransaction(builtTx)
-
-    const successfulSimulation = await this.verifySimulationResponse(simulatedTransaction)
-
-    const costs = this.options.debug ? await this.parseTransactionResources(successfulSimulation) : {}
-
-    const output = this.extractOutputFromSimulation(successfulSimulation, args.method)
-
-    if (this.options.debug) {
-      this.options.costHandler?.(args.method, costs, Date.now() - startTime, 0)
-    }
-
-    return output
+    return await this.invokeContract(args, true)
   }
 
   /**
@@ -251,7 +237,10 @@ export class ContractEngine extends SorobanTransactionProcessor {
    * console.log(output) // 3
    * ```
    */
-  protected async invokeContract(args: SorobanInvokeArgs<object>): Promise<unknown> {
+  protected async invokeContract(
+    args: SorobanInvokeArgs<object> | SorobanSimulateArgs<object>,
+    simulateOnly: boolean = false
+  ): Promise<unknown> {
     this.requireContractId()
 
     const { method, methodArgs } = args
@@ -262,12 +251,17 @@ export class ContractEngine extends SorobanTransactionProcessor {
     const contract = new Contract(this.contractId!) // Contract Id verified in requireContractId
     const contractCallOperation = contract.call(method, ...encodedArgs)
 
+    const executionPlugins = simulateOnly
+      ? [new ExtractInvocationOutputFromSimulationPlugin(this.spec, method)]
+      : [new ExtractInvocationOutputPlugin(this.spec, method)]
+
     const result = await this.sorobanTransactionPipeline.execute({
       txInvocation,
       operations: [contractCallOperation],
       networkConfig: this.network,
       options: {
-        executionPlugins: [new ExtractInvocationOutputPlugin(this.spec, method)],
+        executionPlugins,
+        simulateOnly,
       },
     })
 

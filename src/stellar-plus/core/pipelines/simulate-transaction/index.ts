@@ -55,7 +55,9 @@ export class SimulateTransactionPipeline extends ConveyorBelt<
     }
 
     if (SorobanRpc.Api.isSimulationSuccess(simulationResponse) && simulationResponse.result) {
-      return simulationResponse as SorobanRpc.Api.SimulateTransactionSuccessResponse
+      return {
+        response: simulationResponse as SorobanRpc.Api.SimulateTransactionSuccessResponse,
+      } as SimulateTransactionPipelineOutput
     }
 
     throw PSIError.simulationResultCouldNotBeVerified(

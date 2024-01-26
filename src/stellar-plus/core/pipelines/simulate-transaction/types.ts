@@ -8,7 +8,10 @@ export type SimulateTransactionPipelineInput = {
   rpcHandler: RpcHandler
 }
 
-export type SimulateTransactionPipelineOutput = SorobanRpc.Api.SimulateTransactionSuccessResponse
+export type SimulateTransactionPipelineOutput = {
+  response: SorobanRpc.Api.SimulateTransactionSuccessResponse
+  output?: unknown
+}
 
 // export type SimulateTransactionPipelineType = 'SimulateTransactionPipeline'
 export enum SimulateTransactionPipelineType {
