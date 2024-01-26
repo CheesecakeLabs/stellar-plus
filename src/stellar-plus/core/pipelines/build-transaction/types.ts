@@ -9,6 +9,7 @@ export type BuildTransactionPipelineInput = {
   horizonHandler: HorizonHandler
   operations: xdr.Operation[]
   networkPassphrase: string
+  sorobanData?: string | xdr.SorobanTransactionData
 }
 
 export type BuildTransactionPipelineOutput = Transaction

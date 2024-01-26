@@ -41,10 +41,13 @@ export class SimulateTransactionPipeline extends ConveyorBelt<
     }
 
     if (SorobanRpc.Api.isSimulationRestore(simulationResponse)) {
-      throw PSIError.transactionNeedsRestore(
-        simulationResponse,
-        extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
-      )
+      return {
+        response: simulationResponse as SorobanRpc.Api.SimulateTransactionRestoreResponse,
+      } as SimulateTransactionPipelineOutput
+      // throw PSIError.transactionNeedsRestore(
+      //   simulationResponse,
+      //   extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
+      // )
     }
 
     if (SorobanRpc.Api.isSimulationSuccess(simulationResponse) && !simulationResponse.result) {

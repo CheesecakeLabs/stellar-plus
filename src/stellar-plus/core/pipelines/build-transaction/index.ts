@@ -20,7 +20,7 @@ export class BuildTransactionPipeline extends ConveyorBelt<BTInput, BTOutput, BT
   }
 
   protected async process(item: BTInput, itemId: string): Promise<BTOutput> {
-    const { header, horizonHandler, operations, networkPassphrase }: BTInput = item
+    const { header, horizonHandler, operations, networkPassphrase, sorobanData }: BTInput = item
     let sourceAccount: Account
 
     try {
@@ -40,6 +40,14 @@ export class BuildTransactionPipeline extends ConveyorBelt<BTInput, BTOutput, BT
         e as Error,
         extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
       )
+    }
+
+    if (sorobanData) {
+      try {
+        txEnvelope.setSorobanData(sorobanData)
+      } catch (e) {
+        throw PBTError.couldntSetSorobanData(e as Error, extractConveyorBeltErrorMeta(item, this.getMeta(itemId)))
+      }
     }
 
     try {

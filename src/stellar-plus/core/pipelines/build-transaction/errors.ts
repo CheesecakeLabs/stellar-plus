@@ -10,6 +10,7 @@ export enum ErrorCodesPipelineBuildTransaction {
   PBT002 = 'PBT002',
   PBT003 = 'PBT003',
   PBT004 = 'PBT004',
+  PBT005 = 'PBT005',
 }
 
 const couldntLoadAccount = (
@@ -77,9 +78,26 @@ const couldntBuildTransaction = (
   })
 }
 
+const couldntSetSorobanData = (
+  error: Error,
+  conveyorBeltErrorMeta: ConveyorBeltErrorMeta<BuildTransactionPipelineInput, BeltMetadata>
+): StellarPlusError => {
+  return new StellarPlusError({
+    code: ErrorCodesPipelineBuildTransaction.PBT005,
+    message: 'Could not set Soroban data!',
+    source: 'PipelineBuildTransaction',
+    details: 'An issue occurred while setting the Soroban data. Refer to the meta section for more details.',
+    meta: {
+      error,
+      conveyorBeltErrorMeta,
+    },
+  })
+}
+
 export const PBTError = {
   couldntLoadAccount,
   couldntCreateTransactionBuilder,
   couldntAddOperations,
   couldntBuildTransaction,
+  couldntSetSorobanData,
 }
