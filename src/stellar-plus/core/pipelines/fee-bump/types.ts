@@ -10,7 +10,10 @@ export type FeeBumpPipelineInput = {
 
 export type FeeBumpPipelineOutput = FeeBumpTransaction
 
-export type FeeBumpPipelineType = 'FeeBumpPipeline'
+// export type FeeBumpPipelineType = 'FeeBumpPipeline'
+export enum FeeBumpPipelineType {
+  id = 'FeeBumpPipeline',
+}
 
 export type FeeBumpPipelinePlugin = BeltPluginType<
   FeeBumpPipelineInput,

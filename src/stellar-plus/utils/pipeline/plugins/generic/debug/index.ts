@@ -5,31 +5,36 @@ export class DebugPlugin<Input, Output> implements BeltPluginType<Input, Output,
   readonly name: string = 'DebugPlugin'
   readonly type: GenericPlugin
 
-  private level: 'debug' | 'info' | 'warn' | 'error'
+  private debugLevel: 'all' | 'info' | 'warn' | 'error'
 
-  constructor(level: 'info' | 'error' | 'debug' = 'error') {
-    this.type = 'GenericPlugin'
-    this.level = level
+  constructor(debugLevel: 'info' | 'error' | 'all' = 'error') {
+    this.type = GenericPlugin.id
+    this.debugLevel = debugLevel
   }
 
-  // public async preProcess(item: Input, meta: BeltMetadata): Promise<Input> {
-  //   if (this.level === 'debug') {
-  //     console.log('Preprocessing belt:', meta.beltId, ' item:', meta.itemId)
-  //   }
-  //   return item
-  // }
+  public async preProcess(item: Input, meta: BeltMetadata): Promise<Input> {
+    this.log('info', `>> Start ${meta.beltType}`)
+    this.log('all', `  Belt:${meta.beltId} \n  Item:${meta.itemId}`)
+
+    return item
+  }
 
   public async postProcess(item: Output, meta: BeltMetadata): Promise<Output> {
-    if (this.level === 'debug') {
-      console.log(`Finished processing:\n  Type:${meta.beltType} \n Belt:${meta.beltId} \n  Item:${meta.itemId}`)
-    }
+    this.log('info', `<< Finish ${meta.beltType}`)
+    this.log('all', `  Belt:${meta.beltId} \n  Item:${meta.itemId}`)
 
     return item
   }
 
   public async processError(error: StellarPlusError, _meta: BeltMetadata): Promise<StellarPlusError> {
-    console.log('DEBUG ERROR:', error)
+    this.log('error', `Error: ${error}`)
 
     return error
+  }
+
+  private log = (level: 'all' | 'info' | 'warn' | 'error', message: string): void => {
+    if (this.debugLevel === 'all' || this.debugLevel === level) {
+      console.log(message)
+    }
   }
 }

@@ -11,7 +11,7 @@ import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
 export class FeeBumpPipeline extends ConveyorBelt<FeeBumpPipelineInput, FeeBumpPipelineOutput, FeeBumpPipelineType> {
   constructor(plugins?: FeeBumpPipelinePlugin[]) {
     super({
-      type: 'FeeBumpPipeline',
+      type: FeeBumpPipelineType.id,
       plugins: plugins || [],
     })
   }

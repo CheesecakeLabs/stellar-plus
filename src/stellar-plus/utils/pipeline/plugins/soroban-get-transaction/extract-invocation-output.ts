@@ -1,14 +1,14 @@
-import { Address, xdr } from '@stellar/stellar-sdk'
+import { ContractSpec } from '@stellar/stellar-sdk'
 
 import {
-  ContractIdOutput,
+  ContractInvocationOutput,
   SorobanGetTransactionPipelineInput,
   SorobanGetTransactionPipelineOutput,
   SorobanGetTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
 import { BeltMetadata, BeltPluginType } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
-export class ExtractContractIdPlugin
+export class ExtractInvocationOutputPlugin<OutputType>
   implements
     BeltPluginType<
       SorobanGetTransactionPipelineInput,
@@ -17,20 +17,28 @@ export class ExtractContractIdPlugin
     >
 {
   readonly type = SorobanGetTransactionPipelineType.id
-  readonly name: string = 'ExtractContractIdPlugin'
+  readonly name: string = 'ExtractInvocationOutputPlugin'
+  private spec: ContractSpec
+  private method: string
+
+  constructor(spec: ContractSpec, method: string) {
+    this.spec = spec
+    this.method = method
+  }
 
   public async postProcess(
     item: SorobanGetTransactionPipelineOutput,
     _meta: BeltMetadata
   ): Promise<SorobanGetTransactionPipelineOutput> {
-    const { response, output } = item
+    const { response, output }: SorobanGetTransactionPipelineOutput = item as SorobanGetTransactionPipelineOutput
 
-    const contractId = Address.fromScAddress(
-      response.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
-    ).toString()
+    const value = this.spec.funcResToNative(
+      this.method,
+      response.resultMetaXdr.v3().sorobanMeta()?.returnValue().toXDR('base64') as string
+    ) as unknown
 
-    const pluginOutput: ContractIdOutput = {
-      contractId,
+    const pluginOutput: ContractInvocationOutput<string> = {
+      value: String(value as OutputType),
     }
 
     return {

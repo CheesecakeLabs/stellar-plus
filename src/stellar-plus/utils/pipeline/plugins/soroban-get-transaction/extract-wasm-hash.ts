@@ -1,14 +1,12 @@
-import { Address, xdr } from '@stellar/stellar-sdk'
-
 import {
-  ContractIdOutput,
+  ContractWasmHashOutput,
   SorobanGetTransactionPipelineInput,
   SorobanGetTransactionPipelineOutput,
   SorobanGetTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
 import { BeltMetadata, BeltPluginType } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
-export class ExtractContractIdPlugin
+export class ExtractWasmHashPlugin
   implements
     BeltPluginType<
       SorobanGetTransactionPipelineInput,
@@ -17,7 +15,7 @@ export class ExtractContractIdPlugin
     >
 {
   readonly type = SorobanGetTransactionPipelineType.id
-  readonly name: string = 'ExtractContractIdPlugin'
+  readonly name: string = 'ExtractWasmHashPlugin'
 
   public async postProcess(
     item: SorobanGetTransactionPipelineOutput,
@@ -25,12 +23,12 @@ export class ExtractContractIdPlugin
   ): Promise<SorobanGetTransactionPipelineOutput> {
     const { response, output } = item
 
-    const contractId = Address.fromScAddress(
-      response.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
-    ).toString()
+    const wasmHash = (response.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString(
+      'hex'
+    ) as string
 
-    const pluginOutput: ContractIdOutput = {
-      contractId,
+    const pluginOutput: ContractWasmHashOutput = {
+      wasmHash,
     }
 
     return {

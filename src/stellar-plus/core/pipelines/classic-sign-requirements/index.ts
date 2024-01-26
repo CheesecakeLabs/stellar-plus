@@ -16,7 +16,7 @@ export class ClassicSignRequirementsPipeline extends ConveyorBelt<
 > {
   constructor(plugins?: ClassicSignRequirementsPipelinePlugin[]) {
     super({
-      type: 'ClassicSignRequirementsPipeline',
+      type: ClassicSignRequirementsPipelineType.id,
       plugins: plugins || [],
     })
   }

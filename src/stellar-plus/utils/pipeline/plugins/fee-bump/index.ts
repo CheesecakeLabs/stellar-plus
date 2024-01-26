@@ -15,7 +15,7 @@ export class FeeBumpWrapperPlugin
   implements
     BeltPluginType<SubmitTransactionPipelineInput, SubmitTransactionPipelineOutput, SubmitTransactionPipelineType>
 {
-  readonly type: SubmitTransactionPipelineType = 'SubmitTransactionPipeline'
+  readonly type = SubmitTransactionPipelineType.id
   readonly name: string = 'FeeBumpWrapperPlugin'
 
   private feeBumpHeader: FeeBumpHeader
@@ -31,7 +31,7 @@ export class FeeBumpWrapperPlugin
     const { itemId } = meta
     const { transaction }: SubmitTransactionPipelineInput = item
 
-    if (transaction instanceof FeeBumpTransaction) {
+    if ((transaction as FeeBumpTransaction).innerTransaction) {
       throw new Error('Transaction is already a FeeBump, FeeBumpWrapperPlugin should not be used')
     }
 

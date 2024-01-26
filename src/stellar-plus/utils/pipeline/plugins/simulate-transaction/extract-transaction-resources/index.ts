@@ -16,7 +16,7 @@ export class ExtractTransactionResourcesPlugin
       SimulateTransactionPipelineType
     >
 {
-  readonly type: SimulateTransactionPipelineType = 'SimulateTransactionPipeline'
+  readonly type = SimulateTransactionPipelineType.id
   readonly name: string = 'ExtractTransactionResourcesPlugin'
   private callback: (args: TransactionResources, itemId: string) => void
 

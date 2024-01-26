@@ -22,7 +22,7 @@ export class SorobanGetTransactionPipeline extends ConveyorBelt<
     options: SorobanGetTransactionOptions = { defaultSecondsToWait: 30, useEnvelopeTimeout: true }
   ) {
     super({
-      type: 'SorobanGetTransactionPipeline',
+      type: SorobanGetTransactionPipelineType.id,
       plugins: plugins || [],
     })
     this.options = options

@@ -11,10 +11,13 @@ export type SorobanGetTransactionPipelineInput = {
 
 export type SorobanGetTransactionPipelineOutput = {
   response: SorobanRpc.Api.GetSuccessfulTransactionResponse
-  output?: ContractIdOutput
+  output?: ContractIdOutput & ContractWasmHashOutput & ContractInvocationOutput<string>
 }
 
-export type SorobanGetTransactionPipelineType = 'SorobanGetTransactionPipeline'
+// export type SorobanGetTransactionPipelineType = 'SorobanGetTransactionPipeline'
+export enum SorobanGetTransactionPipelineType {
+  id = 'SorobanGetTransactionPipeline',
+}
 
 export type SorobanGetTransactionPipelinePlugin = BeltPluginType<
   SorobanGetTransactionPipelineInput,
@@ -29,4 +32,11 @@ export type SorobanGetTransactionOptions = {
 
 export type ContractIdOutput = {
   contractId?: string
+}
+export type ContractWasmHashOutput = {
+  wasmHash?: string
+}
+
+export type ContractInvocationOutput<OutputType> = {
+  value?: OutputType
 }

@@ -17,7 +17,7 @@ export class SignTransactionPipeline extends ConveyorBelt<
 > {
   constructor(plugins?: SignTransactionPipelinePlugin[]) {
     super({
-      type: 'SignTransactionPipeline',
+      type: SignTransactionPipelineType.id,
       plugins: plugins || [],
     })
   }

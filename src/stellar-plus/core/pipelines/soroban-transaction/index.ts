@@ -22,15 +22,16 @@ import {
 } from 'stellar-plus/core/pipelines/simulate-transaction/types'
 import { SorobanGetTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-get-transaction'
 import {
+  SorobanGetTransactionPipelinePlugin,
+  SorobanGetTransactionPipelineType,
+} from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
+import {
   SorobanTransactionPipelineInput,
-  SorobanTransactionPipelineMainPlugin,
   SorobanTransactionPipelineOptions,
   SorobanTransactionPipelineOutput,
   SorobanTransactionPipelinePlugin,
   SorobanTransactionPipelineType,
   SupportedInnerPlugins,
-  SupportedInnerPluginsTypes,
-  listOfSupportedInnerPluginsTypes,
 } from 'stellar-plus/core/pipelines/soroban-transaction/types'
 import { SubmitTransactionPipeline } from 'stellar-plus/core/pipelines/submit-transaction'
 import {
@@ -41,44 +42,34 @@ import { HorizonHandlerClient } from 'stellar-plus/horizon'
 import { DefaultRpcHandler } from 'stellar-plus/rpc'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network } from 'stellar-plus/types'
-import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
-import { GenericPlugin } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
-import { filterPluginsByTypes } from 'stellar-plus/utils/pipeline/plugins'
+import { MultiBeltPipeline } from 'stellar-plus/utils/pipeline/multi-belt-pipeline'
+import { MultiBeltPipelineOptions } from 'stellar-plus/utils/pipeline/multi-belt-pipeline/types'
 
-import {
-  SorobanGetTransactionPipelinePlugin,
-  SorobanGetTransactionPipelineType,
-} from '../soroban-get-transaction/types'
-
-export class SorobanTransactionPipeline extends ConveyorBelt<
+export class SorobanTransactionPipeline extends MultiBeltPipeline<
   SorobanTransactionPipelineInput,
   SorobanTransactionPipelineOutput,
-  SorobanTransactionPipelineType
+  SorobanTransactionPipelineType,
+  SupportedInnerPlugins
 > {
   private rpcHandler: RpcHandler
   private horizonHandler: HorizonHandlerClient
   private networkConfig: Network
-  private innerPlugins: SupportedInnerPlugins[]
 
   constructor(options: SorobanTransactionPipelineOptions) {
-    const mainPlugins = filterPluginsByTypes<
-      SorobanTransactionPipelinePlugin,
-      SorobanTransactionPipelineType | GenericPlugin
-    >(options.plugins || [], ['SorobanTransactionPipeline', 'GenericPlugin']) as
-      | SorobanTransactionPipelineMainPlugin[]
-      | undefined
+    const internalConstructorArgs = {
+      beltType: SorobanTransactionPipelineType.id,
+      plugins: (options.plugins as SorobanTransactionPipelinePlugin[]) || [],
+    } as MultiBeltPipelineOptions<
+      SorobanTransactionPipelineInput,
+      SorobanTransactionPipelineOutput,
+      SorobanTransactionPipelineType,
+      SupportedInnerPlugins
+    >
 
     super({
-      type: 'SorobanTransactionPipeline',
-      plugins: mainPlugins || [],
+      ...internalConstructorArgs,
+      ...{ type: SorobanTransactionPipelineType.id },
     })
-
-    const innerPlugins = filterPluginsByTypes<SorobanTransactionPipelinePlugin, SupportedInnerPluginsTypes>(
-      options.plugins || [],
-      listOfSupportedInnerPluginsTypes
-    ) as SupportedInnerPlugins[] | undefined
-
-    this.innerPlugins = innerPlugins || []
 
     this.networkConfig = options.networkConfig
     this.horizonHandler = new HorizonHandlerClient(this.networkConfig)
@@ -90,12 +81,13 @@ export class SorobanTransactionPipeline extends ConveyorBelt<
     itemId: string
   ): Promise<SorobanTransactionPipelineOutput> {
     const { txInvocation, operations, options }: SorobanTransactionPipelineInput = item
-    const innerPlugins = [...this.innerPlugins]
-    if (options?.innerPlugins) innerPlugins.push(...options.innerPlugins)
+    const executionPlugins = []
+    if (options?.executionPlugins) executionPlugins.push(...options.executionPlugins)
 
     // ======================= Build Transaction ==========================
-    const buildTransactionPipelinePlugins = this.getInnerPlugins(
-      innerPlugins,
+
+    const buildTransactionPipelinePlugins = this.getInnerPluginsByType(
+      executionPlugins,
       'BuildTransactionPipeline' as BuildTransactionPipelineType
     ) as BuildTransactionPipelinePlugin[]
 
@@ -112,8 +104,8 @@ export class SorobanTransactionPipeline extends ConveyorBelt<
     )
 
     // ======================= Simulate Transaction ==========================
-    const simulateTransactionPipelinePlugins = this.getInnerPlugins(
-      innerPlugins,
+    const simulateTransactionPipelinePlugins = this.getInnerPluginsByType(
+      executionPlugins,
       'SimulateTransactionPipeline' as SimulateTransactionPipelineType
     ) as SimulateTransactionPipelinePlugin[]
 
@@ -131,8 +123,8 @@ export class SorobanTransactionPipeline extends ConveyorBelt<
     const assembledTransaction = SorobanRpc.assembleTransaction(builtTx, successfulSimulation).build()
 
     // ======================= Calculate classic requirements ==========================
-    const classicSignRequirementsPipelinePlugins = this.getInnerPlugins(
-      innerPlugins,
+    const classicSignRequirementsPipelinePlugins = this.getInnerPluginsByType(
+      executionPlugins,
       'ClassicSignRequirementsPipeline' as ClassicSignRequirementsPipelineType
     ) as ClassicSignRequirementsPipelinePlugin[]
 
@@ -141,8 +133,8 @@ export class SorobanTransactionPipeline extends ConveyorBelt<
     const classicSignatureRequirements = await classicSignRequirementsPipeline.execute(assembledTransaction, itemId)
 
     // ======================= Sign Transaction ==========================
-    const signTransactionPipelinePlugins = this.getInnerPlugins(
-      innerPlugins,
+    const signTransactionPipelinePlugins = this.getInnerPluginsByType(
+      executionPlugins,
       'SignTransactionPipeline' as SignTransactionPipelineType
     ) as SignTransactionPipelinePlugin[]
 
@@ -157,8 +149,8 @@ export class SorobanTransactionPipeline extends ConveyorBelt<
     )
 
     // ======================= Submit Transaction ==========================
-    const submitTransactionPipelinePlugins = this.getInnerPlugins(
-      innerPlugins,
+    const submitTransactionPipelinePlugins = this.getInnerPluginsByType(
+      executionPlugins,
       'SubmitTransactionPipeline' as SubmitTransactionPipelineType
     ) as SubmitTransactionPipelinePlugin[]
 
@@ -173,8 +165,8 @@ export class SorobanTransactionPipeline extends ConveyorBelt<
     )
 
     // ======================= Submission Follow Up ==========================
-    const sorobanGetTransactionPipelinePlugins = this.getInnerPlugins(
-      innerPlugins,
+    const sorobanGetTransactionPipelinePlugins = this.getInnerPluginsByType(
+      executionPlugins,
       'SorobanGetTransactionPipeline' as SorobanGetTransactionPipelineType
     ) as SorobanGetTransactionPipelinePlugin[]
 
@@ -190,9 +182,5 @@ export class SorobanTransactionPipeline extends ConveyorBelt<
     )
 
     return sorobanGetTransactionResult as SorobanTransactionPipelineOutput
-  }
-
-  private getInnerPlugins(plugins: SupportedInnerPlugins[], pipelineType: any): SupportedInnerPlugins[] {
-    return filterPluginsByTypes<SupportedInnerPlugins, typeof pipelineType>(plugins, [pipelineType, 'GenericPlugin'])
   }
 }

@@ -6,6 +6,7 @@ import {
   BuildTransactionPipelineOutput as BTOutput,
   BuildTransactionPipelinePlugin as BTPluginType,
   BuildTransactionPipelineType as BTType,
+  BuildTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/build-transaction/types'
 import { extractConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
@@ -13,7 +14,7 @@ import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
 export class BuildTransactionPipeline extends ConveyorBelt<BTInput, BTOutput, BTType> {
   constructor(plugins?: BTPluginType[]) {
     super({
-      type: 'BuildTransactionPipeline',
+      type: BuildTransactionPipelineType.id,
       plugins: plugins || [],
     })
   }

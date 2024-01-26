@@ -12,7 +12,10 @@ export type SignTransactionPipelineInput = {
 
 export type SignTransactionPipelineOutput = Transaction | FeeBumpTransaction
 
-export type SignTransactionPipelineType = 'SignTransactionPipeline'
+// export type SignTransactionPipelineType = 'SignTransactionPipeline'
+export enum SignTransactionPipelineType {
+  id = 'SignTransactionPipeline',
+}
 
 export type SignTransactionPipelinePlugin = BeltPluginType<
   SignTransactionPipelineInput,

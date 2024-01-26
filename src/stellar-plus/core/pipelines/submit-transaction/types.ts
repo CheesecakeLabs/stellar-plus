@@ -15,7 +15,9 @@ export type SubmitTransactionPipelineOutput = {
   response: HorizonApi.SubmitTransactionResponse | SorobanRpc.Api.SendTransactionResponse
 }
 
-export type SubmitTransactionPipelineType = 'SubmitTransactionPipeline'
+export enum SubmitTransactionPipelineType {
+  id = 'SubmitTransactionPipeline',
+}
 
 export type SubmitTransactionPipelinePlugin = BeltPluginType<
   SubmitTransactionPipelineInput,

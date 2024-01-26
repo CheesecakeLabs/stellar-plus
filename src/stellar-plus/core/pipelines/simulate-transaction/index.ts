@@ -18,7 +18,7 @@ export class SimulateTransactionPipeline extends ConveyorBelt<
 > {
   constructor(plugins?: SimulateTransactionPipelinePlugin[]) {
     super({
-      type: 'SimulateTransactionPipeline',
+      type: SimulateTransactionPipelineType.id,
       plugins: plugins || [],
     })
   }

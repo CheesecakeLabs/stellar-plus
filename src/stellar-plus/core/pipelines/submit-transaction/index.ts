@@ -17,7 +17,7 @@ export class SubmitTransactionPipeline extends ConveyorBelt<
 > {
   constructor(plugins?: SubmitTransactionPipelinePlugin[]) {
     super({
-      type: 'SubmitTransactionPipeline',
+      type: SubmitTransactionPipelineType.id,
       plugins: plugins || [],
     })
   }
