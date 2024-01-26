@@ -3,7 +3,7 @@ import {
   SorobanTransactionPipelineInput,
   SorobanTransactionPipelineOutput,
   SorobanTransactionPipelineType,
-} from 'stellar-plus/core/pipelines/soroban-transaction/types'
+} from 'stellar-plus/core/pipelines/soroban-transaction/b'
 import { StellarPlusError } from 'stellar-plus/error'
 import { BeltMetadata, BeltPluginType } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 import { InnerPlugins, LogEntry } from 'stellar-plus/utils/pipeline/plugins/soroban-transaction/profiler/types'
@@ -15,7 +15,7 @@ export class ProfilerPlugin
   implements
     BeltPluginType<SorobanTransactionPipelineInput, SorobanTransactionPipelineOutput, SorobanTransactionPipelineType>
 {
-  readonly type: SorobanTransactionPipelineType = 'SorobanTransactionPipeline'
+  readonly type = SorobanTransactionPipelineType.id
   readonly name = 'ProfilerPlugin'
 
   private timers: { [key: string]: { start: number; end: number } } = {}

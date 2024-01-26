@@ -1,6 +1,6 @@
 import { ContractSpec } from '@stellar/stellar-sdk'
 
-import { SorobanTransactionPipelineOptions } from 'stellar-plus/core/pipelines/soroban-transaction/types'
+import { SorobanTransactionPipelineOptions } from 'stellar-plus/core/pipelines/soroban-transaction/b'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network } from 'stellar-plus/types'

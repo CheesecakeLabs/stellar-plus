@@ -13,7 +13,7 @@ import {
 
 import { CEError, ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/errors'
 import { ContractEngineConstructorArgs, Options, TransactionResources } from 'stellar-plus/core/contract-engine/types'
-import { ContractIdOutput } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
+import { ContractIdOutput, ContractWasmHashOutput } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
 import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
 import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
 import {
@@ -27,6 +27,8 @@ import { StellarPlusError } from 'stellar-plus/error'
 import { StellarPlusErrorObject } from 'stellar-plus/error/types'
 import { generateRandomSalt } from 'stellar-plus/utils/functions'
 import { ExtractContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-contract-id'
+import { ExtractInvocationOutputPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-invocation-output'
+import { ExtractWasmHashPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-wasm-hash'
 
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
@@ -252,30 +254,24 @@ export class ContractEngine extends SorobanTransactionProcessor {
   protected async invokeContract(args: SorobanInvokeArgs<object>): Promise<unknown> {
     this.requireContractId()
 
-    const startTime = Date.now()
-
-    const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
-
+    const { method, methodArgs } = args
     const txInvocation = { ...args } as TransactionInvocation
 
-    const { response, transactionResources } = await this.processBuiltTransaction({
-      builtTx,
-      updatedTxInvocation: txInvocation,
+    const encodedArgs = this.spec.funcArgsToScVals(method, methodArgs)
+
+    const contract = new Contract(this.contractId!) // Contract Id verified in requireContractId
+    const contractCallOperation = contract.call(method, ...encodedArgs)
+
+    const result = await this.sorobanTransactionPipeline.execute({
+      txInvocation,
+      operations: [contractCallOperation],
+      networkConfig: this.network,
+      options: {
+        executionPlugins: [new ExtractInvocationOutputPlugin(this.spec, method)],
+      },
     })
 
-    const output = this.extractOutputFromProcessedInvocation(response, args.method)
-
-    if (this.options.debug) {
-      const feeCharged = await this.extractFeeCharged(response)
-      this.options.costHandler?.(
-        args.method,
-        transactionResources as TransactionResources,
-        Date.now() - startTime,
-        feeCharged
-      )
-    }
-
-    return output
+    return result.output
   }
 
   /**
@@ -468,26 +464,19 @@ export class ContractEngine extends SorobanTransactionProcessor {
   public async uploadWasm(txInvocation: TransactionInvocation): Promise<void> {
     this.requireWasm()
 
-    const startTime = Date.now()
-    const builtTransactionObjectToProcess = await this.buildUploadContractWasmTransaction({
-      wasm: this.wasm!, // Wasm verified in requireWasm
-      ...txInvocation,
-    })
-
     try {
-      const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
-      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      const wasmHash = this.extractWasmHashFromUploadWasmResponse(response)
-      this.wasmHash = wasmHash
+      const uploadOperation = Operation.uploadContractWasm({ wasm: this.wasm! }) // Wasm verified in requireWasm
 
-      if (this.options.debug) {
-        this.options.costHandler?.(
-          'uploadWasm',
-          transactionResources as TransactionResources,
-          Date.now() - startTime,
-          await this.extractFeeCharged(response)
-        )
-      }
+      const result = await this.sorobanTransactionPipeline.execute({
+        txInvocation,
+        operations: [uploadOperation],
+        networkConfig: this.network,
+        options: {
+          executionPlugins: [new ExtractWasmHashPlugin()],
+        },
+      })
+
+      this.wasmHash = (result.output as ContractWasmHashOutput).wasmHash
     } catch (error) {
       throw CEError.failedToUploadWasm(error as StellarPlusError)
     }
@@ -516,17 +505,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
         operations: [deployOperation],
         networkConfig: this.network,
         options: {
-          innerPlugins: [new ExtractContractIdPlugin()],
+          executionPlugins: [new ExtractContractIdPlugin()],
         },
       })
 
       this.contractId = (result.output as ContractIdOutput).contractId
-
-      // const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
-      // // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      // const contractId = this.extractContractIdFromDeployContractResponse(response)
-
-      // this.contractId = contractId
     } catch (error) {
       throw CEError.failedToDeployContract(error as StellarPlusError)
     }
@@ -547,7 +530,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
         operations: [wrapOperation],
         networkConfig: this.network,
         options: {
-          innerPlugins: [new ExtractContractIdPlugin()],
+          executionPlugins: [new ExtractContractIdPlugin()],
         },
       })
 
