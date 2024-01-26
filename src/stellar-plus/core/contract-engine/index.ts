@@ -31,6 +31,8 @@ import { ExtractContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/sor
 import { ExtractInvocationOutputPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-invocation-output'
 import { ExtractWasmHashPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-wasm-hash'
 
+import { SimulatedInvocationOutput } from '../pipelines/simulate-transaction/types'
+
 export class ContractEngine extends SorobanTransactionProcessor {
   private spec: ContractSpec
   private contractId?: string
@@ -204,7 +206,9 @@ export class ContractEngine extends SorobanTransactionProcessor {
   protected async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
     this.requireContractId()
 
-    return await this.invokeContract(args, true)
+    const output = (await this.invokeContract(args, true)) as SimulatedInvocationOutput
+
+    return output.value
   }
 
   /**
@@ -244,7 +248,7 @@ export class ContractEngine extends SorobanTransactionProcessor {
     this.requireContractId()
 
     const { method, methodArgs } = args
-    const txInvocation = { ...args } as TransactionInvocation
+    const txInvocation = { ...(args as SorobanInvokeArgs<object>) } as TransactionInvocation
 
     const encodedArgs = this.spec.funcArgsToScVals(method, methodArgs)
 

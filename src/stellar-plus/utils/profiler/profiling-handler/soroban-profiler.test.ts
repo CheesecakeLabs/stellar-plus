@@ -1,6 +1,6 @@
 import { TransactionResources } from 'stellar-plus/core/contract-engine/types'
 
-import { Profiler } from '.'
+import { ProfilingHandler } from '.'
 
 const mockLogs = [
   {
@@ -95,10 +95,10 @@ const populateLogEntries = (
 }
 
 describe('Profiler', () => {
-  let profiler: Profiler
+  let profiler: ProfilingHandler
 
   beforeEach(() => {
-    profiler = new Profiler()
+    profiler = new ProfilingHandler()
 
     const args = profiler.getOptionsArgs()
     populateLogEntries(args.costHandler!)

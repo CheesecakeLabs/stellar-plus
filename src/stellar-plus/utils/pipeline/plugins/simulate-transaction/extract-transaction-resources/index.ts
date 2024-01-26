@@ -18,9 +18,9 @@ export class ExtractTransactionResourcesPlugin
 {
   readonly type = SimulateTransactionPipelineType.id
   readonly name: string = 'ExtractTransactionResourcesPlugin'
-  private callback: (args: TransactionResources, itemId: string) => void
+  private callback?: (args: TransactionResources, itemId: string) => void
 
-  constructor(callback: (args: TransactionResources, itemId: string) => void) {
+  constructor(callback?: (args: TransactionResources, itemId: string) => void) {
     this.callback = callback
   }
 
@@ -28,7 +28,7 @@ export class ExtractTransactionResourcesPlugin
     item: SimulateTransactionPipelineOutput,
     meta: BeltMetadata
   ): Promise<SimulateTransactionPipelineOutput> {
-    const simulatedTransaction = item as SorobanRpc.Api.SimulateTransactionSuccessResponse
+    const simulatedTransaction = item.response as SorobanRpc.Api.SimulateTransactionSuccessResponse
 
     const calculateEventSize = (event: xdr.DiagnosticEvent): number => {
       if (event.event()?.type().name === 'diagnostic') {
@@ -43,22 +43,31 @@ export class ExtractTransactionResourcesPlugin
     const transactionDataSize = sorobanTransactionData.toXDR().length
     const eventsSize = events?.reduce((accumulator, currentValue) => accumulator + currentValue, 0)
 
-    this.callback(
-      {
-        cpuInstructions: Number(sorobanTransactionData?.resources().instructions()),
-        ram: Number(simulatedTransaction.cost?.memBytes),
-        minResourceFee: Number(simulatedTransaction.minResourceFee),
-        ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
-        ledgerWriteBytes: sorobanTransactionData?.resources().writeBytes(),
-        ledgerEntryReads: sorobanTransactionData?.resources().footprint().readOnly().length,
-        ledgerEntryWrites: sorobanTransactionData?.resources().footprint().readWrite().length,
-        eventSize: eventsSize,
-        returnValueSize: returnValueSize,
-        transactionSize: transactionDataSize,
-      },
-      meta.itemId
-    )
+    const resources: TransactionResources = {
+      cpuInstructions: Number(sorobanTransactionData?.resources().instructions()),
+      ram: Number(simulatedTransaction.cost?.memBytes),
+      minResourceFee: Number(simulatedTransaction.minResourceFee),
+      ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
+      ledgerWriteBytes: sorobanTransactionData?.resources().writeBytes(),
+      ledgerEntryReads: sorobanTransactionData?.resources().footprint().readOnly().length,
+      ledgerEntryWrites: sorobanTransactionData?.resources().footprint().readWrite().length,
+      eventSize: eventsSize,
+      returnValueSize: returnValueSize,
+      transactionSize: transactionDataSize,
+    }
 
-    return item
+    const updatedItem = {
+      ...item,
+      output: {
+        ...item.output,
+        resources,
+      },
+    }
+
+    if (this.callback) {
+      this.callback(resources, meta.itemId)
+    }
+
+    return updatedItem
   }
 }

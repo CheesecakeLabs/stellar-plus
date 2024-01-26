@@ -38,6 +38,10 @@ export class SignTransactionPipeline extends ConveyorBelt<
     const passphrase = transaction.networkPassphrase
     let signedTransaction = transaction
 
+    if (signers.length === 0) {
+      throw new Error('No signers provided')
+    }
+
     for (const requirement of requirements) {
       const signer = signers.find((s) => s.getPublicKey() === requirement.publicKey) as AccountHandler
       if (!signer) throw new Error(`Signer not found: ${requirement.publicKey}`)

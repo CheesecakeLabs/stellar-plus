@@ -1,6 +1,6 @@
 import { ChannelAccounts as ChannelAccountsHandler } from 'stellar-plus/channel-accounts/index'
 import { CertificateOfDepositClient } from 'stellar-plus/soroban/contracts/certificate-of-deposit'
-import { Profiler as SorobanProfiler } from 'stellar-plus/utils/profiler/soroban'
+import { ProfilingHandler as SorobanProfiler } from 'stellar-plus/utils/profiler/profiling-handler'
 
 export * as Account from 'stellar-plus/account/index'
 export * as Asset from 'stellar-plus/asset/index'

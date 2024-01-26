@@ -4,6 +4,7 @@ import {
   SimulateTransactionPipelineInput,
   SimulateTransactionPipelineOutput,
   SimulateTransactionPipelineType,
+  SimulatedInvocationOutput,
 } from 'stellar-plus/core/pipelines/simulate-transaction/types'
 import { BeltMetadata, BeltPluginType } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
@@ -29,7 +30,7 @@ export class ExtractInvocationOutputFromSimulationPlugin
     item: SimulateTransactionPipelineOutput,
     _meta: BeltMetadata
   ): Promise<SimulateTransactionPipelineOutput> {
-    const { response } = item
+    const { response, output } = item
 
     if (!response.result) {
       // throw CEError.simulationMissingResult(simulated)
@@ -38,11 +39,15 @@ export class ExtractInvocationOutputFromSimulationPlugin
 
     const value = this.spec.funcResToNative(this.method, response.result.retval) as unknown
 
-    const pluginOutput = value
+    const pluginOutput = { value } as SimulatedInvocationOutput
 
-    return {
+    const updatedItem = {
       ...item,
-      output: pluginOutput,
+      output: {
+        ...output,
+        ...pluginOutput,
+      },
     }
+    return updatedItem
   }
 }

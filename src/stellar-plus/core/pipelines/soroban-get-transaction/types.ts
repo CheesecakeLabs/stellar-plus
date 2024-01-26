@@ -11,7 +11,7 @@ export type SorobanGetTransactionPipelineInput = {
 
 export type SorobanGetTransactionPipelineOutput = {
   response: SorobanRpc.Api.GetSuccessfulTransactionResponse
-  output?: ContractIdOutput & ContractWasmHashOutput & ContractInvocationOutput<string>
+  output?: ContractIdOutput & ContractWasmHashOutput & ContractInvocationOutput<string> & FeeChargedOutput
 }
 
 // export type SorobanGetTransactionPipelineType = 'SorobanGetTransactionPipeline'
@@ -39,4 +39,8 @@ export type ContractWasmHashOutput = {
 
 export type ContractInvocationOutput<OutputType> = {
   value?: OutputType
+}
+
+export type FeeChargedOutput = {
+  feeCharged?: string
 }

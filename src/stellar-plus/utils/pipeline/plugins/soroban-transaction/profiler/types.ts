@@ -1,10 +1,6 @@
 import { TransactionResources } from 'stellar-plus/core/contract-engine/types'
-import {
-  SimulateTransactionPipelineInput,
-  SimulateTransactionPipelineOutput,
-  SimulateTransactionPipelineType,
-} from 'stellar-plus/core/pipelines/simulate-transaction/types'
-import { BeltPluginType } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
+import { SimulateTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/simulate-transaction/types'
+import { SorobanGetTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
 
 export type LogEntry = {
   methodName: string
@@ -15,8 +11,4 @@ export type LogEntry = {
 }
 
 // to be merged with all accepted types
-export type InnerPlugins = BeltPluginType<
-  SimulateTransactionPipelineInput,
-  SimulateTransactionPipelineOutput,
-  SimulateTransactionPipelineType
->
+export type InnerPlugins = SimulateTransactionPipelinePlugin | SorobanGetTransactionPipelinePlugin

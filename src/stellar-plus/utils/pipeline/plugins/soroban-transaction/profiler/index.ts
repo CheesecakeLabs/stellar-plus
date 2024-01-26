@@ -1,15 +1,18 @@
+import { xdr } from '@stellar/stellar-sdk'
+
 import { TransactionResources } from 'stellar-plus/core/contract-engine/types'
+import { FeeChargedOutput } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
 import {
   SorobanTransactionPipelineInput,
   SorobanTransactionPipelineOutput,
   SorobanTransactionPipelineType,
-} from 'stellar-plus/core/pipelines/soroban-transaction/b'
+} from 'stellar-plus/core/pipelines/soroban-transaction/types'
 import { StellarPlusError } from 'stellar-plus/error'
 import { BeltMetadata, BeltPluginType } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
+import { ExtractTransactionResourcesPlugin } from 'stellar-plus/utils/pipeline/plugins/simulate-transaction/extract-transaction-resources'
+import { ExtractFeeChargedPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-fee-charged'
 import { InnerPlugins, LogEntry } from 'stellar-plus/utils/pipeline/plugins/soroban-transaction/profiler/types'
-import { Profiler } from 'stellar-plus/utils/profiler/soroban'
-
-import { ExtractTransactionResourcesPlugin } from '../../simulate-transaction/extract-transaction-resources'
+import { ProfilingHandler } from 'stellar-plus/utils/profiler/profiling-handler/index'
 
 export class ProfilerPlugin
   implements
@@ -20,7 +23,7 @@ export class ProfilerPlugin
 
   private timers: { [key: string]: { start: number; end: number } } = {}
   private logs: { [key: string]: LogEntry } = {}
-  public profiler: Profiler
+  public profiler: ProfilingHandler
   public plugins: InnerPlugins[] = []
 
   private costHandler: (
@@ -31,7 +34,7 @@ export class ProfilerPlugin
   ) => void
 
   constructor() {
-    this.profiler = new Profiler()
+    this.profiler = new ProfilingHandler()
 
     this.costHandler = this.profiler.getOptionsArgs().costHandler as (
       methodName: string,
@@ -40,8 +43,8 @@ export class ProfilerPlugin
       feeCharged: number
     ) => void
 
-    const extractTransactionResourcesPlugin = new ExtractTransactionResourcesPlugin(this.extractResources)
-    this.plugins.push(extractTransactionResourcesPlugin)
+    this.plugins.push(new ExtractTransactionResourcesPlugin(this.extractResources))
+    this.plugins.push(new ExtractFeeChargedPlugin(this.extractFeeCharged))
   }
 
   public async preProcess(
@@ -101,8 +104,10 @@ export class ProfilerPlugin
   }
 
   private createLogEntry(item: SorobanTransactionPipelineInput, meta: BeltMetadata): void {
+    const methodName = this.getMethodNameFromOperation(item.operations[0])
+
     const logEntry: LogEntry = {
-      methodName: item.operations[0].body().switch().name,
+      methodName,
       status: 'running',
       feeCharged: 0,
       elapsedTime: '',
@@ -129,15 +134,45 @@ export class ProfilerPlugin
     this.logs[itemId].resources = { ...resources }
   }
 
+  private extractFeeCharged = (output: FeeChargedOutput, itemId: string): void => {
+    this.verifyLogEntry(itemId)
+
+    this.logs[itemId].feeCharged = Number(output.feeCharged)
+  }
+
   private injectPlugins = (item: SorobanTransactionPipelineInput): SorobanTransactionPipelineInput => {
     const updatedItem = {
       ...item,
       options: item.options ? { ...item.options } : {},
     }
-    updatedItem.options.innerPlugins = updatedItem.options.innerPlugins
-      ? [...updatedItem.options.innerPlugins, ...this.plugins]
+    updatedItem.options.executionPlugins = updatedItem.options.executionPlugins
+      ? [...updatedItem.options.executionPlugins, ...this.plugins]
       : [...this.plugins]
 
     return updatedItem
+  }
+
+  private getMethodNameFromOperation = (operation: xdr.Operation): string => {
+    if (operation.body().switch() === xdr.OperationType.invokeHostFunction()) {
+      const hostFunction = operation.body().invokeHostFunctionOp()
+
+      if (hostFunction.hostFunction().switch() === xdr.HostFunctionType.hostFunctionTypeInvokeContract()) {
+        const invokeContractHostFunction = hostFunction.hostFunction().invokeContract()
+
+        return invokeContractHostFunction.functionName() as string
+      }
+
+      if (hostFunction.hostFunction().switch() === xdr.HostFunctionType.hostFunctionTypeUploadContractWasm()) {
+        return 'uploadContractWasm'
+      }
+
+      if (hostFunction.hostFunction().switch() === xdr.HostFunctionType.hostFunctionTypeCreateContract()) {
+        return 'createContract'
+      }
+
+      return hostFunction.hostFunction().switch().name
+    }
+
+    return operation.body().switch().name
   }
 }

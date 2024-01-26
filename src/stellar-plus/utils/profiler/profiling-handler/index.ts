@@ -7,9 +7,9 @@ import {
   GetLogOptions,
   LogEntry,
   ResourcesList,
-} from 'stellar-plus/utils/profiler/soroban/types'
+} from 'stellar-plus/utils/profiler/profiling-handler/types'
 
-export class Profiler {
+export class ProfilingHandler {
   private log: LogEntry[] = []
 
   private costHandler = (
