@@ -84,18 +84,18 @@ export class ContractEngine {
    * ```
    */
   constructor(args: ContractEngineConstructorArgs) {
-    // super(args.network, args.rpcHandler)
-    this.networkConfig = args.network
-    this.rpcHandler = args.rpcHandler ? args.rpcHandler : new DefaultRpcHandler(this.networkConfig)
-    this.spec = args.spec
-    this.contractId = args.contractId
-    this.wasm = args.wasm
-    this.wasmHash = args.wasmHash
-    this.options = { ...args.options }
+    const { networkConfig, contractParameters, options } = args
+    this.networkConfig = networkConfig
+    this.rpcHandler = options?.customRpcHandler ? options.customRpcHandler : new DefaultRpcHandler(this.networkConfig)
+    this.spec = contractParameters.spec
+    this.contractId = contractParameters.contractId
+    this.wasm = contractParameters.wasm
+    this.wasmHash = contractParameters.wasmHash
+    this.options = { ...options }
 
     this.sorobanTransactionPipeline = new SorobanTransactionPipeline({
-      networkConfig: args.network,
-      customRpcHandler: args.rpcHandler,
+      networkConfig: networkConfig,
+      customRpcHandler: options?.customRpcHandler,
       ...this.options.transactionPipeline,
     })
   }

@@ -1,24 +1,22 @@
 import { ContractSpec } from '@stellar/stellar-sdk'
 
 import { SorobanTransactionPipelineOptions } from 'stellar-plus/core/pipelines/soroban-transaction/types'
-import { TransactionInvocation } from 'stellar-plus/core/types'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network } from 'stellar-plus/types'
 
 export type ContractEngineConstructorArgs = {
-  network: Network
-  spec: ContractSpec
-  contractId?: string
-  rpcHandler?: RpcHandler
-  wasm?: Buffer
-  wasmHash?: string
+  networkConfig: Network
+  contractParameters: {
+    spec: ContractSpec
+    contractId?: string
+    wasm?: Buffer
+    wasmHash?: string
+  }
   options?: Options
 }
 
 export type Options = {
-  debug?: boolean
-  costHandler?: (methodName: string, costs: TransactionResources, elapsedTime: number, feeCharged: number) => void
-  restoreTxInvocation?: TransactionInvocation
+  customRpcHandler?: RpcHandler
   transactionPipeline?: SorobanTransactionPipelineOptions
 }
 

@@ -5,7 +5,7 @@ import { BuildTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/buil
 import { ClassicSignRequirementsPipelinePlugin } from 'stellar-plus/core/pipelines/classic-sign-requirements/types'
 import { SignTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/sign-transaction/types'
 import { SubmitTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/submit-transaction/types'
-import { Network, TransactionInvocation } from 'stellar-plus/types'
+import { TransactionInvocation } from 'stellar-plus/types'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
 import { BeltPluginType, GenericPlugin } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
@@ -45,5 +45,4 @@ export type ClassicTransactionPipelineMainPlugin = BeltPluginType<
 
 export type ClassicTransactionPipelineOptions = {
   plugins?: ClassicTransactionPipelinePlugin[]
-  networkConfig: Network
 }

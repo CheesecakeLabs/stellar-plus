@@ -1,25 +1,26 @@
 import { Horizon as HorizonNamespace, Operation, Asset as StellarAsset } from '@stellar/stellar-sdk'
 
+import { HorizonHandler } from 'stellar-plus'
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import {
   ClassicAssetHandlerConstructorArgs,
   ClassicAssetHandler as IClassicAssetHandler,
 } from 'stellar-plus/asset/classic/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
-import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
 import { ClassicTransactionPipeline } from 'stellar-plus/core/pipelines/classic-transaction'
+import { ClassicTransactionPipelineOptions } from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { i128 } from 'stellar-plus/types'
 
 import { CAHError } from './errors'
-import { ClassicTransactionPipelineOptions } from 'stellar-plus/core/pipelines/classic-transaction/types'
 
-export class ClassicAssetHandler extends TransactionProcessor implements IClassicAssetHandler {
+export class ClassicAssetHandler implements IClassicAssetHandler {
   public code: string
   public issuerPublicKey: string
   public type: AssetTypes.native | AssetTypes.credit_alphanum4 | AssetTypes.credit_alphanum12
   private issuerAccount?: AccountHandler
   private asset: StellarAsset
+  private horizonHandler: HorizonHandler
 
   private classicTrasactionPipeline: ClassicTransactionPipeline
 
@@ -36,9 +37,13 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    *
    */
   constructor(args: ClassicAssetHandlerConstructorArgs) {
-    super({ ...args })
+    // super({ ...args })
     this.code = args.code
-    this.issuerPublicKey = args.issuerPublicKey
+    this.issuerPublicKey =
+      typeof args.issuerAccount === 'string' ? args.issuerAccount : args.issuerAccount.getPublicKey()
+
+    this.issuerAccount = typeof args.issuerAccount === 'string' ? undefined : args.issuerAccount
+
     this.type =
       args.code === 'XLM'
         ? AssetTypes.native
@@ -46,10 +51,12 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
           ? AssetTypes.credit_alphanum4
           : AssetTypes.credit_alphanum12
 
-    this.asset = new StellarAsset(args.code, args.issuerPublicKey)
-    this.issuerAccount = args.issuerAccount
+    this.horizonHandler = new HorizonHandler(args.networkConfig)
+
+    this.asset = new StellarAsset(args.code, this.issuerPublicKey)
 
     this.classicTrasactionPipeline = new ClassicTransactionPipeline(
+      args.networkConfig,
       args.options?.clasicTransactionPipeline as ClassicTransactionPipelineOptions
     )
   }
@@ -160,36 +167,6 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
     return
   }
 
-  public async OLDtransfer(args: { from: string; to: string; amount: number } & TransactionInvocation): Promise<void> {
-    const { from, to, amount, header, signers, feeBump } = args
-
-    const txInvocation = {
-      header,
-      signers,
-      feeBump,
-    }
-    const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope(txInvocation)
-
-    // const { updatedHeader, updatedSigners, updatedFeeBump } = updatedTxInvocation
-
-    const tx = envelope
-      .addOperation(
-        Operation.payment({
-          destination: to,
-          asset: this.asset,
-          amount: amount.toString(),
-          source: from,
-        })
-      )
-      .setTimeout(updatedTxInvocation.header.timeout)
-      .build()
-
-    this.verifySigners([from], updatedTxInvocation.signers)
-    await this.processTransaction(tx, updatedTxInvocation.signers, updatedTxInvocation.feeBump)
-
-    return
-  }
-
   // public async transfer_from(): Promise<void> {
   //   throw new Error('Method not implemented.')
   // }
@@ -217,6 +194,11 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
   //==========================================
   // Management Methods - Require Admin / Issuer account
   //==========================================
+  // These methods make use of this.requireIssuerAccount()
+  // to enforce the issuer account to be set. The issue account
+  // is then injected as a signer in the transaction invocation
+  // when needed.
+  //
   //
   //
 
@@ -251,25 +233,25 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
 
     const { to, amount } = args
 
-    const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope({ ...args })
+    const txInvocation = args as TransactionInvocation
+    const updatedTxInvocation = {
+      ...txInvocation,
+      signers: [...txInvocation.signers, this.issuerAccount!], // Adds the issuer account as a signer. Issue account initialization is already verified by requireIssuerAccount().
+    }
 
-    const tx = envelope
-      .addOperation(
-        Operation.payment({
-          destination: to,
-          asset: this.asset,
-          amount: amount.toString(),
-          source: this.asset.getIssuer(),
-        })
-      )
-      .setTimeout(updatedTxInvocation.header.timeout)
-      .build()
+    const mintOp = Operation.payment({
+      destination: to,
+      asset: this.asset,
+      amount: amount.toString(),
+      source: this.asset.getIssuer(),
+    })
 
-    const signersWithIssuer = [...updatedTxInvocation.signers, this.issuerAccount!]
+    const result = await this.classicTrasactionPipeline.execute({
+      txInvocation: updatedTxInvocation,
+      operations: [mintOp],
+    })
 
-    this.verifySigners([this.asset.getIssuer()], signersWithIssuer)
-
-    return await this.processTransaction(tx, signersWithIssuer, updatedTxInvocation.feeBump)
+    return result.response
   }
 
   public async clawback(): Promise<void> {
@@ -305,32 +287,30 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
 
     const { to, amount } = args
 
-    const { envelope, updatedTxInvocation } = await this.transactionSubmitter.createEnvelope({ ...args })
+    const txInvocation = args as TransactionInvocation
+    const updatedTxInvocation = {
+      ...txInvocation,
+      signers: [...txInvocation.signers, this.issuerAccount!], // Adds the issuer account as a signer. Issue account initialization is already verified by requireIssuerAccount().
+    }
 
-    const { header, signers, feeBump } = updatedTxInvocation
+    const addTrustlineOp = Operation.changeTrust({
+      source: to,
+      asset: this.asset,
+    })
 
-    const tx = envelope
-      .addOperation(
-        Operation.changeTrust({
-          source: to,
-          asset: this.asset,
-        })
-      )
-      .addOperation(
-        Operation.payment({
-          destination: to,
-          asset: this.asset,
-          amount: amount.toString(),
-          source: this.asset.getIssuer(),
-        })
-      )
-      .setTimeout(header.timeout)
-      .build()
+    const mintOp = Operation.payment({
+      destination: to,
+      asset: this.asset,
+      amount: amount.toString(),
+      source: this.asset.getIssuer(),
+    })
 
-    const signersWithIssuer = [...signers, this.issuerAccount!]
-    this.verifySigners([to, this.asset.getIssuer()], signersWithIssuer)
+    const result = await this.classicTrasactionPipeline.execute({
+      txInvocation: updatedTxInvocation,
+      operations: [addTrustlineOp, mintOp],
+    })
 
-    return await this.processTransaction(tx, signersWithIssuer, feeBump)
+    return result.response
   }
 
   //==========================================

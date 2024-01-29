@@ -5,6 +5,7 @@ import { AccountHelpersPayload } from 'stellar-plus/account/helpers/types'
 import { TransactionXdr } from 'stellar-plus/types'
 
 export type AccountHandler = AccountBase & {
+  getPublicKey(): string
   sign(tx: Transaction | FeeBumpTransaction): Promise<TransactionXdr> | TransactionXdr
   signatureSchema?: SignatureSchema
 }

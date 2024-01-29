@@ -3,12 +3,10 @@ import { Asset } from '@stellar/stellar-sdk'
 import { ClassicAssetHandler } from 'stellar-plus/asset/classic'
 import { ClassicAssetHandlerConstructorArgs } from 'stellar-plus/asset/classic/types'
 import { SorobanTokenHandler } from 'stellar-plus/asset/soroban-token'
+import { SorobanTokenHandlerConstructorArgs } from 'stellar-plus/asset/soroban-token/types'
 import { SACConstructorArgs, SACHandler as SACHandlerType } from 'stellar-plus/asset/stellar-asset-contract/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
-
-import { SorobanTokenHandlerConstructorArgs } from '../soroban-token/types'
-import { ClassicTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/classic-transaction/types'
 
 export class SACHandler implements SACHandlerType {
   public type: AssetTypes = AssetTypes.SAC

@@ -1,10 +1,9 @@
 import { Address, ContractSpec } from '@stellar/stellar-sdk'
 
 import { ContractEngine } from 'stellar-plus/core/contract-engine'
+import { ContractEngineConstructorArgs } from 'stellar-plus/core/contract-engine/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
-import { i128, u32, u64 } from 'stellar-plus/types'
-
-import { Methods, spec } from './constants'
+import { Methods, spec } from 'stellar-plus/soroban/contracts/certificate-of-deposit/constants'
 import {
   CertificateOfDepositContract,
   CertificateOfDepositContractConstructorArgs,
@@ -15,7 +14,8 @@ import {
   GetTimeLeftArgs,
   Initialize,
   WithdrawArgs,
-} from './types'
+} from 'stellar-plus/soroban/contracts/certificate-of-deposit/types'
+import { i128, u32, u64 } from 'stellar-plus/types'
 
 export class CertificateOfDepositClient extends ContractEngine implements CertificateOfDepositContract {
   private methods: typeof Methods
@@ -30,10 +30,17 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
    *
    */
   constructor(args: CertificateOfDepositContractConstructorArgs) {
+    const contractSpec = args.contractParameters.spec || (spec as ContractSpec)
+    const contractParameters = {
+      ...args.contractParameters,
+      spec: contractSpec,
+    }
+
     super({
       ...args,
-      spec: spec as ContractSpec,
-    })
+      contractParameters,
+    } as ContractEngineConstructorArgs)
+
     this.methods = Methods
   }
 

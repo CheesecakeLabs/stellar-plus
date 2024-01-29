@@ -1,5 +1,8 @@
-import { Address as StellarAddress } from '@stellar/stellar-sdk'
-import { Transaction as _Transaction, FeeBumpTransaction as _FeeBumpTransaction } from '@stellar/stellar-sdk'
+import {
+  Address as StellarAddress,
+  FeeBumpTransaction as _FeeBumpTransaction,
+  Transaction as _Transaction,
+} from '@stellar/stellar-sdk'
 
 import {
   EnvelopeHeader as _EnvelopeHeader,
