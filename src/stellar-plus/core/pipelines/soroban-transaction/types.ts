@@ -21,10 +21,6 @@ export enum SorobanTransactionPipelineType {
   id = 'SorobanTransactionPipeline',
 }
 
-// export type SorobanTransactionPipelineInput = SorobanInvocationInputSimulateOnly | SorobanInvocationInputExecute
-
-// export type SorobanInvocationInput = SorobanInvocationInputSimulateOnly | SorobanInvocationInputExecute
-
 export type SorobanTransactionPipelineInput = {
   txInvocation: TransactionInvocation
   operations: xdr.Operation[]
@@ -34,20 +30,6 @@ export type SorobanTransactionPipelineInput = {
     simulateOnly?: boolean
   }
 }
-
-// Type for when we want to simulate the transaction only
-// type SorobanInvocationInputSimulateOnly = SorobanInvocationInputBase & {
-//   options?: SorobanInvocationInputBase['options'] & {
-//     simulateOnly: true
-//   }
-// }
-
-// // Type for when we want to simulate and execute the transaction
-// type SorobanInvocationInputExecute = SorobanInvocationInputBase & {
-//   options?: SorobanInvocationInputBase['options'] & {
-//     simulateOnly?: false | undefined
-//   }
-// }
 
 export type TransactionSimulationOutput = SimulateTransactionPipelineOutput
 export type TransactionExecutionOutput = SorobanGetTransactionPipelineOutput
@@ -60,37 +42,6 @@ export type SupportedInnerPlugins =
   | SignTransactionPipelinePlugin
   | SubmitTransactionPipelinePlugin
   | SorobanGetTransactionPipelinePlugin
-
-// export type SupportedPluginsTypes =
-//   | BuildTransactionPipelineType
-//   | SimulateTransactionPipelineType
-//   | ClassicSignRequirementsPipelineType
-//   | SignTransactionPipelineType
-//   | SubmitTransactionPipelineType
-//   | SorobanGetTransactionPipelineType
-//   | GenericPlugin
-
-// export const listOfSupportedPluginsTypes: SupportedPluginsTypes[] = [
-//   BuildTransactionPipelineType.id,
-//   SimulateTransactionPipelineType.id,
-//   ClassicSignRequirementsPipelineType.id,
-//   SignTransactionPipelineType.id,
-//   SubmitTransactionPipelineType.id,
-//   SorobanGetTransactionPipelineType.id,
-//   GenericPlugin.id,
-// ]
-
-// export const listOfSupportedInnerPluginsTypes: SupportedInnerPluginsTypes[] = [
-//   'GenericPlugin' as GenericPlugin,
-//   'BuildTransactionPipeline' as BuildTransactionPipelineType,
-//   'SimulateTransactionPipeline' as SimulateTransactionPipelineType,
-//   'ClassicSignRequirementsPipeline' as ClassicSignRequirementsPipelineType,
-//   'SignTransactionPipeline' as SignTransactionPipelineType,
-//   'SubmitTransactionPipeline' as SubmitTransactionPipelineType,
-//   'SorobanGetTransactionPipeline' as SorobanGetTransactionPipelineType,
-// ]
-
-// export type SorobanTransactionPipelineType = 'SorobanTransactionPipeline'
 
 export type SorobanTransactionPipeline = ConveyorBelt<
   SorobanTransactionPipelineInput,
