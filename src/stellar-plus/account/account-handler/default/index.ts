@@ -5,7 +5,6 @@ import { AccountBaseClient } from 'stellar-plus/account/base'
 import { TransactionXdr } from 'stellar-plus/types'
 
 import { DAHError } from './errors'
-import { TransactionBuilder } from 'stellar-base'
 
 export class DefaultAccountHandlerClient extends AccountBaseClient implements DefaultAccountHandler {
   protected secretKey: string

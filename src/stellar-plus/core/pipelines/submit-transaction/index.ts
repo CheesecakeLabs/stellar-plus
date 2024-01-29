@@ -1,4 +1,5 @@
 import { FeeBumpTransaction, Transaction } from '@stellar/stellar-sdk'
+import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
 
 import { HorizonHandler } from 'stellar-plus'
 import {
@@ -44,7 +45,9 @@ export class SubmitTransactionPipeline extends ConveyorBelt<
     horizonHandler: HorizonHandler
   ): Promise<SubmitTransactionPipelineOutput> {
     try {
-      const response = await horizonHandler.server.submitTransaction(transaction)
+      const response = (await horizonHandler.server.submitTransaction(transaction, {
+        skipMemoRequiredCheck: true, // Not skipping memo required check causes an error when submitting fee bump transactions
+      })) as HorizonApi.SubmitTransactionResponse
       return { response }
     } catch (error) {
       throw new Error(`Error submitting transaction through horizon: ${(error as Error).message}`)

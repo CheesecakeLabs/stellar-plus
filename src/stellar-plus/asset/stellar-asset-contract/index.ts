@@ -8,6 +8,7 @@ import { AssetTypes } from 'stellar-plus/asset/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 
 import { SorobanTokenHandlerConstructorArgs } from '../soroban-token/types'
+import { ClassicTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/classic-transaction/types'
 
 export class SACHandler implements SACHandlerType {
   public type: AssetTypes = AssetTypes.SAC

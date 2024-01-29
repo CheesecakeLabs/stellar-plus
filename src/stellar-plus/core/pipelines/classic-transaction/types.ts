@@ -16,10 +16,8 @@ export enum ClassicTransactionPipelineType {
 export type ClassicTransactionPipelineInput = {
   txInvocation: TransactionInvocation
   operations: xdr.Operation[]
-  networkConfig: Network
   options?: {
     executionPlugins?: SupportedInnerPlugins[]
-    simulateOnly?: boolean
   }
 }
 

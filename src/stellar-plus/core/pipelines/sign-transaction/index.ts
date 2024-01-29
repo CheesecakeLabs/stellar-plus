@@ -1,4 +1,4 @@
-import { FeeBumpTransaction, Transaction, TransactionBuilder } from 'stellar-base'
+import { FeeBumpTransaction, Transaction, TransactionBuilder } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from 'stellar-plus/account'
 import {
@@ -44,6 +44,7 @@ export class SignTransactionPipeline extends ConveyorBelt<
 
     for (const requirement of requirements) {
       const signer = signers.find((s) => s.getPublicKey() === requirement.publicKey) as AccountHandler
+
       if (!signer) throw new Error(`Signer not found: ${requirement.publicKey}`)
 
       if (!signer.signatureSchema) {

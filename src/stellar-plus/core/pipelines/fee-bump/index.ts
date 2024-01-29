@@ -1,4 +1,4 @@
-import { Transaction, TransactionBuilder } from '@stellar/stellar-sdk'
+import { FeeBumpTransaction, Transaction, TransactionBuilder } from '@stellar/stellar-sdk'
 
 import {
   FeeBumpPipelineInput,
@@ -31,7 +31,7 @@ export class FeeBumpPipeline extends ConveyorBelt<FeeBumpPipelineInput, FeeBumpP
         feeBumpHeader.header.fee,
         TransactionBuilder.fromXDR(innerTransaction.toXDR(), networkPassphrase) as Transaction,
         networkPassphrase
-      )
+      ) as FeeBumpTransaction
 
       return feeBumpTransaction
     } catch (error) {

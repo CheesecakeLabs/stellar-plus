@@ -7,10 +7,12 @@ import {
 } from 'stellar-plus/asset/classic/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
 import { TransactionProcessor } from 'stellar-plus/core/classic-transaction-processor'
+import { ClassicTransactionPipeline } from 'stellar-plus/core/pipelines/classic-transaction'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { i128 } from 'stellar-plus/types'
 
 import { CAHError } from './errors'
+import { ClassicTransactionPipelineOptions } from 'stellar-plus/core/pipelines/classic-transaction/types'
 
 export class ClassicAssetHandler extends TransactionProcessor implements IClassicAssetHandler {
   public code: string
@@ -18,6 +20,8 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
   public type: AssetTypes.native | AssetTypes.credit_alphanum4 | AssetTypes.credit_alphanum12
   private issuerAccount?: AccountHandler
   private asset: StellarAsset
+
+  private classicTrasactionPipeline: ClassicTransactionPipeline
 
   /**
    *
@@ -44,6 +48,10 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
 
     this.asset = new StellarAsset(args.code, args.issuerPublicKey)
     this.issuerAccount = args.issuerAccount
+
+    this.classicTrasactionPipeline = new ClassicTransactionPipeline(
+      args.options?.clasicTransactionPipeline as ClassicTransactionPipelineOptions
+    )
   }
 
   //==========================================
@@ -133,6 +141,26 @@ export class ClassicAssetHandler extends TransactionProcessor implements IClassi
    * @description - Transfers the given amount of the asset from the 'from' account to the 'to' account.
    */
   public async transfer(args: { from: string; to: string; amount: number } & TransactionInvocation): Promise<void> {
+    const { from, to, amount } = args
+
+    const txInvocation = args as TransactionInvocation
+
+    const transferOp = Operation.payment({
+      destination: to,
+      asset: this.asset,
+      amount: amount.toString(),
+      source: from,
+    })
+
+    await this.classicTrasactionPipeline.execute({
+      txInvocation,
+      operations: [transferOp],
+    })
+
+    return
+  }
+
+  public async OLDtransfer(args: { from: string; to: string; amount: number } & TransactionInvocation): Promise<void> {
     const { from, to, amount, header, signers, feeBump } = args
 
     const txInvocation = {
