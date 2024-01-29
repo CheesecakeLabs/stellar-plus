@@ -268,7 +268,6 @@ export class ContractEngine {
     const result = await this.sorobanTransactionPipeline.execute({
       txInvocation,
       operations: [contractCallOperation],
-      networkConfig: this.networkConfig,
       options: {
         executionPlugins,
         simulateOnly,
@@ -301,7 +300,6 @@ export class ContractEngine {
       const result = await this.sorobanTransactionPipeline.execute({
         txInvocation,
         operations: [uploadOperation],
-        networkConfig: this.networkConfig,
         options: {
           executionPlugins: [new ExtractWasmHashPlugin()],
         },
@@ -334,7 +332,6 @@ export class ContractEngine {
       const result = await this.sorobanTransactionPipeline.execute({
         txInvocation,
         operations: [deployOperation],
-        networkConfig: this.networkConfig,
         options: {
           executionPlugins: [new ExtractContractIdPlugin()],
         },
@@ -359,7 +356,6 @@ export class ContractEngine {
       const result = await this.sorobanTransactionPipeline.execute({
         txInvocation,
         operations: [wrapOperation],
-        networkConfig: this.networkConfig,
         options: {
           executionPlugins: [new ExtractContractIdPlugin()],
         },

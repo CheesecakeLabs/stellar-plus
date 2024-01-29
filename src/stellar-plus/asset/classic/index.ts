@@ -10,7 +10,6 @@ import { AssetTypes } from 'stellar-plus/asset/types'
 import { ClassicTransactionPipeline } from 'stellar-plus/core/pipelines/classic-transaction'
 import { ClassicTransactionPipelineOptions } from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
-import { i128 } from 'stellar-plus/types'
 
 import { CAHError } from './errors'
 
@@ -130,9 +129,9 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
     return balanceLine[0] ? Number(balanceLine[0].balance) : 0
   }
 
-  public async spendable_balance(): Promise<i128> {
-    throw new Error('Method not implemented.')
-  }
+  // public async spendable_balance(): Promise<i128> {
+  //   throw new Error('Method not implemented.')
+  // }
 
   /**
    *
@@ -308,6 +307,39 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
     const result = await this.classicTrasactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [addTrustlineOp, mintOp],
+    })
+
+    return result.response
+  }
+
+  /**
+   *
+   * @param {string} to - The account id to add the trustline.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object.
+   *
+   * @requires - The 'to' account to be set as a signer in the transaction invocation.
+   *
+   * @description - Adds the trustline for the asset to the 'to' account.
+   *
+   * @returns {HorizonNamespace.SubmitTransactionResponse} The response from the Horizon server.
+   */
+  public async addTrustline(
+    args: {
+      to: string
+    } & TransactionInvocation
+  ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
+    const { to } = args
+
+    const txInvocation = args as TransactionInvocation
+
+    const addTrustlineOp = Operation.changeTrust({
+      source: to,
+      asset: this.asset,
+    })
+
+    const result = await this.classicTrasactionPipeline.execute({
+      txInvocation,
+      operations: [addTrustlineOp],
     })
 
     return result.response

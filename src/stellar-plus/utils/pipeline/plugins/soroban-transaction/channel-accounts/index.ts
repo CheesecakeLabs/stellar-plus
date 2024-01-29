@@ -100,9 +100,6 @@ class ChannelAccountsPlugin<Input extends InputType, Output, Type> implements Be
         channel,
       })
 
-      console.log('allocated channel', channel.getPublicKey())
-      console.log('for item id: ', id)
-
       return channel
     }
   }
@@ -113,13 +110,8 @@ class ChannelAccountsPlugin<Input extends InputType, Output, Type> implements Be
       throw new Error(`locked channel not found for item ${id}`)
     }
 
-    console.log('releasing channel', channel.getPublicKey())
     this.lockedChannels = this.lockedChannels.filter((c) => c.id !== id)
     this.freeChannels.push(channel)
-
-    // const channel = this.lockedChannels[id]
-    // delete this.lockedChannels[id]
-    // this.freeChannels.push(channel)
   }
 
   /**

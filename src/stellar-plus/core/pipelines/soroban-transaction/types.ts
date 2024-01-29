@@ -24,7 +24,6 @@ export enum SorobanTransactionPipelineType {
 export type SorobanTransactionPipelineInput = {
   txInvocation: TransactionInvocation
   operations: xdr.Operation[]
-  networkConfig: Network
   options?: {
     executionPlugins?: SupportedInnerPlugins[]
     simulateOnly?: boolean
