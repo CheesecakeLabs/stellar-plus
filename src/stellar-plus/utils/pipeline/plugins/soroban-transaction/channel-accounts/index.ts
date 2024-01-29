@@ -1,5 +1,10 @@
 import { AccountHandler } from 'stellar-plus/account'
 import {
+  ClassicTransactionPipelineInput,
+  ClassicTransactionPipelineOutput,
+  ClassicTransactionPipelineType,
+} from 'stellar-plus/core/pipelines/classic-transaction/types'
+import {
   SorobanTransactionPipelineInput,
   SorobanTransactionPipelineOutput,
   SorobanTransactionPipelineType,
@@ -7,44 +12,42 @@ import {
 import { StellarPlusError } from 'stellar-plus/error'
 import { FeeBumpHeader } from 'stellar-plus/types'
 import { BeltMetadata, BeltPluginType } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
+import {
+  ChannelAccountsPluginConstructorArgs,
+  InputType,
+} from 'stellar-plus/utils/pipeline/plugins/soroban-transaction/channel-accounts/types'
 
-export class ChannelAccountsPlugin
-  implements
-    BeltPluginType<SorobanTransactionPipelineInput, SorobanTransactionPipelineOutput, SorobanTransactionPipelineType>
-{
-  readonly type = SorobanTransactionPipelineType.id
+class ChannelAccountsPlugin<Input extends InputType, Output, Type> implements BeltPluginType<Input, Output, Type> {
+  readonly type
   readonly name = 'ChannelAccountsPlugin'
   private freeChannels: AccountHandler[]
 
-  private lockedChannels: { [key: string]: AccountHandler } = {}
+  private lockedChannels: { channel: AccountHandler; id: string }[] // Channels are allocated to items, and released when the item is processed.
   private feeBump?: FeeBumpHeader
 
-  constructor(feeBump?: FeeBumpHeader) {
-    // this.network = network
+  constructor(typeId: Type, channels?: AccountHandler[], feeBump?: FeeBumpHeader) {
+    this.type = typeId
     this.feeBump = feeBump
     // this.horizonHandler = new HorizonHandlerClient(network)
     this.freeChannels = []
-    this.lockedChannels = {}
+    this.lockedChannels = []
+    if (channels) {
+      this.registerChannels(channels)
+    }
   }
 
   //===========================================
   //         belt process modifiers
   //===========================================
 
-  public async preProcess(
-    item: SorobanTransactionPipelineInput,
-    meta: BeltMetadata
-  ): Promise<SorobanTransactionPipelineInput> {
+  public async preProcess(item: Input, meta: BeltMetadata): Promise<Input> {
     const allocatedChannel = await this.allocateChannel(meta.itemId)
     const updatedItem = this.injectChannel(item, allocatedChannel)
 
     return updatedItem
   }
 
-  public async postProcess(
-    item: SorobanTransactionPipelineOutput,
-    meta: BeltMetadata
-  ): Promise<SorobanTransactionPipelineOutput> {
+  public async postProcess(item: Output, meta: BeltMetadata): Promise<Output> {
     this.releaseChannel(meta.itemId)
     return item
   }
@@ -65,7 +68,9 @@ export class ChannelAccountsPlugin
    * @returns {AccountHandler[]} The list of channels registered to the pool.
    */
   public getChannels(): AccountHandler[] {
-    return [...this.freeChannels, ...Object.values(this.lockedChannels)]
+    const lockedChannels = this.lockedChannels.map((c) => c.channel)
+
+    return [...this.freeChannels, ...lockedChannels]
   }
 
   /**
@@ -90,20 +95,31 @@ export class ChannelAccountsPlugin
     } else {
       const channel = this.freeChannels.pop() as AccountHandler
 
-      this.lockedChannels[id] = channel
+      this.lockedChannels.push({
+        id,
+        channel,
+      })
+
+      console.log('allocated channel', channel.getPublicKey())
+      console.log('for item id: ', id)
 
       return channel
     }
   }
 
   private releaseChannel(id: string): void {
-    if (!this.lockedChannels[id]) {
+    const channel = this.lockedChannels.find((c) => c.id === id)?.channel
+    if (!channel) {
       throw new Error(`locked channel not found for item ${id}`)
     }
 
-    const channel = this.lockedChannels[id]
-    delete this.lockedChannels[id]
+    console.log('releasing channel', channel.getPublicKey())
+    this.lockedChannels = this.lockedChannels.filter((c) => c.id !== id)
     this.freeChannels.push(channel)
+
+    // const channel = this.lockedChannels[id]
+    // delete this.lockedChannels[id]
+    // this.freeChannels.push(channel)
   }
 
   /**
@@ -121,19 +137,40 @@ export class ChannelAccountsPlugin
     })
   }
 
-  private injectChannel(
-    item: SorobanTransactionPipelineInput,
-    channel: AccountHandler
-  ): SorobanTransactionPipelineInput {
+  private injectChannel(item: Input, channel: AccountHandler): Input {
     const { header } = item.txInvocation
-    if (this.feeBump && !item.txInvocation.feeBump) {
-      item.txInvocation.feeBump = this.feeBump as FeeBumpHeader
+
+    const updatedTxInvocation = {
+      ...item.txInvocation,
+      ...{ header: { ...header, source: channel.getPublicKey() } },
+      signers: [...item.txInvocation.signers, channel],
+      feeBump: this.feeBump && !item.txInvocation.feeBump ? (this.feeBump as FeeBumpHeader) : item.txInvocation.feeBump,
     }
 
-    header.source = channel.getPublicKey()
+    const updatedItem = {
+      ...item,
+      ...{ txInvocation: updatedTxInvocation },
+    }
+    return updatedItem
+  }
+}
 
-    item.txInvocation.signers = [...item.txInvocation.signers, channel]
+export class ClassicChannelAccountsPlugin extends ChannelAccountsPlugin<
+  ClassicTransactionPipelineInput,
+  ClassicTransactionPipelineOutput,
+  ClassicTransactionPipelineType
+> {
+  constructor(args: ChannelAccountsPluginConstructorArgs) {
+    super(ClassicTransactionPipelineType.id, args.channels, args.feeBump)
+  }
+}
 
-    return item
+export class SorobanChannelAccountsPlugin extends ChannelAccountsPlugin<
+  SorobanTransactionPipelineInput,
+  SorobanTransactionPipelineOutput,
+  SorobanTransactionPipelineType
+> {
+  constructor(args: ChannelAccountsPluginConstructorArgs) {
+    super(SorobanTransactionPipelineType.id, args.channels, args.feeBump)
   }
 }
