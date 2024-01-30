@@ -57,10 +57,10 @@ export class SorobanTransactionPipeline extends MultiBeltPipeline<
   private horizonHandler: HorizonHandlerClient
   private networkConfig: Network
 
-  constructor(options: SorobanTransactionPipelineOptions) {
+  constructor(networkConfig: Network, options?: SorobanTransactionPipelineOptions) {
     const internalConstructorArgs = {
       beltType: SorobanTransactionPipelineType.id,
-      plugins: (options.plugins as SorobanTransactionPipelinePlugin[]) || [],
+      plugins: (options?.plugins as SorobanTransactionPipelinePlugin[]) || [],
     } as MultiBeltPipelineOptions<
       SorobanTransactionPipelineInput,
       SorobanTransactionPipelineOutput,
@@ -73,9 +73,9 @@ export class SorobanTransactionPipeline extends MultiBeltPipeline<
       ...{ type: SorobanTransactionPipelineType.id },
     })
 
-    this.networkConfig = options.networkConfig
+    this.networkConfig = networkConfig
     this.horizonHandler = new HorizonHandlerClient(this.networkConfig)
-    this.rpcHandler = options.customRpcHandler || new DefaultRpcHandler(this.networkConfig)
+    this.rpcHandler = options?.customRpcHandler || new DefaultRpcHandler(this.networkConfig)
   }
 
   protected async process(

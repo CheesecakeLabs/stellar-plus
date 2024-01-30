@@ -3,13 +3,9 @@ import { FreighterAccountHandlerErrorCodes } from 'stellar-plus/account/account-
 import { FriendbotErrorCodes } from 'stellar-plus/account/helpers/friendbot/errors'
 import { ClassicAssetHandlerErrorCodes } from 'stellar-plus/asset/classic/errors'
 import { ChannelAccountsErrorCodes } from 'stellar-plus/channel-accounts/errors'
-import { ClassicTransactionProcessorErrorCodes } from 'stellar-plus/core/classic-transaction-processor/errors'
 import { ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/errors'
 import { ErrorCodesPipelineBuildTransaction } from 'stellar-plus/core/pipelines/build-transaction/errors'
 import { ErrorCodesPipelineSimulateTransaction } from 'stellar-plus/core/pipelines/simulate-transaction/errors'
-import { SorobanTransactionProcessorErrorCodes } from 'stellar-plus/core/soroban-transaction-processor/errors'
-import { ChannelAccountsTransactionSubmitterErrorCodes } from 'stellar-plus/core/transaction-submitter/classic/channel-accounts-submitter/errors'
-import { DefaultTransactionSubmitterErrorCodes } from 'stellar-plus/core/transaction-submitter/classic/default/errors'
 import { ValidationCloudRpcHandlerErrorCodes } from 'stellar-plus/rpc/validation-cloud-handler/errors'
 
 import { AxiosErrorInfo } from './helpers/axios'
@@ -41,10 +37,6 @@ export type ErrorCodes =
   | DefaultAccountHandlerErrorCodes
   | FreighterAccountHandlerErrorCodes
   | ValidationCloudRpcHandlerErrorCodes
-  | DefaultTransactionSubmitterErrorCodes
-  | ClassicTransactionProcessorErrorCodes
-  | SorobanTransactionProcessorErrorCodes
-  | ChannelAccountsTransactionSubmitterErrorCodes
   | ErrorCodesPipelineBuildTransaction
   | ErrorCodesPipelineSimulateTransaction
 

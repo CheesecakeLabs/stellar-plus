@@ -11,15 +11,16 @@ import {
 } from '@stellar/stellar-sdk'
 
 import { CEError } from 'stellar-plus/core/contract-engine/errors'
-import { ContractEngineConstructorArgs, Options } from 'stellar-plus/core/contract-engine/types'
-import { SimulatedInvocationOutput } from 'stellar-plus/core/pipelines/simulate-transaction/types'
-import { ContractIdOutput, ContractWasmHashOutput } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
-import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
 import {
+  ContractEngineConstructorArgs,
+  Options,
   SorobanInvokeArgs,
   SorobanSimulateArgs,
   WrapClassicAssetArgs,
-} from 'stellar-plus/core/soroban-transaction-processor/types'
+} from 'stellar-plus/core/contract-engine/types'
+import { SimulatedInvocationOutput } from 'stellar-plus/core/pipelines/simulate-transaction/types'
+import { ContractIdOutput, ContractWasmHashOutput } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
+import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
 import { DefaultRpcHandler } from 'stellar-plus/rpc'
@@ -86,16 +87,17 @@ export class ContractEngine {
   constructor(args: ContractEngineConstructorArgs) {
     const { networkConfig, contractParameters, options } = args
     this.networkConfig = networkConfig
-    this.rpcHandler = options?.customRpcHandler ? options.customRpcHandler : new DefaultRpcHandler(this.networkConfig)
+    this.rpcHandler = options?.transactionPipeline?.customRpcHandler
+      ? options.transactionPipeline.customRpcHandler
+      : new DefaultRpcHandler(this.networkConfig)
     this.spec = contractParameters.spec
     this.contractId = contractParameters.contractId
     this.wasm = contractParameters.wasm
     this.wasmHash = contractParameters.wasmHash
     this.options = { ...options }
 
-    this.sorobanTransactionPipeline = new SorobanTransactionPipeline({
-      networkConfig: networkConfig,
-      customRpcHandler: options?.customRpcHandler,
+    this.sorobanTransactionPipeline = new SorobanTransactionPipeline(networkConfig, {
+      customRpcHandler: options?.transactionPipeline?.customRpcHandler,
       ...this.options.transactionPipeline,
     })
   }
@@ -395,3 +397,74 @@ export class ContractEngine {
     }
   }
 }
+
+// // This functions can be invoked with two different sets of arguments. The first set is when the keys are provided directly.
+//   /**
+//    * @args {RestoreFootprintArgs} args - The arguments for the invocation.
+//    * @param {EnvelopeHeader} args.header - The header for the transaction.
+//    * @param {AccountHandler[]} args.signers - The signers for the transaction.
+//    * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+//    *
+//    * Option 1: Provide the keys directly.
+//    * @param {xdr.LedgerKey[]} args.keys - The keys to restore.
+//    * Option 2: Provide the restore preamble.
+//    * @param { RestoreFootprintWithRestorePreamble} args.restorePreamble - The restore preamble.
+//    * @param {string} args.restorePreamble.minResourceFee - The minimum resource fee.
+//    * @param {SorobanDataBuilder} args.restorePreamble.transactionData - The transaction data.
+//    *
+//    * @returns {Promise<void>}
+//    *
+//    * @description - Execute a transaction to restore a given footprint.
+//    */
+//   protected async restoreFootprint(args: RestoreFootprintArgs): Promise<void> {
+//     const { header, signers, feeBump } = args
+
+//     const sorobanData = isRestoreFootprintWithLedgerKeys(args)
+//       ? new SorobanDataBuilder().setReadWrite(args.keys).build()
+//       : args.restorePreamble.transactionData.build()
+
+//     const txInvocation = {
+//       signers,
+//       header,
+//       feeBump,
+//     }
+
+//     // const options: OperationOptions.ExtendFootprintTTL = {
+//     //   extendTo,
+//     // }
+
+//     const options: OperationOptions.RestoreFootprint = {}
+//     // const extendTTLOperation = [Operation.extendFootprintTtl(options)]
+//     const restoreFootprintOperation = [Operation.restoreFootprint(options)]
+
+//     const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(restoreFootprintOperation, txInvocation)
+
+//     const builtTxWithFootprint = TransactionBuilder.cloneFrom(builtTx).setSorobanData(sorobanData).build()
+
+//     const simulatedTransaction = await this.simulateTransaction(builtTxWithFootprint)
+//     const assembledTransaction = await this.assembleTransaction(builtTxWithFootprint, simulatedTransaction)
+
+//     try {
+//       const output = await this.processSorobanTransaction(
+//         assembledTransaction,
+//         updatedTxInvocation.signers,
+//         updatedTxInvocation.feeBump
+//       )
+
+//       // Verify if successfully restored. The returnValue parameter is not trustworthy because it can carry a false flag even with success restore.
+//       if (
+//         (extractGetTransactionData(output) as GetTransactionSuccessErrorInfo).opCode ===
+//         SorobanOpCodes.restoreFootprintSuccess
+//       ) {
+//         return Promise.resolve() // success
+//       }
+
+//       throw STPError.failedToRestoreFootprintWithResponse(output, assembledTransaction)
+//     } catch (error) {
+//       throw STPError.failedToRestoreFootprintWithError(error as StellarPlusError, assembledTransaction)
+//     }
+//   }
+
+//   protected getRpcHandler(): RpcHandler {
+//     return this.rpcHandler
+//   }

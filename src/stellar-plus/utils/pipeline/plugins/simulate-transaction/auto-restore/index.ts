@@ -92,9 +92,8 @@ export class AutoRestorePlugin
       typeof injectionParameter
     >(injectionParameter, BuildTransactionPipelineType.id, 'preProcess')
 
-    const sorobanTransactionPipeline = new SorobanTransactionPipeline({
+    const sorobanTransactionPipeline = new SorobanTransactionPipeline(this.networkConfig, {
       rpcHandler: this.rpcHandler,
-      networkConfig: this.networkConfig,
       plugins: this.sorobanTransactionPipelinePlugins,
     } as SorobanTransactionPipelineOptions)
 

@@ -142,7 +142,7 @@ export class ClassicSignRequirementsPipeline extends ConveyorBelt<
 
       case xdr.OperationType.accountMerge().name:
         return {
-          publicKey: (operation as Operation.AccountMerge).destination,
+          publicKey: setSourceSigner(operation.source),
           thresholdLevel,
         }
 

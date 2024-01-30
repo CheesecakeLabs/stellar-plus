@@ -50,6 +50,7 @@ export class SubmitTransactionPipeline extends ConveyorBelt<
       })) as HorizonApi.SubmitTransactionResponse
       return { response }
     } catch (error) {
+      console.log('transaction', transaction.toXDR())
       throw new Error(`Error submitting transaction through horizon: ${(error as Error).message}`)
     }
   }

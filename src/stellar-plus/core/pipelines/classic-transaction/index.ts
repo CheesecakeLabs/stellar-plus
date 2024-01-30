@@ -38,10 +38,10 @@ export class ClassicTransactionPipeline extends MultiBeltPipeline<
   private horizonHandler: HorizonHandlerClient
   private networkConfig: Network
 
-  constructor(networkConfig: Network, options: ClassicTransactionPipelineOptions) {
+  constructor(networkConfig: Network, options?: ClassicTransactionPipelineOptions) {
     const internalConstructorArgs = {
       beltType: ClassicTransactionPipelineType.id,
-      plugins: (options.plugins as ClassicTransactionPipelinePlugin[]) || [],
+      plugins: (options?.plugins as ClassicTransactionPipelinePlugin[]) || [],
     } as MultiBeltPipelineOptions<
       ClassicTransactionPipelineInput,
       ClassicTransactionPipelineOutput,
