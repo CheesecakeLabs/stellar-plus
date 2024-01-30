@@ -56,7 +56,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
 
     this.classicTrasactionPipeline = new ClassicTransactionPipeline(
       args.networkConfig,
-      args.options?.clasicTransactionPipeline as ClassicTransactionPipelineOptions
+      args.options?.classicTransactionPipeline as ClassicTransactionPipelineOptions
     )
   }
 

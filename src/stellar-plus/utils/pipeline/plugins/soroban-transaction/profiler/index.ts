@@ -36,7 +36,7 @@ export class ProfilerPlugin
   constructor() {
     this.data = new ProfilingHandler()
 
-    this.costHandler = this.data.getOptionsArgs().costHandler as (
+    this.costHandler = this.data.resourceHandler as (
       methodName: string,
       costs: TransactionResources,
       elapsedTime: number,

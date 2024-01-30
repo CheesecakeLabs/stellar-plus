@@ -1,3 +1,8 @@
+import { genericPlugins } from './generic'
+import { simulateTransactionPlugins } from './simulate-transaction'
+import { sorobanGetTransactionPlugins } from './soroban-get-transaction'
+import { sorobanTransactionPlugins } from './soroban-transaction'
+import { submitTransactionPlugins } from './submit-transaction'
 import { GenericPlugin } from '../conveyor-belts/types'
 
 export const filterPluginsByType = <PluginType extends { type?: string }, BeltType>(
@@ -23,4 +28,15 @@ export const filterPluginsByName = <PluginType extends { name?: string }>(
   nameFilter: string
 ): PluginType[] => {
   return plugins.filter((plugin) => plugin.name === nameFilter)
+}
+
+export const plugins = {
+  generic: genericPlugins,
+  simulateTransaction: simulateTransactionPlugins,
+  sorobanGetTransaction: sorobanGetTransactionPlugins,
+  sorobanTransaction: sorobanTransactionPlugins,
+  submitTransaction: submitTransactionPlugins,
+  filterPluginsByType,
+  filterPluginsByTypes,
+  filterPluginsByName,
 }

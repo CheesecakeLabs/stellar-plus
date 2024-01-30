@@ -12,7 +12,7 @@ import {
 export class ProfilingHandler {
   private log: LogEntry[] = []
 
-  private costHandler = (
+  public resourceHandler = (
     methodName: string,
     costs: TransactionResources,
     elapsedTime: number,

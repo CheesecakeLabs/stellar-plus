@@ -20,7 +20,7 @@ export type ClassicAssetHandlerConstructorArgs = {
   networkConfig: Network
 
   options?: {
-    clasicTransactionPipeline?: ClassicTransactionPipelineOptions
+    classicTransactionPipeline?: ClassicTransactionPipelineOptions
   }
 }
 
