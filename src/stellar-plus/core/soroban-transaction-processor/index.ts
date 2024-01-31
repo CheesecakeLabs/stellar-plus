@@ -27,8 +27,6 @@ import {
 } from 'stellar-plus/core/soroban-transaction-processor/types'
 import { FeeBumpHeader, TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
-import { SorobanOpCodes } from 'stellar-plus/error/helpers/result-meta-xdr'
-import { GetTransactionSuccessErrorInfo, extractGetTransactionData } from 'stellar-plus/error/helpers/soroban-rpc'
 import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network, TransactionXdr } from 'stellar-plus/types'
@@ -478,7 +476,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
    *
    * @description - Execute a transaction to restore a given footprint.
    */
-  protected async restoreFootprint(args: RestoreFootprintArgs): Promise<void> {
+  public async restoreFootprint(args: RestoreFootprintArgs): Promise<void> {
     const { header, signers, feeBump } = args
 
     const sorobanData = isRestoreFootprintWithLedgerKeys(args)
@@ -513,15 +511,7 @@ export class SorobanTransactionProcessor extends TransactionProcessor {
         updatedTxInvocation.feeBump
       )
 
-      // Verify if successfully restored. The returnValue parameter is not trustworthy because it can carry a false flag even with success restore.
-      if (
-        (extractGetTransactionData(output) as GetTransactionSuccessErrorInfo).opCode ===
-        SorobanOpCodes.restoreFootprintSuccess
-      ) {
-        return Promise.resolve() // success
-      }
-
-      throw STPError.failedToRestoreFootprintWithResponse(output, assembledTransaction)
+      return Promise.resolve()
     } catch (error) {
       throw STPError.failedToRestoreFootprintWithError(error as StellarPlusError, assembledTransaction)
     }
