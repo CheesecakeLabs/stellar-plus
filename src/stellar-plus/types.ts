@@ -19,7 +19,7 @@ export type FeeBumpTransaction = _FeeBumpTransaction
 //
 // Networks
 //
-export type Network = {
+export type NetworkConfig = {
   name: NetworksList
   networkPassphrase: string
   rpcUrl: string

@@ -21,4 +21,7 @@ export const mockedStellarAccount: Account = {
   },
 }
 
-export const mockedDefaultAccountHandler = new DefaultAccountHandler({ network: NETWORK, secretKey: ACCOUNT_A_SK })
+export const mockedDefaultAccountHandler = new DefaultAccountHandler({
+  networkConfig: NETWORK,
+  secretKey: ACCOUNT_A_SK,
+})

@@ -1,24 +1,24 @@
 import { FeeBumpTransaction, SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import { RpcHandler } from 'stellar-plus/rpc/types'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 
 export class DefaultRpcHandler implements RpcHandler {
   readonly type = 'RpcHandler'
   private server: SorobanRpc.Server
-  private network: Network
+  private networkConfig: NetworkConfig
 
   /**
    *
-   * @param {Network} network - The network to use.
+   * @param {NetworkConfig} networkConfig - The network to use.
    *
    * @description - The default rpc handler is used for interacting with the Soroban server.
    * It uses the URL provided by the network to connect to the Soroban server and carry out the RPC functions.
    *
    */
-  constructor(network: Network) {
-    this.network = network
-    this.server = new SorobanRpc.Server(this.network.rpcUrl)
+  constructor(networkConfig: NetworkConfig) {
+    this.networkConfig = networkConfig
+    this.server = new SorobanRpc.Server(this.networkConfig.rpcUrl)
   }
 
   /**

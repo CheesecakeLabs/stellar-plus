@@ -23,7 +23,7 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
   /**
    *
    * @param {string} contractId - The contract ID of the deployed Certificate of Deposit to use.
-   * @param {Network} network - The network to use.
+   * @param {NetworkConfig} networkConfig - The network to use.
    * @param {RpcHandler} rpcHandler - The RPC handler to use.
    *
    * @description - The certificate of deposit client is used for interacting with the certificate of deposit contract.

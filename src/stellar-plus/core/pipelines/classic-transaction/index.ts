@@ -19,7 +19,7 @@ import {
   SubmitTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/submit-transaction/types'
 import { HorizonHandlerClient } from 'stellar-plus/horizon'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 import { MultiBeltPipeline } from 'stellar-plus/utils/pipeline/multi-belt-pipeline'
 import { MultiBeltPipelineOptions } from 'stellar-plus/utils/pipeline/multi-belt-pipeline/types'
 
@@ -36,9 +36,9 @@ export class ClassicTransactionPipeline extends MultiBeltPipeline<
   SupportedInnerPlugins
 > {
   private horizonHandler: HorizonHandlerClient
-  private networkConfig: Network
+  private networkConfig: NetworkConfig
 
-  constructor(networkConfig: Network, options?: ClassicTransactionPipelineOptions) {
+  constructor(networkConfig: NetworkConfig, options?: ClassicTransactionPipelineOptions) {
     const internalConstructorArgs = {
       beltType: ClassicTransactionPipelineType.id,
       plugins: (options?.plugins as ClassicTransactionPipelinePlugin[]) || [],

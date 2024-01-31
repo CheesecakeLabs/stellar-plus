@@ -2,10 +2,10 @@ import { ContractSpec, SorobanDataBuilder, Asset as StellarAsset, xdr } from '@s
 
 import { AccountHandler } from 'stellar-plus/account'
 import { SorobanTransactionPipelineOptions } from 'stellar-plus/core/pipelines/soroban-transaction/types'
-import { EnvelopeHeader, FeeBumpHeader, Network, TransactionInvocation } from 'stellar-plus/types'
+import { EnvelopeHeader, FeeBumpHeader, NetworkConfig, TransactionInvocation } from 'stellar-plus/types'
 
 export type ContractEngineConstructorArgs = {
-  networkConfig: Network
+  networkConfig: NetworkConfig
   contractParameters: {
     spec: ContractSpec
     contractId?: string

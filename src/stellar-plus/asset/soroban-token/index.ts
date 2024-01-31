@@ -13,7 +13,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
   /**
    *
    * @args args
-   * @param {Network} args.network - Network to connect to
+   * @param {NetworkConfig} args.networkConfig - Network to connect to
    * @param {ContractSpec=} args.spec - Contract specification object
    * @param {string=} args.contractId - Contract ID
    * @param {RpcHandler=} args.rpcHandler - RPC Handler

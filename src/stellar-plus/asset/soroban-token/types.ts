@@ -3,10 +3,10 @@ import { ContractSpec } from '@stellar/stellar-sdk'
 import { AssetType } from 'stellar-plus/asset/types'
 import { Options } from 'stellar-plus/core/contract-engine/types'
 import { SorobanSimulationInvocation, TransactionInvocation } from 'stellar-plus/core/types'
-import { Network, i128, u32 } from 'stellar-plus/types'
+import { NetworkConfig, i128, u32 } from 'stellar-plus/types'
 
 export type SorobanTokenHandlerConstructorArgs = {
-  networkConfig: Network
+  networkConfig: NetworkConfig
   contractParameters?: {
     spec?: ContractSpec
     contractId?: string

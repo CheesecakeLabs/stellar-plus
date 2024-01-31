@@ -20,7 +20,7 @@ import {
 import { FeeBumpHeader } from 'stellar-plus/core/types'
 import { DefaultRpcHandler } from 'stellar-plus/rpc'
 import { RpcHandler } from 'stellar-plus/rpc/types'
-import { Network, TransactionInvocation } from 'stellar-plus/types'
+import { NetworkConfig, TransactionInvocation } from 'stellar-plus/types'
 import { BeltMetadata, BeltPluginType } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
 import { InjectPreprocessParameterPlugin } from '../../generic/inject-preprocess-parameter'
@@ -38,11 +38,11 @@ export class AutoRestorePlugin
   readonly name: string = 'AutoRestorePlugin'
 
   private restoreTxInvocation: TransactionInvocation
-  private networkConfig: Network
+  private networkConfig: NetworkConfig
   private rpcHandler: RpcHandler
   private sorobanTransactionPipelinePlugins: SorobanTransactionPipelinePlugin[] = []
 
-  constructor(restoreTxInvocation: TransactionInvocation, networkConfig: Network, customRpcHandler?: RpcHandler) {
+  constructor(restoreTxInvocation: TransactionInvocation, networkConfig: NetworkConfig, customRpcHandler?: RpcHandler) {
     this.restoreTxInvocation = restoreTxInvocation
     this.networkConfig = networkConfig
     this.rpcHandler = customRpcHandler ? customRpcHandler : new DefaultRpcHandler(this.networkConfig)

@@ -5,7 +5,7 @@ import { ClassicAssetHandlerConstructorArgs } from 'stellar-plus/asset/classic/t
 import { SorobanTokenHandler } from 'stellar-plus/asset/soroban-token'
 import { AssetType } from 'stellar-plus/asset/types'
 import { Options } from 'stellar-plus/core/contract-engine/types'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 
 export type SACHandler = AssetType & {
   classicHandler: ClassicAssetHandler
@@ -13,7 +13,7 @@ export type SACHandler = AssetType & {
 }
 
 export type SACConstructorArgs = ClassicAssetHandlerConstructorArgs & {
-  networkConfig: Network
+  networkConfig: NetworkConfig
   contractParameters?: {
     spec?: ContractSpec
     contractId?: string

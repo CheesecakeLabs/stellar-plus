@@ -27,7 +27,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
    *
    * @param {string} code - The asset code.
    * @param {string} issuerPublicKey - The public key of the asset issuer.
-   * @param {Network} network - The network to use.
+   * @param {NetworkConfig} networkConfig - The network to use.
    * @param {AccountHandler=} issuerAccount - The issuer account handler. When provided, it'll enable management functions and be used to sign transactions as the issuer.
    * @param {TransactionSubmitter=} transactionSubmitter - The transaction submitter to use.
    *

@@ -1,6 +1,6 @@
 import { Horizon } from '@stellar/stellar-sdk'
 
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 
 //
 // Allows for account data to be fetched from the network
@@ -19,5 +19,5 @@ export type AccountDataViewer = {
 }
 
 export type AccountDataViewerConstructor = {
-  network?: Network
+  networkConfig?: NetworkConfig
 }

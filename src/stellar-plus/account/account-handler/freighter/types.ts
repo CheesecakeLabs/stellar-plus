@@ -1,5 +1,5 @@
 import { AccountHandler, AccountHandlerPayload } from 'stellar-plus/account/account-handler/types'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 
 export type FreighterAccountHandler = AccountHandler & {
   connect(onPublicKeyReceived: FreighterCallback): Promise<void>
@@ -12,7 +12,7 @@ export type FreighterAccountHandler = AccountHandler & {
 }
 
 export type FreighterAccHandlerPayload = AccountHandlerPayload & {
-  network: Network
+  networkConfig: NetworkConfig
 }
 
 export type FreighterCallback = (pk: string) => Promise<void>

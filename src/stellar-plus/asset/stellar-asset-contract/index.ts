@@ -17,7 +17,7 @@ export class SACHandler implements SACHandlerType {
   /**
    *
    * @param args - The constructor arguments.
-   * @param {Network} args.network - The network to connect to.
+   * @param {NetworkConfig} args.networkConfig - The network to connect to.
    * Parameters related to the classic asset.
    * @param {string} args.code - The asset code.
    * @param {string} args.issuerPublicKey - The issuer public key.
@@ -39,7 +39,7 @@ export class SACHandler implements SACHandlerType {
    * @example - Initialize the Stellar Asset Contract handler and wrapping a classic asset with it:
    *
    * ```typescript
-   * const issuer = new StellarPlus.Account.DefaultAccountHandler({ network })
+   * const issuer = new StellarPlus.Account.DefaultAccountHandler({ networkConfig })
    * await issuer.friendbot?.initialize()
    *
    * const issuerInvocation: TransactionInvocation = {

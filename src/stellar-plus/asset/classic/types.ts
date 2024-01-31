@@ -4,7 +4,7 @@ import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { AssetType, AssetTypes } from 'stellar-plus/asset/types'
 import { ClassicTransactionPipelineOptions } from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 
 export type ClassicAsset = AssetType & {
   code: string
@@ -17,7 +17,7 @@ export type ClassicAssetHandler = ClassicAsset & ClassicTokenInterface & Classic
 export type ClassicAssetHandlerConstructorArgs = {
   code: string
   issuerAccount: string | AccountHandler
-  networkConfig: Network
+  networkConfig: NetworkConfig
 
   options?: {
     classicTransactionPipeline?: ClassicTransactionPipelineOptions

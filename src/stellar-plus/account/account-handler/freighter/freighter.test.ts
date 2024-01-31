@@ -6,7 +6,7 @@ import {
   mockSignedClassicTransactionXdr,
   mockUnsignedClassicTransaction,
 } from 'stellar-plus/test/mocks/classic-transaction'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 
 jest.mock('@stellar/freighter-api', () => ({
   getPublicKey: jest.fn(),
@@ -18,7 +18,7 @@ jest.mock('@stellar/freighter-api', () => ({
 }))
 
 const mockPublicKey = 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-const mockNetwork = testnet as Network
+const mockNetwork = testnet as NetworkConfig
 
 const mockFreighterGetPublicKey = (): void => {
   ;(freighterApi.getPublicKey as jest.MockedFunction<typeof freighterApi.getPublicKey>).mockResolvedValue(mockPublicKey)
@@ -50,7 +50,7 @@ describe('FreighterAccountHandlerClient', () => {
   let client: FreighterAccountHandlerClient
 
   beforeEach(() => {
-    client = new FreighterAccountHandlerClient({ network: mockNetwork })
+    client = new FreighterAccountHandlerClient({ networkConfig: mockNetwork })
   })
 
   it('should initialize with provided network', () => {

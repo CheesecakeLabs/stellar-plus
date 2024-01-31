@@ -25,7 +25,7 @@ import { TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
 import { DefaultRpcHandler } from 'stellar-plus/rpc'
 import { RpcHandler } from 'stellar-plus/rpc/types'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 import { generateRandomSalt } from 'stellar-plus/utils/functions'
 import { ExtractInvocationOutputFromSimulationPlugin } from 'stellar-plus/utils/pipeline/plugins/simulate-transaction/extract-invocation-output'
 import { ExtractContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-contract-id'
@@ -37,7 +37,7 @@ export class ContractEngine {
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
-  private networkConfig: Network
+  private networkConfig: NetworkConfig
   private rpcHandler: RpcHandler
 
   private sorobanTransactionPipeline: SorobanTransactionPipeline
@@ -46,7 +46,7 @@ export class ContractEngine {
 
   /**
    *
-   * @param {Network} network - The network to use.
+   * @param {NetworkConfig} networkConfig - The network to use.
    * @param {ContractSpec} spec - The contract specification.
    * @param {string=} contractId - The contract id.
    * @param {RpcHandler=} rpcHandler - A custom RPC handler to use when interacting with the network RPC server.
