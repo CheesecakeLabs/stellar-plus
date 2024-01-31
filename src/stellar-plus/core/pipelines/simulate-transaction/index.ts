@@ -40,11 +40,16 @@ export class SimulateTransactionPipeline extends ConveyorBelt<
       throw PSIError.simulationFailed(simulationResponse, extractConveyorBeltErrorMeta(item, this.getMeta(itemId)))
     }
 
-    if (!simulationResponse.result) {
-      throw PSIError.simulationMissingResult(
-        simulationResponse,
-        extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
-      )
+    if (SorobanRpc.Api.isSimulationSuccess(simulationResponse) && !simulationResponse.result) {
+      // throw PSIError.simulationMissingResult(
+      //   simulationResponse,
+      //   extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
+      // )
+      // Restore doesnt contain result, yet it is ok
+      return {
+        response: simulationResponse as SorobanRpc.Api.SimulateTransactionSuccessResponse,
+        assembledTransaction: this.assembleTransaction(transaction, simulationResponse),
+      } as SimulateTransactionPipelineOutput
     }
 
     if (SorobanRpc.Api.isSimulationRestore(simulationResponse) && simulationResponse.result) {

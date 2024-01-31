@@ -1,6 +1,5 @@
-import { SorobanRpc, Transaction } from '@stellar/stellar-sdk'
+import { FeeBumpTransaction, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
-import { FeeBumpTransaction } from 'stellar-base'
 
 import { HorizonHandler } from 'stellar-plus'
 import { RpcHandler } from 'stellar-plus/rpc/types'

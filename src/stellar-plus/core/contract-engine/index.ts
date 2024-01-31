@@ -6,6 +6,7 @@ import {
   ContractSpec,
   Operation,
   OperationOptions,
+  SorobanDataBuilder,
   SorobanRpc as SorobanRpcNamespace,
   xdr,
 } from '@stellar/stellar-sdk'
@@ -14,9 +15,11 @@ import { CEError } from 'stellar-plus/core/contract-engine/errors'
 import {
   ContractEngineConstructorArgs,
   Options,
+  RestoreFootprintArgs,
   SorobanInvokeArgs,
   SorobanSimulateArgs,
   WrapClassicAssetArgs,
+  isRestoreFootprintWithLedgerKeys,
 } from 'stellar-plus/core/contract-engine/types'
 import { SimulatedInvocationOutput } from 'stellar-plus/core/pipelines/simulate-transaction/types'
 import { ContractIdOutput, ContractWasmHashOutput } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
@@ -27,10 +30,17 @@ import { DefaultRpcHandler } from 'stellar-plus/rpc'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { NetworkConfig } from 'stellar-plus/types'
 import { generateRandomSalt } from 'stellar-plus/utils/functions'
+import { InjectPreprocessParameterPlugin } from 'stellar-plus/utils/pipeline/plugins/generic/inject-preprocess-parameter'
 import { ExtractInvocationOutputFromSimulationPlugin } from 'stellar-plus/utils/pipeline/plugins/simulate-transaction/extract-invocation-output'
 import { ExtractContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-contract-id'
 import { ExtractInvocationOutputPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-invocation-output'
 import { ExtractWasmHashPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-wasm-hash'
+
+import {
+  BuildTransactionPipelineInput,
+  BuildTransactionPipelineOutput,
+  BuildTransactionPipelineType,
+} from '../pipelines/build-transaction/types'
 
 export class ContractEngine {
   private spec: ContractSpec
@@ -85,10 +95,10 @@ export class ContractEngine {
    * ```
    */
   constructor(args: ContractEngineConstructorArgs) {
-    const { networkConfig, contractParameters, options } = args
+    const { networkConfig, contractParameters, options } = args as ContractEngineConstructorArgs
     this.networkConfig = networkConfig
-    this.rpcHandler = options?.transactionPipeline?.customRpcHandler
-      ? options.transactionPipeline.customRpcHandler
+    this.rpcHandler = options?.sorobanTransactionPipeline?.customRpcHandler
+      ? options.sorobanTransactionPipeline.customRpcHandler
       : new DefaultRpcHandler(this.networkConfig)
     this.spec = contractParameters.spec
     this.contractId = contractParameters.contractId
@@ -97,8 +107,8 @@ export class ContractEngine {
     this.options = { ...options }
 
     this.sorobanTransactionPipeline = new SorobanTransactionPipeline(networkConfig, {
-      customRpcHandler: options?.transactionPipeline?.customRpcHandler,
-      ...this.options.transactionPipeline,
+      customRpcHandler: options?.sorobanTransactionPipeline?.customRpcHandler,
+      ...this.options.sorobanTransactionPipeline,
     })
   }
 
@@ -136,23 +146,11 @@ export class ContractEngine {
    
    */
   public async getContractInstanceLiveUntilLedgerSeq(): Promise<number> {
-    this.requireContractId()
+    const contractInstance = await this.getContractInstanceLedgerEntry()
 
-    const footprint = this.getContractFootprint()
-
-    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
-      footprint
-    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
-
-    const contractInstance = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractData')
-
-    if (!contractInstance) {
-      throw CEError.contractInstanceNotFound(ledgerEntries)
-    }
     if (!contractInstance.liveUntilLedgerSeq) {
-      throw CEError.contractInstanceMissingLiveUntilLedgerSeq(ledgerEntries)
+      throw CEError.contractInstanceMissingLiveUntilLedgerSeq()
     }
-
     return contractInstance.liveUntilLedgerSeq
   }
 
@@ -166,19 +164,10 @@ export class ContractEngine {
    *
    * */
   public async getContractCodeLiveUntilLedgerSeq(): Promise<number> {
-    this.requireWasmHash()
+    const contractCode = await this.getContractCodeLedgerEntry()
 
-    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
-      xdr.LedgerKey.contractCode(new xdr.LedgerKeyContractCode({ hash: Buffer.from(this.getWasmHash(), 'hex') }))
-    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
-
-    const contractCode = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractCode')
-
-    if (!contractCode) {
-      throw CEError.contractCodeNotFound(ledgerEntries)
-    }
     if (!contractCode.liveUntilLedgerSeq) {
-      throw CEError.contractCodeMissingLiveUntilLedgerSeq(ledgerEntries)
+      throw CEError.contractCodeMissingLiveUntilLedgerSeq()
     }
 
     return contractCode.liveUntilLedgerSeq
@@ -369,6 +358,20 @@ export class ContractEngine {
     }
   }
 
+  public async restoreContractInstance(args: TransactionInvocation): Promise<void> {
+    return await this.restore({
+      keys: [(await this.getContractInstanceLedgerEntry()).key],
+      ...(args as TransactionInvocation),
+    })
+  }
+
+  public async restoreContractCode(args: TransactionInvocation): Promise<void> {
+    return await this.restore({
+      keys: [(await this.getContractCodeLedgerEntry()).key],
+      ...(args as TransactionInvocation),
+    })
+  }
+
   //==========================================
   // Internal Methods
   //==========================================
@@ -396,75 +399,83 @@ export class ContractEngine {
       throw CEError.missingWasmHash()
     }
   }
+
+  protected async getContractCodeLedgerEntry(): Promise<SorobanRpcNamespace.Api.LedgerEntryResult> {
+    this.requireWasmHash()
+
+    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
+      xdr.LedgerKey.contractCode(new xdr.LedgerKeyContractCode({ hash: Buffer.from(this.getWasmHash(), 'hex') }))
+    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
+
+    const contractCode = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractCode')
+
+    if (!contractCode) {
+      throw CEError.contractCodeNotFound(ledgerEntries)
+    }
+    return contractCode as SorobanRpcNamespace.Api.LedgerEntryResult
+  }
+
+  protected async getContractInstanceLedgerEntry(): Promise<SorobanRpcNamespace.Api.LedgerEntryResult> {
+    this.requireWasmHash()
+
+    const footprint = this.getContractFootprint()
+
+    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
+      footprint
+    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
+
+    const contractInstance = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractData')
+
+    if (!contractInstance) {
+      throw CEError.contractInstanceNotFound(ledgerEntries)
+    }
+
+    return contractInstance as SorobanRpcNamespace.Api.LedgerEntryResult
+  }
+
+  /**
+   * @args {RestoreFootprintArgs} args - The arguments for the invocation.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   *
+   * Option 1: Provide the keys directly.
+   * @param {xdr.LedgerKey[]} args.keys - The keys to restore.
+   * Option 2: Provide the restore preamble.
+   * @param { RestoreFootprintWithRestorePreamble} args.restorePreamble - The restore preamble.
+   * @param {string} args.restorePreamble.minResourceFee - The minimum resource fee.
+   * @param {SorobanDataBuilder} args.restorePreamble.transactionData - The transaction data.
+   *
+   * @returns {Promise<void>}
+   *
+   * @description - Execute a transaction to restore a given footprint.
+   */
+  protected async restore(args: RestoreFootprintArgs): Promise<void> {
+    const txInvocation = args as TransactionInvocation
+    const sorobanData = isRestoreFootprintWithLedgerKeys(args)
+      ? new SorobanDataBuilder().setReadWrite(args.keys).build()
+      : args.restorePreamble.transactionData.build()
+
+    const options: OperationOptions.RestoreFootprint = {}
+
+    const injectionParameter = { sorobanData: sorobanData }
+
+    const restoreFootprintOperation = Operation.restoreFootprint(options)
+    await this.sorobanTransactionPipeline.execute({
+      txInvocation,
+      operations: [restoreFootprintOperation],
+      options: {
+        executionPlugins: [
+          new InjectPreprocessParameterPlugin<
+            BuildTransactionPipelineInput,
+            BuildTransactionPipelineOutput,
+            BuildTransactionPipelineType,
+            typeof injectionParameter
+          >(injectionParameter, BuildTransactionPipelineType.id, 'preProcess'),
+        ],
+      },
+    })
+
+    return
+  }
 }
-
-// // This functions can be invoked with two different sets of arguments. The first set is when the keys are provided directly.
-//   /**
-//    * @args {RestoreFootprintArgs} args - The arguments for the invocation.
-//    * @param {EnvelopeHeader} args.header - The header for the transaction.
-//    * @param {AccountHandler[]} args.signers - The signers for the transaction.
-//    * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
-//    *
-//    * Option 1: Provide the keys directly.
-//    * @param {xdr.LedgerKey[]} args.keys - The keys to restore.
-//    * Option 2: Provide the restore preamble.
-//    * @param { RestoreFootprintWithRestorePreamble} args.restorePreamble - The restore preamble.
-//    * @param {string} args.restorePreamble.minResourceFee - The minimum resource fee.
-//    * @param {SorobanDataBuilder} args.restorePreamble.transactionData - The transaction data.
-//    *
-//    * @returns {Promise<void>}
-//    *
-//    * @description - Execute a transaction to restore a given footprint.
-//    */
-//   protected async restoreFootprint(args: RestoreFootprintArgs): Promise<void> {
-//     const { header, signers, feeBump } = args
-
-//     const sorobanData = isRestoreFootprintWithLedgerKeys(args)
-//       ? new SorobanDataBuilder().setReadWrite(args.keys).build()
-//       : args.restorePreamble.transactionData.build()
-
-//     const txInvocation = {
-//       signers,
-//       header,
-//       feeBump,
-//     }
-
-//     // const options: OperationOptions.ExtendFootprintTTL = {
-//     //   extendTo,
-//     // }
-
-//     const options: OperationOptions.RestoreFootprint = {}
-//     // const extendTTLOperation = [Operation.extendFootprintTtl(options)]
-//     const restoreFootprintOperation = [Operation.restoreFootprint(options)]
-
-//     const { builtTx, updatedTxInvocation } = await this.buildCustomTransaction(restoreFootprintOperation, txInvocation)
-
-//     const builtTxWithFootprint = TransactionBuilder.cloneFrom(builtTx).setSorobanData(sorobanData).build()
-
-//     const simulatedTransaction = await this.simulateTransaction(builtTxWithFootprint)
-//     const assembledTransaction = await this.assembleTransaction(builtTxWithFootprint, simulatedTransaction)
-
-//     try {
-//       const output = await this.processSorobanTransaction(
-//         assembledTransaction,
-//         updatedTxInvocation.signers,
-//         updatedTxInvocation.feeBump
-//       )
-
-//       // Verify if successfully restored. The returnValue parameter is not trustworthy because it can carry a false flag even with success restore.
-//       if (
-//         (extractGetTransactionData(output) as GetTransactionSuccessErrorInfo).opCode ===
-//         SorobanOpCodes.restoreFootprintSuccess
-//       ) {
-//         return Promise.resolve() // success
-//       }
-
-//       throw STPError.failedToRestoreFootprintWithResponse(output, assembledTransaction)
-//     } catch (error) {
-//       throw STPError.failedToRestoreFootprintWithError(error as StellarPlusError, assembledTransaction)
-//     }
-//   }
-
-//   protected getRpcHandler(): RpcHandler {
-//     return this.rpcHandler
-//   }

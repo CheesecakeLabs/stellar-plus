@@ -16,7 +16,7 @@ export type ContractEngineConstructorArgs = {
 }
 
 export type Options = {
-  transactionPipeline?: SorobanTransactionPipelineOptions
+  sorobanTransactionPipeline?: SorobanTransactionPipelineOptions
 }
 
 export type TransactionResources = {
