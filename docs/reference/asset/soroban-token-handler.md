@@ -26,7 +26,7 @@ The `SorobanTokenHandler` constructor accepts the following parameters:
 {% hint style="info" %}
 This class can be initialized in different forms. In case you have an instance of soroban token already live, you can simply provide the Contract ID and proceed with the contract invocations.\
 \
-Refer to [#contract-initialization-with-contract-engine](../contracts/contract-engine.md#contract-initialization-with-contract-engine "mention") for more details.
+Refer to [#contract-initialization-with-contract-engine](../core/contract-engine.md#contract-initialization-with-contract-engine "mention") for more details.
 {% endhint %}
 
 ### Methods
