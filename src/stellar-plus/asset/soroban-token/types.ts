@@ -7,7 +7,7 @@ import { Network, i128, u32 } from 'stellar-plus/types'
 
 export type SorobanTokenHandlerConstructorArgs = {
   networkConfig: Network
-  contractParameters: {
+  contractParameters?: {
     spec?: ContractSpec
     contractId?: string
     wasm?: Buffer
