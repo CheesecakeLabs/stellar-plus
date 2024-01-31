@@ -1,7 +1,9 @@
 import { FeeBumpTransaction, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
+import { extractConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
 
+import { SGTError } from './errors'
 import {
   SorobanGetTransactionOptions,
   SorobanGetTransactionPipelineInput,
@@ -35,7 +37,7 @@ export class SorobanGetTransactionPipeline extends ConveyorBelt<
   //    If the transaction fails, it will throw an error.
   protected async process(
     item: SorobanGetTransactionPipelineInput,
-    _itemId: string
+    itemId: string
   ): Promise<SorobanGetTransactionPipelineOutput> {
     const { sorobanSubmission, transactionEnvelope, rpcHandler }: SorobanGetTransactionPipelineInput = item
     const { hash } = sorobanSubmission
@@ -62,11 +64,12 @@ export class SorobanGetTransactionPipeline extends ConveyorBelt<
     }
 
     if (updatedTransaction.status === SorobanRpc.Api.GetTransactionStatus.FAILED) {
-      throw new Error(`Transaction failed: ${updatedTransaction.resultXdr}`)
-      // throw STPError.transactionSubmittedFailed(updatedTransaction)
+      throw SGTError.transactionFailed(
+        extractConveyorBeltErrorMeta(item, this.getMeta(itemId)),
+        updatedTransaction as SorobanRpc.Api.GetFailedTransactionResponse
+      )
     }
-    throw new Error(`Transaction not found: ${hash}`)
-    // throw STPError.transactionSubmittedNotFound(updatedTransaction, secondsToWait, hash)
+    throw SGTError.transactionNotFound(extractConveyorBeltErrorMeta(item, this.getMeta(itemId)), secondsToWait, hash)
   }
   private getSecondsToWait(transactionEnvelope?: Transaction | FeeBumpTransaction): number {
     let secondsToWait = this.options.defaultSecondsToWait

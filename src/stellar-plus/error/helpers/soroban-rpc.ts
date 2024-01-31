@@ -7,17 +7,17 @@ import { extractSorobanResultXdrOpErrorCode } from './result-meta-xdr'
 // ====================================================================================================================
 export type SimulationErrorInfo = errorBase | errorData | restoreData
 
-type errorBase = {
+export type errorBase = {
   id: string
   latestLedger: number
   events: xdr.DiagnosticEvent[]
 }
 
-type errorData = errorBase & {
+export type errorData = errorBase & {
   error: string
 }
 
-type restoreData = errorBase & {
+export type restoreData = errorBase & {
   result: SorobanRpc.Api.SimulateHostFunctionResult
   restorePreamble: {
     minResourceFee: string

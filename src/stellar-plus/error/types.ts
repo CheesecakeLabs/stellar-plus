@@ -6,6 +6,7 @@ import { ChannelAccountsErrorCodes } from 'stellar-plus/channel-accounts/errors'
 import { ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/errors'
 import { ErrorCodesPipelineBuildTransaction } from 'stellar-plus/core/pipelines/build-transaction/errors'
 import { ErrorCodesPipelineSimulateTransaction } from 'stellar-plus/core/pipelines/simulate-transaction/errors'
+import { ErrorCodesPipelineSorobanGetTransaction } from 'stellar-plus/core/pipelines/soroban-get-transaction/errors'
 import { ValidationCloudRpcHandlerErrorCodes } from 'stellar-plus/rpc/validation-cloud-handler/errors'
 
 import { AxiosErrorInfo } from './helpers/axios'
@@ -39,6 +40,7 @@ export type ErrorCodes =
   | ValidationCloudRpcHandlerErrorCodes
   | ErrorCodesPipelineBuildTransaction
   | ErrorCodesPipelineSimulateTransaction
+  | ErrorCodesPipelineSorobanGetTransaction
 
 export enum GeneralErrorCodes {
   ER000 = 'ER000',
