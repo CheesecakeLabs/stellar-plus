@@ -100,25 +100,12 @@ describe('Profiler', () => {
   beforeEach(() => {
     profiler = new ProfilingHandler()
 
-    const args = profiler.getOptionsArgs()
-    populateLogEntries(args.costHandler!)
+    const logFunction = profiler.resourceHandler
+    populateLogEntries(logFunction)
   })
 
   it('should add a log entry when costHandler is invoked', () => {
     expect(profiler.getLog()).toHaveLength(4)
-  })
-
-  it('should return correct options arguments', () => {
-    const options = profiler.getOptionsArgs()
-    expect(options).toEqual({
-      debug: true,
-
-      costHandler: expect.any(Function) as (
-        methodName: string,
-        costs: TransactionResources,
-        elapsedTime: number
-      ) => void,
-    })
   })
 
   it('should return the entire log without options', () => {

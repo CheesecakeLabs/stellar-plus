@@ -1,5 +1,6 @@
+import { FeeBumpHeader, TransactionInvocation, TransactionXdr } from 'stellar-plus/types'
+
 import { AccountHandler } from '../../account/account-handler/types'
-import { TransactionSubmitter } from '../../core/transaction-submitter/classic/types'
 import { EnvelopeHeader } from '../../core/types'
 
 export const MockSubmitTransaction = {
@@ -25,44 +26,27 @@ export function mockHeader(sourceKey = mockAccount): EnvelopeHeader {
 
 export function mockAccountHandler(accountKey = mockAccount): AccountHandler {
   return {
-    sign(tx: any) {
+    sign(_tx: any): TransactionXdr {
       return 'success'
     },
-    getPublicKey() {
+    getPublicKey(): string {
       return accountKey
     },
   }
 }
 
-export function mockFeeBumpHeader(signerKey = mockAccount) {
+export function mockFeeBumpHeader(signerKey = mockAccount): FeeBumpHeader {
   return {
     signers: [mockAccountHandler(signerKey)],
     header: mockHeader(signerKey),
   }
 }
 
-export function mockTransactionInvocation(signerKey = mockAccount) {
+export function mockTransactionInvocation(signerKey = mockAccount): TransactionInvocation {
   return {
     signers: [mockAccountHandler(signerKey)],
     header: mockHeader(signerKey),
     feeBump: mockFeeBumpHeader(signerKey),
-  }
-}
-
-export function mockTransactionSubmitter(signerKey?: string): TransactionSubmitter {
-  return {
-    async createEnvelope(txInvocation: any): Promise<{
-      envelope: any
-      updatedTxInvocation: any
-    }> {
-      return { envelope: mockTransactionBuilder, updatedTxInvocation: mockTransactionInvocation(signerKey) }
-    },
-    postProcessTransaction(response?: any): any {
-      return MockSubmitTransaction
-    },
-    async submit(envelope: any): Promise<any> {
-      return Promise<void>
-    },
   }
 }
 
@@ -81,3 +65,5 @@ export const mockTransactionBuilder = {
   }),
   toXDR: jest.fn().mockReturnValue('success'),
 }
+
+// export const mockUnsignedClassicTransaction = new TransactionBuilder(new Account(mockAccount, '123'), { fee: '500' })

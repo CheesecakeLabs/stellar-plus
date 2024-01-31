@@ -25,9 +25,9 @@ class ChannelAccountsPlugin<Input extends InputType, Output, Type> implements Be
   private lockedChannels: { channel: AccountHandler; id: string }[] // Channels are allocated to items, and released when the item is processed.
   private feeBump?: FeeBumpHeader
 
-  constructor(typeId: Type, channels?: AccountHandler[], feeBump?: FeeBumpHeader) {
+  constructor(typeId: Type, channels?: AccountHandler[]) {
     this.type = typeId
-    this.feeBump = feeBump
+    // this.feeBump = feeBump
     // this.horizonHandler = new HorizonHandlerClient(network)
     this.freeChannels = []
     this.lockedChannels = []
@@ -153,7 +153,7 @@ export class ClassicChannelAccountsPlugin extends ChannelAccountsPlugin<
   ClassicTransactionPipelineType
 > {
   constructor(args: ChannelAccountsPluginConstructorArgs) {
-    super(ClassicTransactionPipelineType.id, args.channels, args.feeBump)
+    super(ClassicTransactionPipelineType.id, args.channels)
   }
 }
 
@@ -163,6 +163,6 @@ export class SorobanChannelAccountsPlugin extends ChannelAccountsPlugin<
   SorobanTransactionPipelineType
 > {
   constructor(args: ChannelAccountsPluginConstructorArgs) {
-    super(SorobanTransactionPipelineType.id, args.channels, args.feeBump)
+    super(SorobanTransactionPipelineType.id, args.channels)
   }
 }

@@ -6,16 +6,21 @@ import { spec } from 'stellar-plus/asset/soroban-token/constants'
 import { testnet } from 'stellar-plus/constants'
 import { ContractEngine } from 'stellar-plus/core/contract-engine'
 import { CEError } from 'stellar-plus/core/contract-engine/errors'
-import { ContractEngineConstructorArgs, TransactionResources } from 'stellar-plus/core/contract-engine/types'
+import {
+  ContractEngineConstructorArgs,
+  SorobanInvokeArgs,
+  SorobanSimulateArgs,
+  TransactionResources,
+} from 'stellar-plus/core/contract-engine/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { mockUnsignedClassicTransaction } from 'stellar-plus/test/mocks/classic-transaction'
 import { mockTransactionInvocation } from 'stellar-plus/test/mocks/transaction-mock'
 
-import { SorobanInvokeArgs, SorobanSimulateArgs } from '../soroban-transaction-processor/types'
-
 const mockCEConstructorBaseArgs: ContractEngineConstructorArgs = {
-  network: testnet,
-  spec: spec,
+  networkConfig: testnet,
+  contractParameters: {
+    spec: spec,
+  },
 }
 
 class TestableContractEngine extends ContractEngine {
@@ -55,19 +60,28 @@ describe('ContractEngine', () => {
     it('should correctly initialize the contract engine', () => {
       const mockContractEngineWithWasm: ContractEngine = new ContractEngine({
         ...mockCEConstructorBaseArgs,
-        wasm: Buffer.from('mock-wasm'),
+        contractParameters: {
+          ...mockCEConstructorBaseArgs.contractParameters,
+          wasm: Buffer.from('mock-wasm'),
+        },
       })
       expect(mockContractEngineWithWasm.getWasm()).toEqual(Buffer.from('mock-wasm'))
 
       const mockContractEngineWithWasmHash: ContractEngine = new ContractEngine({
         ...mockCEConstructorBaseArgs,
-        wasmHash: 'mock-wasm-hash',
+        contractParameters: {
+          ...mockCEConstructorBaseArgs.contractParameters,
+          wasmHash: 'mock-wasm-hash',
+        },
       })
       expect(mockContractEngineWithWasmHash.getWasmHash()).toEqual('mock-wasm-hash')
 
       const mockContractEngineWithContractId: ContractEngine = new ContractEngine({
         ...mockCEConstructorBaseArgs,
-        contractId: 'mock-contract-id',
+        contractParameters: {
+          ...mockCEConstructorBaseArgs.contractParameters,
+          contractId: 'mock-contract-id',
+        },
       })
 
       expect(mockContractEngineWithContractId.getContractId()).toEqual('mock-contract-id')
@@ -87,7 +101,10 @@ describe('ContractEngine', () => {
     it('should upload WASM and update wasmHash', async () => {
       const mockContractEngineWithWasm: ContractEngine = new ContractEngine({
         ...mockCEConstructorBaseArgs,
-        wasm: Buffer.from('mock-wasm'),
+        contractParameters: {
+          ...mockCEConstructorBaseArgs.contractParameters,
+          wasm: Buffer.from('mock-wasm'),
+        },
       })
 
       // Allowing this instance of 'any' to be able to mock the internal method
@@ -123,7 +140,10 @@ describe('ContractEngine', () => {
     it('should deploy a new instance of the contract and update contract id', async () => {
       const mockContractEngineWithWasmHash: ContractEngine = new ContractEngine({
         ...mockCEConstructorBaseArgs,
-        wasmHash: 'mock-wasm-hash',
+        contractParameters: {
+          ...mockCEConstructorBaseArgs.contractParameters,
+          wasmHash: 'mock-wasm-hash',
+        },
       })
 
       // Allowing this instance of 'any' to be able to mock the internal method
@@ -184,7 +204,10 @@ describe('ContractEngine', () => {
     it('should throw an error if contract already has a contract Id', async () => {
       const mockContractEngineWithContractId: ContractEngine = new ContractEngine({
         ...mockCEConstructorBaseArgs,
-        contractId: 'mock-contract-id',
+        contractParameters: {
+          ...mockCEConstructorBaseArgs.contractParameters,
+          contractId: 'mock-contract-id',
+        },
       })
 
       const mockAsset = new Asset('mockAsset', 'GBKIJOMRI2BRGEJ3CCME2E3Q6B6LOGQLL4KLDBLYDKVSHGY7CAROYISV')
@@ -198,7 +221,10 @@ describe('ContractEngine', () => {
     it('should invoke a contract method and return the output', async () => {
       const mockContractEngineWithContractId: TestableContractEngine = new TestableContractEngine({
         ...mockCEConstructorBaseArgs,
-        contractId: 'mock-contract-id',
+        contractParameters: {
+          ...mockCEConstructorBaseArgs.contractParameters,
+          contractId: 'mock-contract-id',
+        },
       })
 
       // Allowing these instances of 'any' to be able to mock the internal methods
@@ -243,7 +269,10 @@ describe('ContractEngine', () => {
     it('should read from a contract method and return the output', async () => {
       const mockContractEngineWithContractId: TestableContractEngine = new TestableContractEngine({
         ...mockCEConstructorBaseArgs,
-        contractId: 'mock-contract-id',
+        contractParameters: {
+          ...mockCEConstructorBaseArgs.contractParameters,
+          contractId: 'mock-contract-id',
+        },
       })
 
       // Allowing these instances of 'any' to be able to mock the internal methods
@@ -285,185 +314,6 @@ describe('ContractEngine', () => {
           ...mockTxInvocation,
         })
       ).rejects.toThrowError(CEError.missingContractId())
-    })
-  })
-
-  describe('options', () => {
-    it('should invoke costHandler if provided when debug is true and return the transaction costs - invoke contract', async () => {
-      const mockCostHandler = jest.fn()
-
-      const mockContractEngineWithContractId: TestableContractEngine = new TestableContractEngine({
-        ...mockCEConstructorBaseArgs,
-        contractId: 'mock-contract-id',
-        options: {
-          debug: true,
-          costHandler: mockCostHandler,
-        },
-      })
-
-      // Allowing these instances of 'any' to be able to mock the internal methods
-      // which are protected and and would required a more complex approach
-      // to mock.
-      //
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'buildTransaction')
-        .mockResolvedValueOnce(mockUnsignedClassicTransaction)
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromProcessedInvocation')
-        .mockResolvedValueOnce('mock-output')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'processBuiltTransaction')
-        .mockResolvedValueOnce({ response: 'mock-success-response', transactionResources: mockTransactionResources })
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'extractFeeCharged')
-        .mockResolvedValueOnce(10)
-
-      await mockContractEngineWithContractId.invokeContractTest({
-        method: 'mock-method',
-        methodArgs: { arg: 'mock-method-args' },
-        ...mockTxInvocation,
-      })
-
-      expect(mockCostHandler).toHaveBeenCalledTimes(1)
-      expect(mockCostHandler).toHaveBeenCalledWith(
-        'mock-method',
-        mockTransactionResources,
-        expect.any(Number),
-        expect.any(Number)
-      )
-    })
-
-    it('should not invoke costHandler if provided when debug is false - invoke contract', async () => {
-      const mockCostHandler = jest.fn()
-
-      const mockContractEngineWithContractId: TestableContractEngine = new TestableContractEngine({
-        ...mockCEConstructorBaseArgs,
-        contractId: 'mock-contract-id',
-        options: {
-          debug: false,
-          costHandler: mockCostHandler,
-        },
-      })
-
-      // Allowing these instances of 'any' to be able to mock the internal methods
-      // which are protected and and would required a more complex approach
-      // to mock.
-      //
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'buildTransaction')
-        .mockResolvedValueOnce(mockUnsignedClassicTransaction)
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromProcessedInvocation')
-        .mockResolvedValueOnce('mock-output')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'processBuiltTransaction')
-        .mockResolvedValueOnce({ response: 'mock-success-response', transactionResources: mockTransactionResources })
-
-      await mockContractEngineWithContractId.invokeContractTest({
-        method: 'mock-method',
-        methodArgs: { arg: 'mock-method-args' },
-        ...mockTxInvocation,
-      })
-
-      expect(mockCostHandler).toHaveBeenCalledTimes(0)
-      expect(mockCostHandler).not.toHaveBeenCalledWith('mock-method', mockTransactionResources, expect.any(Number))
-    })
-
-    it('should invoke costHandler if provided when debug is true and return the transaction costs - read from contract', async () => {
-      const mockCostHandler = jest.fn()
-
-      const mockContractEngineWithContractId: TestableContractEngine = new TestableContractEngine({
-        ...mockCEConstructorBaseArgs,
-        contractId: 'mock-contract-id',
-        options: {
-          debug: true,
-          costHandler: mockCostHandler,
-        },
-      })
-
-      // Allowing these instances of 'any' to be able to mock the internal methods
-      // which are protected and and would required a more complex approach
-      // to mock.
-      //
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'buildTransaction')
-        .mockResolvedValueOnce(mockUnsignedClassicTransaction)
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'simulateTransaction')
-        .mockResolvedValueOnce('mock-output-unprocessed')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'verifySimulationResponse')
-        .mockResolvedValueOnce('mock-output-verified')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromSimulation')
-        .mockResolvedValueOnce('mock-output')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'parseTransactionResources')
-        .mockResolvedValueOnce(mockTransactionResources)
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'extractFeeCharged')
-        .mockResolvedValueOnce(10)
-
-      await mockContractEngineWithContractId.readFromContractTest({
-        method: 'mock-method',
-        methodArgs: { arg: 'mock-method-args' },
-        ...mockTxInvocation,
-      })
-
-      expect(mockCostHandler).toHaveBeenCalledTimes(1)
-      expect(mockCostHandler).toHaveBeenCalledWith(
-        'mock-method',
-        mockTransactionResources,
-        expect.any(Number),
-        expect.any(Number)
-      )
-    })
-
-    it('should not invoke costHandler if provided when debug is false - read from contract', async () => {
-      const mockCostHandler = jest.fn()
-
-      const mockContractEngineWithContractId: TestableContractEngine = new TestableContractEngine({
-        ...mockCEConstructorBaseArgs,
-        contractId: 'mock-contract-id',
-        options: {
-          debug: false,
-          costHandler: mockCostHandler,
-        },
-      })
-
-      // Allowing these instances of 'any' to be able to mock the internal methods
-      // which are protected and and would required a more complex approach
-      // to mock.
-      //
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'buildTransaction')
-        .mockResolvedValueOnce(mockUnsignedClassicTransaction)
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'simulateTransaction')
-        .mockResolvedValueOnce('mock-output-unprocessed')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'verifySimulationResponse')
-        .mockResolvedValueOnce('mock-output-verified')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'extractOutputFromSimulation')
-        .mockResolvedValueOnce('mock-output')
-      jest // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(mockContractEngineWithContractId as any, 'parseTransactionResources')
-        .mockResolvedValueOnce(mockTransactionResources)
-
-      await mockContractEngineWithContractId.readFromContractTest({
-        method: 'mock-method',
-        methodArgs: { arg: 'mock-method-args' },
-        ...mockTxInvocation,
-      })
-
-      expect(mockCostHandler).toHaveBeenCalledTimes(0)
-      expect(mockCostHandler).not.toHaveBeenCalledWith(
-        'mock-method',
-        mockTransactionResources,
-        expect.any(Number),
-        expect.any(Number)
-      )
     })
   })
 })

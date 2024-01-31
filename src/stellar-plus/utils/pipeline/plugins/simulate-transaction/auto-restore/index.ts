@@ -42,7 +42,7 @@ export class AutoRestorePlugin
   private rpcHandler: RpcHandler
   private sorobanTransactionPipelinePlugins: SorobanTransactionPipelinePlugin[] = []
 
-  constructor(restoreTxInvocation: TransactionInvocation, networkConfig: Network, customRpcHandler: RpcHandler) {
+  constructor(restoreTxInvocation: TransactionInvocation, networkConfig: Network, customRpcHandler?: RpcHandler) {
     this.restoreTxInvocation = restoreTxInvocation
     this.networkConfig = networkConfig
     this.rpcHandler = customRpcHandler ? customRpcHandler : new DefaultRpcHandler(this.networkConfig)
