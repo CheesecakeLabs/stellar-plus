@@ -11,8 +11,6 @@ export enum ErrorCodesPipelineSorobanGetTransaction {
   //General
   SGT001 = 'SGT001',
   SGT002 = 'SGT002',
-  SGT003 = 'SGT003',
-  SGT004 = 'SGT004',
 }
 
 const transactionFailed = (
