@@ -44,8 +44,9 @@ import { HorizonHandlerClient } from 'stellar-plus/horizon'
 import { DefaultRpcHandler } from 'stellar-plus/rpc'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { Network } from 'stellar-plus/types'
-import { MultiBeltPipeline } from 'stellar-plus/utils/pipeline/multi-belt-pipeline'
-import { MultiBeltPipelineOptions } from 'stellar-plus/utils/pipeline/multi-belt-pipeline/types'
+
+import { MultiBeltPipeline } from '../../../utils/pipeline/multi-belt-pipeline' //'stellar-plus/utils/pipeline/multi-belt-pipeline'
+import { MultiBeltPipelineOptions } from '../../../utils/pipeline/multi-belt-pipeline/types'
 
 export class SorobanTransactionPipeline extends MultiBeltPipeline<
   SorobanTransactionPipelineInput,

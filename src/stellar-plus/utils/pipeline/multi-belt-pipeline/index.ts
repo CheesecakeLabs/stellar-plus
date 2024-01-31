@@ -5,7 +5,8 @@ import {
   BeltPlugin,
   MultiBeltPipelineOptions,
 } from 'stellar-plus/utils/pipeline/multi-belt-pipeline/types'
-import { filterPluginsByTypes } from 'stellar-plus/utils/pipeline/plugins'
+
+import { filterPluginsByTypes } from '../plugins/helpers'
 
 export class MultiBeltPipeline<
   Input,
