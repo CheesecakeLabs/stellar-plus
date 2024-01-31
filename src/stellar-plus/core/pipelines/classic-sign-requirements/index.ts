@@ -7,7 +7,10 @@ import {
   ClassicSignRequirementsPipelineType,
 } from 'stellar-plus/core/pipelines/classic-sign-requirements/types'
 import { SignatureRequirement, SignatureThreshold } from 'stellar-plus/core/types'
+import { extractConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
+
+import { CSRError } from './errors'
 
 export class ClassicSignRequirementsPipeline extends ConveyorBelt<
   ClassicSignRequirementsPipelineInput,
@@ -27,15 +30,19 @@ export class ClassicSignRequirementsPipeline extends ConveyorBelt<
   ): Promise<ClassicSignRequirementsPipelineOutput> {
     const transaction = item
 
-    const operations = transaction instanceof FeeBumpTransaction ? [] : (transaction as Transaction).operations
-    const sourceRequirement = this.getSignatureThresholdForSource(transaction)
+    try {
+      const operations = transaction instanceof FeeBumpTransaction ? [] : (transaction as Transaction).operations
+      const sourceRequirement = this.getSignatureThresholdForSource(transaction)
 
-    const operationRequirements =
-      transaction instanceof FeeBumpTransaction ? [] : this.getOperationsSignatureRequirements(operations)
+      const operationRequirements =
+        transaction instanceof FeeBumpTransaction ? [] : this.getOperationsSignatureRequirements(operations)
 
-    const bundledRequirements = this.bundleSignatureRequirements(operationRequirements, sourceRequirement)
+      const bundledRequirements = this.bundleSignatureRequirements(operationRequirements, sourceRequirement)
 
-    return bundledRequirements
+      return bundledRequirements
+    } catch (e) {
+      throw CSRError.processFailed(e as Error, extractConveyorBeltErrorMeta(item, this.getMeta(_itemId)), transaction)
+    }
   }
 
   private getOperationsSignatureRequirements(operations: Operation[]): SignatureRequirement[] {
