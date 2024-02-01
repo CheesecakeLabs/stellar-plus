@@ -1,4 +1,11 @@
-import { Operation, SorobanDataBuilder, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
+import {
+  Account,
+  Operation,
+  SorobanDataBuilder,
+  SorobanRpc,
+  Transaction,
+  TransactionBuilder,
+} from '@stellar/stellar-sdk'
 
 import {
   BuildTransactionPipelineInput,
@@ -62,9 +69,11 @@ export class AutoRestorePlugin
 
     if (SorobanRpc.Api.isSimulationRestore(response)) {
       await this.restore((response as SorobanRpc.Api.SimulateTransactionRestoreResponse).restorePreamble)
-
       if (assembledTransaction.source === this.restoreTxInvocation.header.source) {
-        const updatedTransaction = this.bumpSequence(assembledTransaction)
+        const updatedTransaction = this.bumpSequence(
+          assembledTransaction,
+          response as SorobanRpc.Api.SimulateTransactionRestoreResponse
+        )
 
         return {
           ...item,
@@ -108,8 +117,34 @@ export class AutoRestorePlugin
     } as SorobanTransactionPipelineInput)
   }
 
-  private bumpSequence(transaction: Transaction): Transaction {
-    transaction.sequence = BigInt(transaction.sequence).toString()
-    return transaction
+  private bumpSequence(
+    transaction: Transaction,
+    simulationResponse: SorobanRpc.Api.SimulateTransactionRestoreResponse
+  ): Transaction {
+    const sourceAccount = new Account(transaction.source, transaction.sequence)
+
+    const updatedTransaction = new TransactionBuilder(sourceAccount, {
+      fee: transaction.fee,
+      memo: transaction.memo,
+      networkPassphrase: transaction.networkPassphrase,
+      timebounds: transaction.timeBounds,
+      ledgerbounds: transaction.ledgerBounds,
+      minAccountSequence: transaction.minAccountSequence,
+      minAccountSequenceAge: transaction.minAccountSequenceAge,
+      minAccountSequenceLedgerGap: transaction.minAccountSequenceLedgerGap,
+      extraSigners: transaction.extraSigners,
+      sorobanData: simulationResponse.transactionData.build(),
+    })
+
+    transaction
+      .toEnvelope()
+      .v1()
+      .tx()
+      .operations()
+      .forEach((op) => {
+        updatedTransaction.addOperation(op)
+      })
+
+    return updatedTransaction.build()
   }
 }

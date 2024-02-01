@@ -30,6 +30,7 @@ export class SimulateTransactionPipeline extends ConveyorBelt<
     const { transaction, rpcHandler }: SimulateTransactionPipelineInput = item as SimulateTransactionPipelineInput
 
     let simulationResponse: SorobanRpc.Api.SimulateTransactionResponse
+
     try {
       simulationResponse = await rpcHandler.simulateTransaction(transaction)
     } catch (e) {
@@ -40,31 +41,14 @@ export class SimulateTransactionPipeline extends ConveyorBelt<
       throw PSIError.simulationFailed(simulationResponse, extractConveyorBeltErrorMeta(item, this.getMeta(itemId)))
     }
 
-    if (SorobanRpc.Api.isSimulationSuccess(simulationResponse) && !simulationResponse.result) {
-      // throw PSIError.simulationMissingResult(
-      //   simulationResponse,
-      //   extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
-      // )
-      // Restore doesnt contain result, yet it is ok
-      return {
-        response: simulationResponse as SorobanRpc.Api.SimulateTransactionSuccessResponse,
-        assembledTransaction: this.assembleTransaction(transaction, simulationResponse),
-      } as SimulateTransactionPipelineOutput
-    }
-
     if (SorobanRpc.Api.isSimulationRestore(simulationResponse) && simulationResponse.result) {
       return {
         response: simulationResponse as SorobanRpc.Api.SimulateTransactionRestoreResponse,
         assembledTransaction: this.assembleTransaction(transaction, simulationResponse),
       } as SimulateTransactionPipelineOutput
-
-      // throw PSIError.transactionNeedsRestore(
-      //   simulationResponse,
-      //   extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
-      // )
     }
 
-    if (SorobanRpc.Api.isSimulationSuccess(simulationResponse) && simulationResponse.result) {
+    if (SorobanRpc.Api.isSimulationSuccess(simulationResponse)) {
       return {
         response: simulationResponse as SorobanRpc.Api.SimulateTransactionSuccessResponse,
         assembledTransaction: this.assembleTransaction(transaction, simulationResponse),
