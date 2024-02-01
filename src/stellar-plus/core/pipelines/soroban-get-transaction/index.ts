@@ -48,10 +48,6 @@ export class SorobanGetTransactionPipeline extends ConveyorBelt<
 
     let currentWaitTime = initialWaitTime
 
-    //verify
-
-    //fetch
-
     let updatedTransaction = await rpcHandler.getTransaction(hash)
     while (Date.now() < waitUntil && updatedTransaction.status === SorobanRpc.Api.GetTransactionStatus.NOT_FOUND) {
       await new Promise((resolve) => setTimeout(resolve, currentWaitTime))

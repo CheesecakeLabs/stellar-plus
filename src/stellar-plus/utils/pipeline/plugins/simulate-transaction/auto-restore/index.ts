@@ -121,13 +121,26 @@ export class AutoRestorePlugin
     transaction: Transaction,
     simulationResponse: SorobanRpc.Api.SimulateTransactionRestoreResponse
   ): Transaction {
+    let updatedTimeBounds: { minTime: string; maxTime: string } | undefined
+
+    if (transaction.timeBounds) {
+      const additionalTimeout = this.restoreTxInvocation.header.timeout ? this.restoreTxInvocation.header.timeout : 30
+
+      updatedTimeBounds = {
+        minTime: transaction.timeBounds?.minTime,
+        maxTime: (Number(transaction.timeBounds?.maxTime) + additionalTimeout).toString(),
+      }
+    }
+
+    // The sequence number extracted from the existing envelope is already bumped by 1
+    // so building the new envelope will automatically bump it once more.
     const sourceAccount = new Account(transaction.source, transaction.sequence)
 
     const updatedTransaction = new TransactionBuilder(sourceAccount, {
       fee: transaction.fee,
       memo: transaction.memo,
       networkPassphrase: transaction.networkPassphrase,
-      timebounds: transaction.timeBounds,
+      timebounds: updatedTimeBounds,
       ledgerbounds: transaction.ledgerBounds,
       minAccountSequence: transaction.minAccountSequence,
       minAccountSequenceAge: transaction.minAccountSequenceAge,
