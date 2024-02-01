@@ -365,13 +365,6 @@ export class ContractEngine {
     })
   }
 
-  public async restoreContractCode(args: TransactionInvocation): Promise<void> {
-    return await this.restore({
-      keys: [(await this.getContractCodeLedgerEntry()).key],
-      ...(args as TransactionInvocation),
-    })
-  }
-
   /**
    *
    * @param {TransactionInvocation} txInvocation - The transaction invocation object to use in this transaction.
@@ -380,20 +373,11 @@ export class ContractEngine {
    *
    * @description - Restores the contract code.
    */
-  public async restoreContractCode(txInvocation: TransactionInvocation): Promise<void> {
-    this.requireWasmHash()
-
-    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
-      xdr.LedgerKey.contractCode(new xdr.LedgerKeyContractCode({ hash: Buffer.from(this.getWasmHash(), 'hex') }))
-    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
-
-    const contractCode = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractCode')
-
-    if (!contractCode) {
-      throw CEError.contractCodeNotFound(ledgerEntries)
-    }
-
-    return await this.restoreFootprint({ ...txInvocation, keys: [contractCode.key] }) // Contract Id verified in requireContractId
+  public async restoreContractCode(args: TransactionInvocation): Promise<void> {
+    return await this.restore({
+      keys: [(await this.getContractCodeLedgerEntry()).key],
+      ...(args as TransactionInvocation),
+    })
   }
 
   //==========================================
