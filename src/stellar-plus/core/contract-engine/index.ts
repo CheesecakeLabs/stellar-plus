@@ -478,4 +478,14 @@ export class ContractEngine {
 
     return
   }
+
+  public deriveWasmHash(): string {
+    this.requireWasm()
+
+    console.log(
+      'CC: ',
+      xdr.ContractExecutable.contractExecutableWasm(Buffer.from(this.getWasmHash())).wasmHash().toString('utf8')
+    )
+    return 'a'
+  }
 }
