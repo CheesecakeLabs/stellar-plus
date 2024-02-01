@@ -83,7 +83,7 @@ const contractInstanceNotFound = (ledgerEntries: SorobanRpc.Api.GetLedgerEntries
 }
 
 const contractInstanceMissingLiveUntilLedgerSeq = (
-  ledgerEntries: SorobanRpc.Api.GetLedgerEntriesResponse
+  ledgerEntries?: SorobanRpc.Api.GetLedgerEntriesResponse
 ): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE006,
@@ -107,7 +107,7 @@ const contractCodeNotFound = (ledgerEntries: SorobanRpc.Api.GetLedgerEntriesResp
 }
 
 const contractCodeMissingLiveUntilLedgerSeq = (
-  ledgerEntries: SorobanRpc.Api.GetLedgerEntriesResponse
+  ledgerEntries?: SorobanRpc.Api.GetLedgerEntriesResponse
 ): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE008,

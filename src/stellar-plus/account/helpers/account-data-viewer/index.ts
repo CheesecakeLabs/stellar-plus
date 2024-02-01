@@ -4,15 +4,15 @@ import { AccountHelpers } from 'stellar-plus/account/helpers'
 import { AccountDataViewer } from 'stellar-plus/account/helpers/account-data-viewer/types'
 import { HorizonHandlerClient } from 'stellar-plus/horizon/index'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 
 export class AccountDataViewerClient implements AccountDataViewer {
-  private network: Network
+  private networkConfig: NetworkConfig
   private horizonHandler: HorizonHandler
   private parent: AccountHelpers
-  constructor(network: Network, parent: AccountHelpers) {
-    this.network = network
-    this.horizonHandler = new HorizonHandlerClient(this.network) as HorizonHandler
+  constructor(networkConfig: NetworkConfig, parent: AccountHelpers) {
+    this.networkConfig = networkConfig
+    this.horizonHandler = new HorizonHandlerClient(this.networkConfig) as HorizonHandler
     this.parent = parent
   }
 

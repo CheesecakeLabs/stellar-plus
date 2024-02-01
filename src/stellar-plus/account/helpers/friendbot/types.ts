@@ -1,4 +1,4 @@
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 
 //
 // Allows for accounts to be initialized with Friendbot
@@ -8,5 +8,5 @@ export type Friendbot = {
 }
 
 export type FriendbotConstructor = {
-  network?: Network
+  networkConfig?: NetworkConfig
 }

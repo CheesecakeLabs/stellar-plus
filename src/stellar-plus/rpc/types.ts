@@ -1,6 +1,7 @@
 import { FeeBumpTransaction, SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
 
 export type RpcHandler = {
+  readonly type: 'RpcHandler'
   getTransaction(txHash: string): Promise<SorobanRpc.Api.GetTransactionResponse>
   getLatestLedger(): Promise<SorobanRpc.Api.GetLatestLedgerResponse>
   getHealth(): Promise<SorobanRpc.Api.GetHealthResponse>

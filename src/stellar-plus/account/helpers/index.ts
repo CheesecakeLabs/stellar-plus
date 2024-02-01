@@ -9,9 +9,9 @@ export class AccountHelpers implements AccountHelpersType {
   public friendbot?: Friendbot
 
   constructor(payload: AccountHelpersPayload) {
-    if ('network' in payload && payload.network) {
-      this.accountDataViewer = new AccountDataViewerClient(payload.network, this)
-      this.friendbot = new FriendbotClient(payload.network, this)
+    if ('networkConfig' in payload && payload.networkConfig) {
+      this.accountDataViewer = new AccountDataViewerClient(payload.networkConfig, this)
+      this.friendbot = new FriendbotClient(payload.networkConfig, this)
     }
   }
 }

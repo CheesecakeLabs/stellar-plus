@@ -1,20 +1,20 @@
 import { SorobanRpc } from '@stellar/stellar-sdk'
 
 import { SorobanHandler } from 'stellar-plus/soroban/types'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 export class SorobanHandlerClient implements SorobanHandler {
-  private network: Network
+  private networkConfig: NetworkConfig
   public server: SorobanRpc.Server
 
   /**
    *
-   * @param {Network} network - The network to use.
+   * @param {NetworkConfig} networkConfig - The network to use.
    *
    * @description - The soroban handler is used for interacting with the Soroban server.
    *
    */
-  constructor(network: Network) {
-    this.network = network
-    this.server = new SorobanRpc.Server(this.network.rpcUrl)
+  constructor(networkConfig: NetworkConfig) {
+    this.networkConfig = networkConfig
+    this.server = new SorobanRpc.Server(this.networkConfig.rpcUrl)
   }
 }

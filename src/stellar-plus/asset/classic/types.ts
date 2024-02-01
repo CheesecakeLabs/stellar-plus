@@ -2,9 +2,9 @@ import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
 
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { AssetType, AssetTypes } from 'stellar-plus/asset/types'
-import { TransactionSubmitter } from 'stellar-plus/core/transaction-submitter/classic/types'
+import { ClassicTransactionPipelineOptions } from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 
 export type ClassicAsset = AssetType & {
   code: string
@@ -16,10 +16,12 @@ export type ClassicAssetHandler = ClassicAsset & ClassicTokenInterface & Classic
 
 export type ClassicAssetHandlerConstructorArgs = {
   code: string
-  issuerPublicKey: string
-  network: Network
-  issuerAccount?: AccountHandler
-  transactionSubmitter?: TransactionSubmitter
+  issuerAccount: string | AccountHandler
+  networkConfig: NetworkConfig
+
+  options?: {
+    classicTransactionPipeline?: ClassicTransactionPipelineOptions
+  }
 }
 
 export type ClassicTokenInterface = ClassicTokenInterfaceManagement & ClassicTokenInterfaceUser

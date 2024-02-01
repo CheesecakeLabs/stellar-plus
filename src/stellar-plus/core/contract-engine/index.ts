@@ -1,35 +1,62 @@
 import { Buffer } from 'buffer'
 
-import { Contract, ContractSpec, SorobanRpc as SorobanRpcNamespace, Transaction, xdr } from '@stellar/stellar-sdk'
-
-import { ContractEngineConstructorArgs, Options, TransactionResources } from 'stellar-plus/core/contract-engine/types'
-import { SorobanTransactionProcessor } from 'stellar-plus/core/soroban-transaction-processor'
 import {
+  Address,
+  Contract,
+  ContractSpec,
+  Operation,
+  OperationOptions,
+  SorobanDataBuilder,
+  SorobanRpc as SorobanRpcNamespace,
+  xdr,
+} from '@stellar/stellar-sdk'
+
+import { CEError } from 'stellar-plus/core/contract-engine/errors'
+import {
+  ContractEngineConstructorArgs,
+  Options,
   RestoreFootprintArgs,
   SorobanInvokeArgs,
   SorobanSimulateArgs,
   WrapClassicAssetArgs,
-} from 'stellar-plus/core/soroban-transaction-processor/types'
+  isRestoreFootprintWithLedgerKeys,
+} from 'stellar-plus/core/contract-engine/types'
+import { SimulatedInvocationOutput } from 'stellar-plus/core/pipelines/simulate-transaction/types'
+import { ContractIdOutput, ContractWasmHashOutput } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
+import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
-import { StellarPlusErrorObject } from 'stellar-plus/error/types'
+import { DefaultRpcHandler } from 'stellar-plus/rpc'
+import { RpcHandler } from 'stellar-plus/rpc/types'
+import { NetworkConfig } from 'stellar-plus/types'
+import { generateRandomSalt } from 'stellar-plus/utils/functions'
+import { InjectPreprocessParameterPlugin } from 'stellar-plus/utils/pipeline/plugins/generic/inject-preprocess-parameter'
+import { ExtractInvocationOutputFromSimulationPlugin } from 'stellar-plus/utils/pipeline/plugins/simulate-transaction/extract-invocation-output'
+import { ExtractContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-contract-id'
+import { ExtractInvocationOutputPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-invocation-output'
+import { ExtractWasmHashPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-wasm-hash'
 
-import { CEError, ContractEngineErrorCodes } from './errors'
+import {
+  BuildTransactionPipelineInput,
+  BuildTransactionPipelineOutput,
+  BuildTransactionPipelineType,
+} from '../pipelines/build-transaction/types'
 
-export class ContractEngine extends SorobanTransactionProcessor {
+export class ContractEngine {
   private spec: ContractSpec
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
+  private networkConfig: NetworkConfig
+  private rpcHandler: RpcHandler
 
-  private options: Options = {
-    debug: false,
-    costHandler: defaultCostHandler,
-  }
+  private sorobanTransactionPipeline: SorobanTransactionPipeline
+
+  private options: Options
 
   /**
    *
-   * @param {Network} network - The network to use.
+   * @param {NetworkConfig} networkConfig - The network to use.
    * @param {ContractSpec} spec - The contract specification.
    * @param {string=} contractId - The contract id.
    * @param {RpcHandler=} rpcHandler - A custom RPC handler to use when interacting with the network RPC server.
@@ -68,12 +95,21 @@ export class ContractEngine extends SorobanTransactionProcessor {
    * ```
    */
   constructor(args: ContractEngineConstructorArgs) {
-    super(args.network, args.rpcHandler)
-    this.spec = args.spec
-    this.contractId = args.contractId
-    this.wasm = args.wasm
-    this.wasmHash = args.wasmHash
-    this.options = { ...this.options, ...args.options }
+    const { networkConfig, contractParameters, options } = args as ContractEngineConstructorArgs
+    this.networkConfig = networkConfig
+    this.rpcHandler = options?.sorobanTransactionPipeline?.customRpcHandler
+      ? options.sorobanTransactionPipeline.customRpcHandler
+      : new DefaultRpcHandler(this.networkConfig)
+    this.spec = contractParameters.spec
+    this.contractId = contractParameters.contractId
+    this.wasm = contractParameters.wasm
+    this.wasmHash = contractParameters.wasmHash
+    this.options = { ...options }
+
+    this.sorobanTransactionPipeline = new SorobanTransactionPipeline(networkConfig, {
+      customRpcHandler: options?.sorobanTransactionPipeline?.customRpcHandler,
+      ...this.options.sorobanTransactionPipeline,
+    })
   }
 
   public getContractId(): string {
@@ -96,6 +132,10 @@ export class ContractEngine extends SorobanTransactionProcessor {
     return new Contract(this.contractId!).getFootprint()
   }
 
+  public getRpcHandler(): RpcHandler {
+    return this.rpcHandler
+  }
+
   /**
    * 
    * @param {void} args - No arguments.
@@ -106,23 +146,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
    
    */
   public async getContractInstanceLiveUntilLedgerSeq(): Promise<number> {
-    this.requireContractId()
+    const contractInstance = await this.getContractInstanceLedgerEntry()
 
-    const footprint = this.getContractFootprint()
-
-    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
-      footprint
-    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
-
-    const contractInstance = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractData')
-
-    if (!contractInstance) {
-      throw CEError.contractInstanceNotFound(ledgerEntries)
-    }
     if (!contractInstance.liveUntilLedgerSeq) {
-      throw CEError.contractInstanceMissingLiveUntilLedgerSeq(ledgerEntries)
+      throw CEError.contractInstanceMissingLiveUntilLedgerSeq()
     }
-
     return contractInstance.liveUntilLedgerSeq
   }
 
@@ -136,19 +164,10 @@ export class ContractEngine extends SorobanTransactionProcessor {
    *
    * */
   public async getContractCodeLiveUntilLedgerSeq(): Promise<number> {
-    this.requireWasmHash()
+    const contractCode = await this.getContractCodeLedgerEntry()
 
-    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
-      xdr.LedgerKey.contractCode(new xdr.LedgerKeyContractCode({ hash: Buffer.from(this.getWasmHash(), 'hex') }))
-    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
-
-    const contractCode = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractCode')
-
-    if (!contractCode) {
-      throw CEError.contractCodeNotFound(ledgerEntries)
-    }
     if (!contractCode.liveUntilLedgerSeq) {
-      throw CEError.contractCodeMissingLiveUntilLedgerSeq(ledgerEntries)
+      throw CEError.contractCodeMissingLiveUntilLedgerSeq()
     }
 
     return contractCode.liveUntilLedgerSeq
@@ -181,22 +200,9 @@ export class ContractEngine extends SorobanTransactionProcessor {
   protected async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
     this.requireContractId()
 
-    const startTime = Date.now()
+    const output = (await this.invokeContract(args, true)) as SimulatedInvocationOutput
 
-    const builtTx = (await this.buildTransaction(args, this.spec, this.contractId!)) as Transaction // Contract Id verified in requireContractId
-    const simulatedTransaction = await this.simulateTransaction(builtTx)
-
-    const successfulSimulation = await this.verifySimulationResponse(simulatedTransaction)
-
-    const costs = this.options.debug ? await this.parseTransactionResources(successfulSimulation) : {}
-
-    const output = this.extractOutputFromSimulation(successfulSimulation, args.method)
-
-    if (this.options.debug) {
-      this.options.costHandler?.(args.method, costs, Date.now() - startTime, 0)
-    }
-
-    return output
+    return output.value
   }
 
   /**
@@ -229,153 +235,37 @@ export class ContractEngine extends SorobanTransactionProcessor {
    * console.log(output) // 3
    * ```
    */
-  protected async invokeContract(args: SorobanInvokeArgs<object>): Promise<unknown> {
+  protected async invokeContract(
+    args: SorobanInvokeArgs<object> | SorobanSimulateArgs<object>,
+    simulateOnly: boolean = false
+  ): Promise<unknown> {
     this.requireContractId()
 
-    const startTime = Date.now()
+    const { method, methodArgs } = args
+    const txInvocation = { ...(args as SorobanInvokeArgs<object>) } as TransactionInvocation
 
-    const builtTx = await this.buildTransaction(args, this.spec, this.contractId!) // Contract Id verified in requireContractId
+    const encodedArgs = this.spec.funcArgsToScVals(method, methodArgs)
 
-    const txInvocation = { ...args } as TransactionInvocation
+    const contract = new Contract(this.contractId!) // Contract Id verified in requireContractId
+    const contractCallOperation = contract.call(method, ...encodedArgs)
 
-    const { response, transactionResources } = await this.processBuiltTransaction({
-      builtTx,
-      updatedTxInvocation: txInvocation,
+    const executionPlugins = [
+      ...(simulateOnly
+        ? [new ExtractInvocationOutputFromSimulationPlugin(this.spec, method)]
+        : [new ExtractInvocationOutputPlugin(this.spec, method)]),
+      ...(txInvocation.executionPlugins || []),
+    ]
+
+    const result = await this.sorobanTransactionPipeline.execute({
+      txInvocation,
+      operations: [contractCallOperation],
+      options: {
+        executionPlugins,
+        simulateOnly,
+      },
     })
 
-    const output = this.extractOutputFromProcessedInvocation(response, args.method)
-
-    if (this.options.debug) {
-      const feeCharged = await this.extractFeeCharged(response)
-      this.options.costHandler?.(
-        args.method,
-        transactionResources as TransactionResources,
-        Date.now() - startTime,
-        feeCharged
-      )
-    }
-
-    return output
-  }
-
-  /**
-   *
-   * @param {SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse} simulatedTransaction - The simulated transaction response to parse.
-   *
-   * @returns {Promise<TransactionCosts>} The parsed transaction costs.
-   *
-   * @description - Parses the transaction costs from the simulated transaction response.
-   *
-   */
-  private async parseTransactionResources(
-    simulatedTransaction: SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
-  ): Promise<TransactionResources> {
-    const calculateEventSize = (event: xdr.DiagnosticEvent): number => {
-      if (event.event()?.type().name === 'diagnostic') {
-        return 0
-      }
-      return event.toXDR().length
-    }
-
-    const sorobanTransactionData = simulatedTransaction.transactionData.build()
-    const events = simulatedTransaction.events?.map((event) => calculateEventSize(event))
-    const returnValueSize = simulatedTransaction.result?.retval.toXDR().length
-    const transactionDataSize = sorobanTransactionData.toXDR().length
-    const eventsSize = events?.reduce((accumulator, currentValue) => accumulator + currentValue, 0)
-
-    return {
-      // cpuInstructions: Number(simulatedTransaction.cost?.cpuInsns),
-      cpuInstructions: Number(sorobanTransactionData?.resources().instructions()),
-      ram: Number(simulatedTransaction.cost?.memBytes),
-      minResourceFee: Number(simulatedTransaction.minResourceFee),
-      ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
-      ledgerWriteBytes: sorobanTransactionData?.resources().writeBytes(),
-      ledgerEntryReads: sorobanTransactionData?.resources().footprint().readOnly().length,
-      ledgerEntryWrites: sorobanTransactionData?.resources().footprint().readWrite().length,
-      eventSize: eventsSize,
-      returnValueSize: returnValueSize,
-      transactionSize: transactionDataSize,
-    }
-  }
-
-  private async extractFeeCharged(tx: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse): Promise<number> {
-    return Number(tx.resultXdr.feeCharged())
-  }
-
-  private async extractOutputFromSimulation(
-    simulated: SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse,
-    method: string
-  ): Promise<unknown> {
-    if (!simulated.result) {
-      throw CEError.simulationMissingResult(simulated)
-    }
-
-    const output = this.spec.funcResToNative(method, simulated.result.retval) as unknown
-    return output
-  }
-
-  private async extractOutputFromProcessedInvocation(
-    response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse,
-    method: string
-  ): Promise<unknown> {
-    // console.log('Response: ', response)
-    const invocationResultMetaXdr = response.resultMetaXdr
-    const output = this.spec.funcResToNative(
-      method,
-      invocationResultMetaXdr.v3().sorobanMeta()?.returnValue().toXDR('base64') as string
-    ) as unknown
-    return output
-  }
-
-  private async verifySimulationResponse(
-    simulated: SorobanRpcNamespace.Api.SimulateTransactionResponse
-  ): Promise<SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse> {
-    if (SorobanRpcNamespace.Api.isSimulationError(simulated)) {
-      throw CEError.simulationFailed(simulated)
-    }
-
-    // Simulated transactions with restore status are simulated as if
-    // the restore was done already. This means that the simulation
-    // result will come as successful. Therefore, we need to restore
-    // the footprint and proceed as if it was successful.
-    // Here, if no auto restor is set, we throw an error as the
-    // execution cannot proceed.
-    if (SorobanRpcNamespace.Api.isSimulationRestore(simulated)) {
-      throw CEError.transactionNeedsRestore(simulated)
-      // if (this.options.restoreTxInvocation) {
-      //   await this.autoRestoreFootprintFromFromSimulation(simulated, originalTx)
-      //   // Bump sequence number if same account is used for restore
-      // } else {
-
-      // }
-    }
-
-    if (SorobanRpcNamespace.Api.isSimulationSuccess(simulated) && simulated.result) {
-      return simulated as SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
-    }
-
-    if (SorobanRpcNamespace.Api.isSimulationSuccess(simulated) && !simulated.result) {
-      throw CEError.simulationMissingResult(simulated)
-    }
-
-    throw CEError.couldntVerifyTransactionSimulation(simulated)
-  }
-
-  private async autoRestoreFootprintFromFromSimulation(
-    simulation: SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse,
-    originalTx: Transaction
-  ): Promise<Transaction> {
-    if (!this.options.restoreTxInvocation) {
-      throw CEError.restoreOptionNotSet(simulation)
-    }
-    const restorePreamble = simulation.restorePreamble
-
-    await this.restoreFootprint({ restorePreamble, ...this.options.restoreTxInvocation } as RestoreFootprintArgs)
-
-    if (originalTx.source === this.options.restoreTxInvocation.header.source) {
-      originalTx.sequence = (BigInt(originalTx.sequence) + BigInt(1)).toString()
-    }
-    return originalTx
+    return result.output
   }
 
   //==========================================
@@ -383,59 +273,6 @@ export class ContractEngine extends SorobanTransactionProcessor {
   //==========================================
   //
   //
-
-  private async processBuiltTransaction(args: {
-    builtTx: Transaction
-    updatedTxInvocation: TransactionInvocation
-  }): Promise<{
-    response: SorobanRpcNamespace.Api.GetSuccessfulTransactionResponse
-    transactionResources?: TransactionResources
-  }> {
-    const { updatedTxInvocation } = args
-
-    let { builtTx } = args
-
-    const simulatedTransaction = await this.simulateTransaction(builtTx)
-
-    let successfulSimulation: SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
-
-    try {
-      successfulSimulation = await this.verifySimulationResponse(simulatedTransaction)
-    } catch (error: unknown) {
-      const spError = error as StellarPlusErrorObject
-      if (spError.code === ContractEngineErrorCodes.CE102) {
-        // Transaction needs Restore
-        if (this.options.restoreTxInvocation) {
-          builtTx = await this.autoRestoreFootprintFromFromSimulation(
-            simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse,
-            builtTx
-          )
-
-          successfulSimulation = simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionSuccessResponse
-        } else {
-          throw CEError.restoreOptionNotSet(
-            simulatedTransaction as SorobanRpcNamespace.Api.SimulateTransactionRestoreResponse
-          )
-        }
-      } else {
-        throw error
-      }
-    }
-
-    const transactionResources = this.options.debug ? await this.parseTransactionResources(successfulSimulation) : {}
-
-    const assembledTransaction = await this.assembleTransaction(builtTx, successfulSimulation)
-
-    return {
-      response: await this.processSorobanTransaction(
-        assembledTransaction,
-        updatedTxInvocation.signers,
-        updatedTxInvocation.feeBump,
-        updatedTxInvocation.header.timeout
-      ),
-      transactionResources,
-    }
-  }
 
   /**
    * @param {TransactionInvocation} txInvocation - The transaction invocation object to use in this transaction.
@@ -448,26 +285,18 @@ export class ContractEngine extends SorobanTransactionProcessor {
   public async uploadWasm(txInvocation: TransactionInvocation): Promise<void> {
     this.requireWasm()
 
-    const startTime = Date.now()
-    const builtTransactionObjectToProcess = await this.buildUploadContractWasmTransaction({
-      wasm: this.wasm!, // Wasm verified in requireWasm
-      ...txInvocation,
-    })
-
     try {
-      const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
-      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      const wasmHash = this.extractWasmHashFromUploadWasmResponse(response)
-      this.wasmHash = wasmHash
+      const uploadOperation = Operation.uploadContractWasm({ wasm: this.wasm! }) // Wasm verified in requireWasm
 
-      if (this.options.debug) {
-        this.options.costHandler?.(
-          'uploadWasm',
-          transactionResources as TransactionResources,
-          Date.now() - startTime,
-          await this.extractFeeCharged(response)
-        )
-      }
+      const result = await this.sorobanTransactionPipeline.execute({
+        txInvocation,
+        operations: [uploadOperation],
+        options: {
+          executionPlugins: [new ExtractWasmHashPlugin()],
+        },
+      })
+
+      this.wasmHash = (result.output as ContractWasmHashOutput).wasmHash
     } catch (error) {
       throw CEError.failedToUploadWasm(error as StellarPlusError)
     }
@@ -483,28 +312,23 @@ export class ContractEngine extends SorobanTransactionProcessor {
    * */
   public async deploy(txInvocation: TransactionInvocation): Promise<void> {
     this.requireWasmHash()
-    const startTime = Date.now()
-
-    const builtTransactionObjectToProcess = await this.buildDeployContractTransaction({
-      wasmHash: this.wasmHash!, // Wasm hash verified in requireWasmHash
-      ...txInvocation,
-    })
 
     try {
-      const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
-      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      const contractId = this.extractContractIdFromDeployContractResponse(response)
+      const deployOperation = Operation.createCustomContract({
+        address: new Address(txInvocation.header.source),
+        wasmHash: Buffer.from(this.wasmHash!, 'hex'), // Wasm hash verified in requireWasmHash
+        salt: generateRandomSalt(),
+      } as OperationOptions.CreateCustomContract)
 
-      this.contractId = contractId
+      const result = await this.sorobanTransactionPipeline.execute({
+        txInvocation,
+        operations: [deployOperation],
+        options: {
+          executionPlugins: [new ExtractContractIdPlugin()],
+        },
+      })
 
-      if (this.options.debug) {
-        this.options.costHandler?.(
-          'deployWasm',
-          transactionResources as TransactionResources,
-          Date.now() - startTime,
-          await this.extractFeeCharged(response)
-        )
-      }
+      this.contractId = (result.output as ContractIdOutput).contractId
     } catch (error) {
       throw CEError.failedToDeployContract(error as StellarPlusError)
     }
@@ -512,42 +336,33 @@ export class ContractEngine extends SorobanTransactionProcessor {
 
   public async wrapAndDeployClassicAsset(args: WrapClassicAssetArgs): Promise<void> {
     this.requireNoContractId()
-    const startTime = Date.now()
-
-    const builtTransactionObjectToProcess = await this.buildWrapClassicAssetTransaction(args)
 
     try {
-      const { response, transactionResources } = await this.processBuiltTransaction(builtTransactionObjectToProcess)
-      // Not using the root returnValue parameter because it may not be available depending on the rpcHandler.
-      const contractId = this.extractContractIdFromWrapClassicAssetResponse(response)
+      const txInvocation = args as TransactionInvocation
 
-      this.contractId = contractId
+      const wrapOperation = Operation.createStellarAssetContract({
+        asset: args.asset,
+      } as OperationOptions.CreateStellarAssetContract)
 
-      if (this.options.debug) {
-        this.options.costHandler?.(
-          'wrapSAC',
-          transactionResources as TransactionResources,
-          Date.now() - startTime,
-          await this.extractFeeCharged(response)
-        )
-      }
+      const result = await this.sorobanTransactionPipeline.execute({
+        txInvocation,
+        operations: [wrapOperation],
+        options: {
+          executionPlugins: [new ExtractContractIdPlugin()],
+        },
+      })
+
+      this.contractId = (result.output as ContractIdOutput).contractId
     } catch (error) {
       throw CEError.failedToWrapAsset(error as StellarPlusError)
     }
   }
 
-  /**
-   *
-   * @param {TransactionInvocation} txInvocation - The transaction invocation object to use in this transaction.
-   *
-   * @returns {Promise<void>} - The output of the invocation.
-   *
-   * @description - Restores the contract instance footprint.
-   */
-  public async restoreContractFootprint(txInvocation: TransactionInvocation): Promise<void> {
-    const footprint = this.getContractFootprint()
-
-    return await this.restoreFootprint({ ...txInvocation, keys: [footprint] }) // Contract Id verified in requireContractId
+  public async restoreContractInstance(args: TransactionInvocation): Promise<void> {
+    return await this.restore({
+      keys: [(await this.getContractInstanceLedgerEntry()).key],
+      ...(args as TransactionInvocation),
+    })
   }
 
   /**
@@ -558,20 +373,11 @@ export class ContractEngine extends SorobanTransactionProcessor {
    *
    * @description - Restores the contract code.
    */
-  public async restoreContractCode(txInvocation: TransactionInvocation): Promise<void> {
-    this.requireWasmHash()
-
-    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
-      xdr.LedgerKey.contractCode(new xdr.LedgerKeyContractCode({ hash: Buffer.from(this.getWasmHash(), 'hex') }))
-    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
-
-    const contractCode = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractCode')
-
-    if (!contractCode) {
-      throw CEError.contractCodeNotFound(ledgerEntries)
-    }
-
-    return await this.restoreFootprint({ ...txInvocation, keys: [contractCode.key] }) // Contract Id verified in requireContractId
+  public async restoreContractCode(args: TransactionInvocation): Promise<void> {
+    return await this.restore({
+      keys: [(await this.getContractCodeLedgerEntry()).key],
+      ...(args as TransactionInvocation),
+    })
   }
 
   //==========================================
@@ -601,16 +407,83 @@ export class ContractEngine extends SorobanTransactionProcessor {
       throw CEError.missingWasmHash()
     }
   }
-}
 
-function defaultCostHandler(
-  methodName: string,
-  costs: TransactionResources,
-  elapsedTime: number,
-  feeCharged: number
-): void {
-  console.log('Debugging method: ', methodName)
-  console.log(costs)
-  console.log('Fee charged: ', feeCharged)
-  console.log('Elapsed time: ', elapsedTime)
+  protected async getContractCodeLedgerEntry(): Promise<SorobanRpcNamespace.Api.LedgerEntryResult> {
+    this.requireWasmHash()
+
+    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
+      xdr.LedgerKey.contractCode(new xdr.LedgerKeyContractCode({ hash: Buffer.from(this.getWasmHash(), 'hex') }))
+    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
+
+    const contractCode = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractCode')
+
+    if (!contractCode) {
+      throw CEError.contractCodeNotFound(ledgerEntries)
+    }
+    return contractCode as SorobanRpcNamespace.Api.LedgerEntryResult
+  }
+
+  protected async getContractInstanceLedgerEntry(): Promise<SorobanRpcNamespace.Api.LedgerEntryResult> {
+    this.requireWasmHash()
+
+    const footprint = this.getContractFootprint()
+
+    const ledgerEntries = (await this.getRpcHandler().getLedgerEntries(
+      footprint
+    )) as SorobanRpcNamespace.Api.GetLedgerEntriesResponse
+
+    const contractInstance = ledgerEntries.entries.find((entry) => entry.key.switch().name === 'contractData')
+
+    if (!contractInstance) {
+      throw CEError.contractInstanceNotFound(ledgerEntries)
+    }
+
+    return contractInstance as SorobanRpcNamespace.Api.LedgerEntryResult
+  }
+
+  /**
+   * @args {RestoreFootprintArgs} args - The arguments for the invocation.
+   * @param {EnvelopeHeader} args.header - The header for the transaction.
+   * @param {AccountHandler[]} args.signers - The signers for the transaction.
+   * @param {FeeBumpHeader=} args.feeBump - The fee bump header for the transaction. This is optional.
+   *
+   * Option 1: Provide the keys directly.
+   * @param {xdr.LedgerKey[]} args.keys - The keys to restore.
+   * Option 2: Provide the restore preamble.
+   * @param { RestoreFootprintWithRestorePreamble} args.restorePreamble - The restore preamble.
+   * @param {string} args.restorePreamble.minResourceFee - The minimum resource fee.
+   * @param {SorobanDataBuilder} args.restorePreamble.transactionData - The transaction data.
+   *
+   * @returns {Promise<void>}
+   *
+   * @description - Execute a transaction to restore a given footprint.
+   */
+  protected async restore(args: RestoreFootprintArgs): Promise<void> {
+    const txInvocation = args as TransactionInvocation
+    const sorobanData = isRestoreFootprintWithLedgerKeys(args)
+      ? new SorobanDataBuilder().setReadWrite(args.keys).build()
+      : args.restorePreamble.transactionData.build()
+
+    const options: OperationOptions.RestoreFootprint = {}
+
+    const injectionParameter = { sorobanData: sorobanData }
+
+    const restoreFootprintOperation = Operation.restoreFootprint(options)
+    await this.sorobanTransactionPipeline.execute({
+      txInvocation,
+      operations: [restoreFootprintOperation],
+      options: {
+        executionPlugins: [
+          new InjectPreprocessParameterPlugin<
+            BuildTransactionPipelineInput,
+            BuildTransactionPipelineOutput,
+            BuildTransactionPipelineType,
+            typeof injectionParameter
+          >(injectionParameter, BuildTransactionPipelineType.id, 'preProcess'),
+        ],
+      },
+    })
+
+    return
+  }
 }

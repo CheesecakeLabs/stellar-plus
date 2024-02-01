@@ -12,33 +12,35 @@ import {
   SendTransactionAPIResponse,
   SimulateTransactionAPIResponse,
 } from 'stellar-plus/rpc/validation-cloud-handler/types'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 
 import { VCRPCError } from './errors'
 
 export class ValidationCloudRpcHandler implements RpcHandler {
+  readonly type = 'RpcHandler'
+
   private apiKey: string
-  private network: Network
+  private networkConfig: NetworkConfig
   private baseUrl: string
   private id: string
 
   /**
    *
-   * @param {Network} network - The network to use.
+   * @param {NetworkConfig} networkConfig - The network to use.
    * @param {string} apiKey - The API key to authenticate with Validation Cloud's API.
    *
    * @description - This rpc handler integrates directly with Validation Cloud's API. And uses their RPC infrastructure to carry out the RPC functions.
    *
    */
-  constructor(network: Network, apiKey: string) {
+  constructor(networkConfig: NetworkConfig, apiKey: string) {
     if (!apiKey) {
       throw VCRPCError.invalidApiKey()
     }
 
-    this.network = network
+    this.networkConfig = networkConfig
     this.apiKey = apiKey
     this.baseUrl =
-      this.network.name === 'testnet'
+      this.networkConfig.name === 'testnet'
         ? 'https://testnet.stellar.validationcloud.io/v1/'
         : 'https://testnet.stellar.validationcloud.io/v1/' // no support to mainnet yet
 

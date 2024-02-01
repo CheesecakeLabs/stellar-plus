@@ -1,9 +1,9 @@
 import { Address, ContractSpec } from '@stellar/stellar-sdk'
 
 import { ContractEngine } from 'stellar-plus/core/contract-engine'
-import { i128, u32, u64 } from 'stellar-plus/types'
-
-import { Methods, spec } from './constants'
+import { ContractEngineConstructorArgs } from 'stellar-plus/core/contract-engine/types'
+import { TransactionInvocation } from 'stellar-plus/core/types'
+import { Methods, spec } from 'stellar-plus/soroban/contracts/certificate-of-deposit/constants'
 import {
   CertificateOfDepositContract,
   CertificateOfDepositContractConstructorArgs,
@@ -14,7 +14,8 @@ import {
   GetTimeLeftArgs,
   Initialize,
   WithdrawArgs,
-} from './types'
+} from 'stellar-plus/soroban/contracts/certificate-of-deposit/types'
+import { i128, u32, u64 } from 'stellar-plus/types'
 
 export class CertificateOfDepositClient extends ContractEngine implements CertificateOfDepositContract {
   private methods: typeof Methods
@@ -22,17 +23,24 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
   /**
    *
    * @param {string} contractId - The contract ID of the deployed Certificate of Deposit to use.
-   * @param {Network} network - The network to use.
+   * @param {NetworkConfig} networkConfig - The network to use.
    * @param {RpcHandler} rpcHandler - The RPC handler to use.
    *
    * @description - The certificate of deposit client is used for interacting with the certificate of deposit contract.
    *
    */
   constructor(args: CertificateOfDepositContractConstructorArgs) {
+    const contractSpec = args.contractParameters.spec || (spec as ContractSpec)
+    const contractParameters = {
+      ...args.contractParameters,
+      spec: contractSpec,
+    }
+
     super({
       ...args,
-      spec: spec as ContractSpec,
-    })
+      contractParameters,
+    } as ContractEngineConstructorArgs)
+
     this.methods = Methods
   }
 
@@ -56,9 +64,10 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
     await this.invokeContract({
       method: this.methods.deposit,
       methodArgs: { amount, address },
-      signers: args.signers,
-      header: args.header,
-      feeBump: args.feeBump,
+      // signers: args.signers,
+      // header: args.header,
+      // feeBump: args.feeBump,
+      ...(args as TransactionInvocation),
     })
   }
 
@@ -204,9 +213,10 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
         penalty_rate: penaltyRate as u64,
         allowance_period: args.allowancePeriod as u32,
       },
-      signers: args.signers,
-      header: args.header,
-      feeBump: args.feeBump,
+      // signers: args.signers,
+      // header: args.header,
+      // feeBump: args.feeBump,
+      ...(args as TransactionInvocation),
     })
   }
 

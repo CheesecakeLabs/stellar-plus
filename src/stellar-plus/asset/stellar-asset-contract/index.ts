@@ -3,11 +3,10 @@ import { Asset } from '@stellar/stellar-sdk'
 import { ClassicAssetHandler } from 'stellar-plus/asset/classic'
 import { ClassicAssetHandlerConstructorArgs } from 'stellar-plus/asset/classic/types'
 import { SorobanTokenHandler } from 'stellar-plus/asset/soroban-token'
+import { SorobanTokenHandlerConstructorArgs } from 'stellar-plus/asset/soroban-token/types'
 import { SACConstructorArgs, SACHandler as SACHandlerType } from 'stellar-plus/asset/stellar-asset-contract/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
-
-import { SorobanTokenHandlerConstructorArgs } from '../soroban-token/types'
 
 export class SACHandler implements SACHandlerType {
   public type: AssetTypes = AssetTypes.SAC
@@ -18,7 +17,7 @@ export class SACHandler implements SACHandlerType {
   /**
    *
    * @param args - The constructor arguments.
-   * @param {Network} args.network - The network to connect to.
+   * @param {NetworkConfig} args.networkConfig - The network to connect to.
    * Parameters related to the classic asset.
    * @param {string} args.code - The asset code.
    * @param {string} args.issuerPublicKey - The issuer public key.
@@ -40,7 +39,7 @@ export class SACHandler implements SACHandlerType {
    * @example - Initialize the Stellar Asset Contract handler and wrapping a classic asset with it:
    *
    * ```typescript
-   * const issuer = new StellarPlus.Account.DefaultAccountHandler({ network })
+   * const issuer = new StellarPlus.Account.DefaultAccountHandler({ networkConfig })
    * await issuer.friendbot?.initialize()
    *
    * const issuerInvocation: TransactionInvocation = {

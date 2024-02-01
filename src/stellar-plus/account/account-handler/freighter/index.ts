@@ -14,27 +14,27 @@ import {
   FreighterCallback,
 } from 'stellar-plus/account/account-handler/freighter/types'
 import { AccountBaseClient } from 'stellar-plus/account/base'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 
 import { FAHError } from './errors'
 
 export class FreighterAccountHandlerClient extends AccountBaseClient implements FreighterAccountHandler {
-  private network: Network
+  private networkConfig: NetworkConfig
 
   /**
    *
    * @args payload - The payload for the Freighter account handler. Additional parameters may be provided to enable different helpers.
    *
-   * @param {Network} payload.network The network to use.
+   * @param {NetworkConfig} payload.networkConfig The network to use.
    *
    * @description - The Freighter account handler is used for handling and creating new accounts by integrating with the browser extension Freighter App.
    */
   constructor(payload: FreighterAccHandlerPayload) {
-    const { network } = payload as { network: Network }
+    const { networkConfig } = payload as { networkConfig: NetworkConfig }
     const publicKey = ''
     super({ ...payload, publicKey })
 
-    this.network = network
+    this.networkConfig = networkConfig
     this.publicKey = ''
   }
 
@@ -111,7 +111,7 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
         const txXDR = tx.toXDR()
 
         const signedTx = await signTransaction(txXDR, {
-          networkPassphrase: this.network.networkPassphrase,
+          networkPassphrase: this.networkConfig.networkPassphrase,
           accountToSign: this.publicKey,
         })
         return signedTx
@@ -197,8 +197,8 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
   public async isNetworkCorrect(): Promise<boolean> {
     const networkDetails = await getNetworkDetails()
 
-    if (networkDetails.networkPassphrase !== this.network.networkPassphrase) {
-      throw FAHError.connectedToWrongNetworkError(this.network.name)
+    if (networkDetails.networkPassphrase !== this.networkConfig.networkPassphrase) {
+      throw FAHError.connectedToWrongNetworkError(this.networkConfig.name)
     }
     return true
   }

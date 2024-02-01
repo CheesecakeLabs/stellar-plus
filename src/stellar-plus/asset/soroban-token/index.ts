@@ -1,6 +1,6 @@
-import { Address } from '@stellar/stellar-sdk'
+import { Address, ContractSpec } from '@stellar/stellar-sdk'
 
-import { methods, spec } from 'stellar-plus/asset/soroban-token/constants'
+import { spec as defaultSpec, methods } from 'stellar-plus/asset/soroban-token/constants'
 import { SorobanTokenHandlerConstructorArgs, SorobanTokenInterface } from 'stellar-plus/asset/soroban-token/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
 import { ContractEngine } from 'stellar-plus/core/contract-engine'
@@ -13,7 +13,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
   /**
    *
    * @args args
-   * @param {Network} args.network - Network to connect to
+   * @param {NetworkConfig} args.networkConfig - Network to connect to
    * @param {ContractSpec=} args.spec - Contract specification object
    * @param {string=} args.contractId - Contract ID
    * @param {RpcHandler=} args.rpcHandler - RPC Handler
@@ -26,7 +26,10 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
   constructor(args: SorobanTokenHandlerConstructorArgs) {
     super({
       ...args,
-      spec: args.spec || spec,
+      contractParameters: {
+        ...args.contractParameters,
+        spec: args.contractParameters?.spec || (defaultSpec as ContractSpec),
+      },
     })
   }
 

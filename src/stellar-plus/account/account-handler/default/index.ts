@@ -13,7 +13,7 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
    *
    * @args  payload - The payload for the account handler. Additional parameters may be provided to enable different helpers.
    * @param {string=} payload.secretKey The secret key of the account. If not provided, a new random account will be created.
-   * @param {Network} payload.network The network to use.
+   * @param {NetworkConfig} payload.networkConfig The network to use.
    * @description - The default account handler is used for handling and creating new accounts by directly manipulating the secret key.
    */
   constructor(payload: DefaultAccountHandlerPayload) {

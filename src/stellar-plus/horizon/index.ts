@@ -2,22 +2,22 @@ import { Horizon } from '@stellar/stellar-sdk'
 
 import { StellarPlusError } from 'stellar-plus/error'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
-import { Network } from 'stellar-plus/types'
+import { NetworkConfig } from 'stellar-plus/types'
 
 export class HorizonHandlerClient implements HorizonHandler {
-  private network: Network
+  private networkConfig: NetworkConfig
   public server: Horizon.Server
 
   /**
    *
-   * @param {Network} network - The network to use.
+   * @param {NetworkConfig} networkConfig - The network to use.
    *
    * @description - The horizon handler is used for interacting with the Horizon server.
    *
    */
-  constructor(network: Network) {
-    this.network = network
-    this.server = new Horizon.Server(this.network.horizonUrl)
+  constructor(networkConfig: NetworkConfig) {
+    this.networkConfig = networkConfig
+    this.server = new Horizon.Server(this.networkConfig.horizonUrl)
   }
 
   /**

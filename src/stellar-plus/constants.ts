@@ -1,6 +1,6 @@
-import { Network, NetworksList } from 'stellar-plus/types'
+import { NetworkConfig, NetworksList } from 'stellar-plus/types'
 
-const networksConfig: { [key: string]: Network } = {
+const networksConfig: { [key: string]: NetworkConfig } = {
   futurenet: {
     name: NetworksList.futurenet,
     networkPassphrase: 'Test SDF Future Network ; October 2022',
@@ -23,8 +23,8 @@ const networksConfig: { [key: string]: Network } = {
     horizonUrl: 'https://horizon.stellar.org',
   },
 }
-const testnet: Network = networksConfig.testnet
-const futurenet: Network = networksConfig.futurenet
-const mainnet: Network = networksConfig.mainnet
+const testnet: NetworkConfig = networksConfig.testnet
+const futurenet: NetworkConfig = networksConfig.futurenet
+const mainnet: NetworkConfig = networksConfig.mainnet
 
 export { testnet, futurenet, mainnet }

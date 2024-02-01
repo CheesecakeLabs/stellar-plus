@@ -3,11 +3,11 @@ import { FreighterAccountHandlerErrorCodes } from 'stellar-plus/account/account-
 import { FriendbotErrorCodes } from 'stellar-plus/account/helpers/friendbot/errors'
 import { ClassicAssetHandlerErrorCodes } from 'stellar-plus/asset/classic/errors'
 import { ChannelAccountsErrorCodes } from 'stellar-plus/channel-accounts/errors'
-import { ClassicTransactionProcessorErrorCodes } from 'stellar-plus/core/classic-transaction-processor/errors'
 import { ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/errors'
-import { SorobanTransactionProcessorErrorCodes } from 'stellar-plus/core/soroban-transaction-processor/errors'
-import { ChannelAccountsTransactionSubmitterErrorCodes } from 'stellar-plus/core/transaction-submitter/classic/channel-accounts-submitter/errors'
-import { DefaultTransactionSubmitterErrorCodes } from 'stellar-plus/core/transaction-submitter/classic/default/errors'
+import { ErrorCodesPipelineBuildTransaction } from 'stellar-plus/core/pipelines/build-transaction/errors'
+import { ErrorCodesPipelineClassicSignRequirements } from 'stellar-plus/core/pipelines/classic-sign-requirements/errors'
+import { ErrorCodesPipelineSimulateTransaction } from 'stellar-plus/core/pipelines/simulate-transaction/errors'
+import { ErrorCodesPipelineSorobanGetTransaction } from 'stellar-plus/core/pipelines/soroban-get-transaction/errors'
 import { ValidationCloudRpcHandlerErrorCodes } from 'stellar-plus/rpc/validation-cloud-handler/errors'
 
 import { AxiosErrorInfo } from './helpers/axios'
@@ -39,10 +39,10 @@ export type ErrorCodes =
   | DefaultAccountHandlerErrorCodes
   | FreighterAccountHandlerErrorCodes
   | ValidationCloudRpcHandlerErrorCodes
-  | DefaultTransactionSubmitterErrorCodes
-  | ClassicTransactionProcessorErrorCodes
-  | SorobanTransactionProcessorErrorCodes
-  | ChannelAccountsTransactionSubmitterErrorCodes
+  | ErrorCodesPipelineBuildTransaction
+  | ErrorCodesPipelineSimulateTransaction
+  | ErrorCodesPipelineSorobanGetTransaction
+  | ErrorCodesPipelineClassicSignRequirements
 
 export enum GeneralErrorCodes {
   ER000 = 'ER000',
@@ -61,4 +61,5 @@ export type Meta = {
   sorobanGetTransactionData?: GetTransactionErrorInfo
   sorobanSendTransactionData?: SendTransactionErrorInfo
   horizonSubmitTransactionData?: SubmitTransactionMetaInfo
+  conveyorBeltErrorMeta?: unknown
 }
