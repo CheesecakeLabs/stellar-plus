@@ -35,6 +35,11 @@ export class FeeBumpWrapperPlugin
       throw new Error('Transaction is already a FeeBump, FeeBumpWrapperPlugin should not be used')
     }
 
+    // No fee bump is applied if source is the same for the fee bump and the transaction
+    if ((transaction as Transaction).source === this.feeBumpHeader.header.source) {
+      return item
+    }
+
     const feeBumpPipeline = new FeeBumpPipeline()
     const feeBumpEnvelope = await feeBumpPipeline.execute(
       {
