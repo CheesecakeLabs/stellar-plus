@@ -122,7 +122,7 @@ This configuration enables debugging and allows for custom handling of performan
 
 ## Example Usage
 
-The `CertificateOfDepositClient` class (See [certificate-of-deposit-client.md](certificate-of-deposit-client.md "mention")) is an example of how to extend the `ContractEngine` class to interact with a specific smart contract. This client showcases the implementation of methods that utilize both `readFromContract` and `invokeContract` functionalities provided by `ContractEngine`.
+The `CertificateOfDepositClient` class (See [certificate-of-deposit-client.md](../contracts/certificate-of-deposit-client.md "mention")) is an example of how to extend the `ContractEngine` class to interact with a specific smart contract. This client showcases the implementation of methods that utilize both `readFromContract` and `invokeContract` functionalities provided by `ContractEngine`.
 
 ### State-Changing Operation: `deposit`
 
