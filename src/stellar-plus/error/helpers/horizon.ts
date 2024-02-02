@@ -31,7 +31,7 @@ export type HorizonDiagnostics = {
 
 export const diagnoseSubmitError = (
   error: Error | AxiosError,
-  tx?: Transaction | FeeBumpTransaction
+  tx: Transaction | FeeBumpTransaction
 ): HorizonDiagnostics => {
   const transactionData = tx ? extractTransactionData(tx) : undefined
 
