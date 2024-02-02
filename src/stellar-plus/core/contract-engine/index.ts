@@ -21,7 +21,6 @@ import {
   WrapClassicAssetArgs,
   isRestoreFootprintWithLedgerKeys,
 } from 'stellar-plus/core/contract-engine/types'
-import { SimulatedInvocationOutput } from 'stellar-plus/core/pipelines/simulate-transaction/types'
 import { ContractIdOutput, ContractWasmHashOutput } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
 import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
 import { TransactionInvocation } from 'stellar-plus/core/types'
@@ -200,9 +199,7 @@ export class ContractEngine {
   protected async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
     this.requireContractId()
 
-    const output = (await this.invokeContract(args, true)) as SimulatedInvocationOutput
-
-    return output.value
+    return await this.invokeContract(args, true)
   }
 
   /**
@@ -265,7 +262,7 @@ export class ContractEngine {
       },
     })
 
-    return result.output
+    return result.output?.value
   }
 
   //==========================================

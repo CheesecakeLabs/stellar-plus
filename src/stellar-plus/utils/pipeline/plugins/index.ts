@@ -1,3 +1,4 @@
+import { classicTransactionPlugins } from './classic-transaction'
 import { genericPlugins } from './generic'
 import { filterPluginsByName, filterPluginsByType, filterPluginsByTypes } from './helpers'
 import { simulateTransactionPlugins } from './simulate-transaction'
@@ -7,6 +8,7 @@ import { submitTransactionPlugins } from './submit-transaction'
 
 export const plugins = {
   generic: genericPlugins,
+  classicTransaction: classicTransactionPlugins,
   simulateTransaction: simulateTransactionPlugins,
   sorobanGetTransaction: sorobanGetTransactionPlugins,
   sorobanTransaction: sorobanTransactionPlugins,

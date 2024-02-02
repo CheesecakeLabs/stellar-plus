@@ -1,10 +1,5 @@
 import { AccountHandler } from 'stellar-plus/account'
 import {
-  ClassicTransactionPipelineInput,
-  ClassicTransactionPipelineOutput,
-  ClassicTransactionPipelineType,
-} from 'stellar-plus/core/pipelines/classic-transaction/types'
-import {
   SorobanTransactionPipelineInput,
   SorobanTransactionPipelineOutput,
   SorobanTransactionPipelineType,
@@ -17,7 +12,9 @@ import {
   InputType,
 } from 'stellar-plus/utils/pipeline/plugins/soroban-transaction/channel-accounts/types'
 
-class ChannelAccountsPlugin<Input extends InputType, Output, Type> implements BeltPluginType<Input, Output, Type> {
+export class BaseChannelAccountsPlugin<Input extends InputType, Output, Type>
+  implements BeltPluginType<Input, Output, Type>
+{
   readonly type
   readonly name = 'ChannelAccountsPlugin'
   private freeChannels: AccountHandler[]
@@ -147,17 +144,7 @@ class ChannelAccountsPlugin<Input extends InputType, Output, Type> implements Be
   }
 }
 
-export class ClassicChannelAccountsPlugin extends ChannelAccountsPlugin<
-  ClassicTransactionPipelineInput,
-  ClassicTransactionPipelineOutput,
-  ClassicTransactionPipelineType
-> {
-  constructor(args: ChannelAccountsPluginConstructorArgs) {
-    super(ClassicTransactionPipelineType.id, args.channels)
-  }
-}
-
-export class SorobanChannelAccountsPlugin extends ChannelAccountsPlugin<
+export class SorobanChannelAccountsPlugin extends BaseChannelAccountsPlugin<
   SorobanTransactionPipelineInput,
   SorobanTransactionPipelineOutput,
   SorobanTransactionPipelineType
