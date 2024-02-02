@@ -44,6 +44,7 @@
     * [Fee Bump Plugin](reference/utils/plugins/fee-bump-plugin.md)
     * [Channel Accounts Plugin](reference/utils/plugins/channel-accounts-plugin.md)
     * [Auto Restore Plugin](reference/utils/plugins/auto-restore-plugin.md)
+    * [Profiler Plugin](reference/utils/plugins/profiler-plugin.md)
   * [Pipeline](reference/utils/pipeline/README.md)
     * [Conveyor Belt](reference/utils/pipeline/conveyor-belt.md)
     * [Multi-belt Pipeline](reference/utils/pipeline/multi-belt-pipeline.md)
