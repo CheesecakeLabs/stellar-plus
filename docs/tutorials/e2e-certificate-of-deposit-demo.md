@@ -41,7 +41,7 @@ Our target with this demo is to exemplify a direct workflow to how the Stellar P
 
 In this first step, we'll start by defining which network we'll be operating in this demo, which for now is the `testnet`. Then we'll start a new account handler to manage the Opex account and initialize it with friendbot.\
 \
-Once the account is fully created and funded, we'll then creat a `TransactionInvocation` object for transactions made by the Opex account. This object will also be used to define the Fee Bump strategy for the subsequent transactions processed.
+Once the account is fully created and funded, we'll then create a `TransactionInvocation` object for transactions made by the Opex account. This object will also be used to define the Fee Bump strategy for the subsequent transactions processed.
 
 {% code lineNumbers="true" %}
 ```typescript
@@ -291,7 +291,7 @@ For this step just as a fun bonus, instead of using SDF's testnet RPC, we'll ins
 
 With your own key, we'll just go back to Step 4 and make some slight changes. We'll initialize a custom Validation Cloud RPC handler providing our API key. Then we just need to provide this handler and optional argument when initializing our CD client.\
 \
-Since the CD client extends the [contract-engine.md](../reference/contracts/contract-engine.md "mention"), it'll automatically ensure this handler is used to perform all direct interactions with the RPC such as simulating and submitting transactions.
+Since the CD client extends the [contract-engine.md](../reference/core/contract-engine.md "mention"), it'll automatically ensure this handler is used to perform all direct interactions with the RPC such as simulating and submitting transactions.
 
 {% code overflow="wrap" lineNumbers="true" %}
 ```typescript
