@@ -99,7 +99,7 @@ console.log("Public key: ", distributionAccount.getPublicKey());
 
 Searching for the public key in the Stellar Expert should display the account with all of its historical data, balances and more.
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption><p>Distribution account as seen in the Stellar Expert</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (15).png" alt=""><figcaption><p>Distribution account as seen in the Stellar Expert</p></figcaption></figure>
 
 ## Complete Example
 
