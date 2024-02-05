@@ -8,10 +8,11 @@ In this tutorial, we'll demonstrate how to execute bulk payments on the Stellar 
 
 ## Prerequisites
 
-* **Basic Understanding of Stellar Concepts**: Familiarize yourself with Stellar network fundamentals, including assets, accounts, trustlines, and transactions. For more in-depth information, especially on asset issuance and control, refer to Stellar's official documentation on [Asset Design Considerations](https://developers.stellar.org/docs/issuing-assets/control-asset-access).
-* **Basic understanding of Channel Accounts:**  Familiarize yourself with how channel accounts can be used to enable bulk transactions to be executed in the Stellar network. For more in-depth information refer to Stellar's official documentation on [Channel Accounts](https://developers.stellar.org/docs/encyclopedia/channel-accounts).
-* **Node.js Environment**: Set up a Node.js environment to run your JavaScript code.&#x20;
-* **StellarPlus Library**: Ensure that the StellarPlus library is installed in your project. For the installation steps, refer to [quick-start.md](../quick-start.md "mention").
+* **Basic understanding of Stellar concepts**: Familiarize with Stellar network fundamentals, including assets, accounts, trustlines, and transactions. For more in-depth information, especially on asset issuance and control, refer to Stellar's official documentation on [Asset Design Considerations](https://developers.stellar.org/docs/issuing-assets/control-asset-access).
+  * **Channel accounts:**  Understanding how channel accounts can be used to enable bulk transactions to be executed in the Stellar network. For more in-depth information refer to Stellar's official documentation on [Channel Accounts](https://developers.stellar.org/docs/encyclopedia/channel-accounts).
+  * **Fee bump transactions**: Understanding how fee bump transactions can be used to redirect network costs to be covered by a central account during transaction processing. For more in-depth information refer to Stellar's official documentation on [Fee Bump Transactions](https://developers.stellar.org/docs/encyclopedia/fee-bump-transactions).
+* **Node.js environment**: Set up a Node.js environment to run your JavaScript code.&#x20;
+* **Stellar Plus library**: Ensure that the StellarPlus library is installed in your project. For the installation steps, refer to [quick-start.md](../quick-start.md "mention").
 
 ## Step-by-Step Guide
 
@@ -20,11 +21,11 @@ In this tutorial, we'll demonstrate how to execute bulk payments on the Stellar 
 The first step in our bulk payments example is to initialize an account to cover the operational expenditure, here, we're naming it the opex account. This account plays a crucial role in managing the operations of our bulk payment process.
 
 ```typescript
-const network = StellarPlus.Constants.testnet;
+const networkConfig = StellarPlus.Constants.testnet;
 
 console.log("Initializing opex account");
 const opexAccount = new StellarPlus.Account.DefaultAccountHandler({
-  network,
+  networkConfig,
 });
 await opex.friendbot?.initialize();
 
@@ -36,49 +37,42 @@ await opex.friendbot?.initialize();
 
 This step establishes the primary account required for handling the core setup of our bulk payments process.
 
-### Step 2: Setting Up Transaction Submitter and Channel Accounts
+### Step 2: Opening Channel Accounts and Setting up the Plugin
 
-After initializing the opex account, the next step involves setting up the transaction submitter and preparing channel accounts for handling transactions.
+After initializing the opex account, the next step involves opening a number of channel accounts to be used as resources for submitting transactions and initializing the Channel Accounts plugins, which automatically manage these accounts and handles each transaction.
 
 ```typescript
 const defaultFeeBump = {
   header: {
     source: opex.getPublicKey(),
     fee: "10000",
-    timeout: 30,
+    timeout: 45,
   },
   signers: [opex],
 };
 
-const transactionSubmitter =
-  new StellarPlus.Core.Classic.ChannelAccountsTransactionSubmitter(
-    network,
-    defaultFeeBump
-  );
+const channels = await StellarPlus.Utils.ChannelAccountsHandler.openChannels({
+    numberOfChannels: 15,
+    sponsor: opex,
+    networkConfig,
+    txInvocation: defaultFeeBump,
+});
 
-await transactionSubmitter.registerChannels(
-  await StellarPlus.Utils.ChannelAccountsHandler.openChannels(
-    {
-      numberOfChannels: 15,
-      sponsor: opex,
-      network,
-      txInvocation: defaultFeeBump,
-    }
-  )
-);
+const channelAccountsPlugin =
+  new StellarPlus.Utils.Plugins.classicTransaction.channelAccounts({
+    channels,
+  } as ChannelAccountsPluginConstructorArgs);
 ```
 
 #### Explanation:
 
-* **Default Fee Bump Configuration**: Configure the default settings for transaction fees, source account, and timeout. Here, by defining a default Fee Bump and providing it directly to the transaction submitter, we ensure that all transactions triggered through this submitter will be wrapped with this fee bump configuration in case none is explicitly provided at the invocation.\
+* **Default Fee Bump Configuration**:  Configure the default settings for transaction fees, source account, and timeout. Here, by defining a transaction invocation object as a default Fee Bump and combining it with the [Fee Bump Wrapper Plugin](../reference/utils/plugins/fee-bump-plugin.md) , we ensure that all transactions will be wrapped with this fee bump configuration in case none is explicitly provided at the invocation.\
   \
-  This allows us to ensure that when performing our subsequent transactions with this submitter, all fee costs will be redirected and covered by our central opex account.
-* **Transaction Submitter**: Create a `ChannelAccountsTransactionSubmitter` instance. This component is responsible for efficiently managing and submitting transactions to the Stellar network. It implements the concept of Channel Accounts and ensures a high throughput to the network with minimal required configuration.
-* **Initializing Channel Accounts**: Initialize channel accounts using the opex account and register these accounts to the `transactionSubmitter`. \
-  \
-  These channel accounts are created with a special configuration so they are sponsored by our opex account, this ensures we don't have to send lumens to any of those, and all operational costs to instantiate and use these accounts are covered by the opex account.\
-  \
-  When we provide these accounts to the transactionSubmitter, they are registered, to be used as channel accounts for all subsequent transactions triggered by this submitter.
+  This allows us to ensure that when performing our subsequent transactions with this configuration, all fee costs will be redirected and covered by our central opex account.\
+
+* **Channels**: With the assistance of the `ChannelAccountsHandler`, we initialize a number of channel accounts. This tool creates these accounts using the provided opex account handler, sponsoring the reserves and initializing them with zero funds. With this configuration, we're sure these accounts won't directly handle any lumens and only be used as channels for the transactions. If a personalized configuration is necessary, one could create their own channel accounts and simply arrange an array of `AccountHandler` objects with the capability to sign on behalf of the channels.\
+
+* **Initializing the plugin**: The channels are then provided to the [Classic Channel Accounts plugin](../reference/utils/plugins/channel-accounts-plugin.md), creating a new instance of the plugin that can be used in classic transaction pipelines to automatically manage the transactions' usage of channel accounts.
 
 This step is critical for ensuring that the bulk payment process is efficient and scalable, leveraging Stellar's capabilities for handling multiple simultaneous transactions.
 
@@ -88,12 +82,12 @@ Following the setup of the transaction submitter and channel accounts, the next 
 
 ```typescript
 const issuerAccount = new StellarPlus.Account.DefaultAccountHandler({
-  network,
+  networkConfig,
 });
 await issuerAccount.friendbot?.initialize();
 
 const userAccount = new StellarPlus.Account.DefaultAccountHandler({
-  network,
+  networkConfig,
 });
 await userAccount.friendbot?.initialize();
 ```
@@ -112,12 +106,18 @@ These steps ensure that both the issuer of the asset and the recipient of the pa
 After initializing the necessary accounts, the next step involves creating the asset and setting up the transaction configuration.
 
 ```javascript
-const cakeToken = new StellarPlus.Asset.ClassicAssetHandler({
-    code: 'CAKE',
-    issuerPublicKey: issuerAccount.getPublicKey(),
-    network,
+  const cakeToken = new StellarPlus.Asset.ClassicAssetHandler({
+    code: "CAKE",
+    networkConfig,
     issuerAccount,
-    transactionSubmitter,
+    options: {
+      classicTransactionPipeline: {
+        plugins: [
+          channelAccountsPlugin,
+          new FeeBumpWrapperPlugin(defaultFeeBump),
+        ],
+      },
+    },
   });
 
 const txInvocationConfig = {
@@ -126,24 +126,27 @@ const txInvocationConfig = {
     fee: "1000",
     timeout: 30,
   },
-  signers: [],
+  signers: [userAccount],
 };
 
 await cakeToken.addTrustlineAndMint({
     to: userAccount.getPublicKey(),
     amount: 100,
     ...txInvocationConfig,
-    signers: [userAccount],
   });
 ```
 
 #### Explanation:
 
-* **Creating the Asset**: Instantiate the 'CAKE' asset using `ClassicAssetHandler`. This step involves specifying the asset's name, the issuer's public key, the network, the issuer account, and the transaction submitter.
-* **Setting Up Transaction Configuration**: Define the transaction invocation configuration, including the source account (user account), fee, and timeout settings.
+* **Creating the Asset**: Instantiate the 'CAKE' asset using `ClassicAssetHandler`. This step involves specifying the asset's name, the issuer's public key, the network, and the issuer account, and providing the plugins to be used in this asset's transaction pipeline. This is very important for this use case because these plugins will act as middleware in the transaction pipeline ensuring all transactions are modified in the same way. &#x20;
+  * The [Channel Accounts plugin](../reference/utils/plugins/channel-accounts-plugin.md) will be responsible for allocating and managing the channels accounts.&#x20;
+  * The [Fee Bump Wrapper plugin](../reference/utils/plugins/fee-bump-plugin.md) will ensure that all transactions are wrapped in a fee bump and redirect the fees to the opex account. Here we're utilizing this plugin as well because all accounts created through the `ChannelAccountsHandler` are sponsored and hold no lumens, so we need a fee bump to cover the network fees.\
+
+* **Setting Up Transaction Configuration**: Define the transaction invocation configuration, including the source account (user account), fee, and timeout settings. This object is meant to facilitate transactions involving this account.\
+
 * **Adding Trustline and Minting**: Add a trustline for the 'CAKE' asset to the user account and mint an initial amount of the asset. This step is crucial to enable the user account to hold and transact in the newly created asset. \
   \
-  It is also important to note that to authorize the creation of the asset trustline, the transaction needs to be authorized by the user account so, we include the userAccount as a signer in this transaction invocation to include its signature to the transaction.
+  It is also important to note that to authorize the creation of the asset trustline, the transaction needs to be authorized by the asset issuer so, as we have initialized the asset with an `AccountHandler` of the asset issuer, the Asset will automatically include the issuer wherever necessary and authorize the transactions on their behalf.
 
 This step finalizes the asset creation process and prepares the user account to receive and hold the asset, setting the stage for executing the bulk payments.
 
@@ -233,13 +236,15 @@ Below is the complete code snippet, incorporating all the steps previously outli
 {% code lineNumbers="true" %}
 ```typescript
 import { StellarPlus } from "stellar-plus";
+import { ChannelAccountsPluginConstructorArgs } from "stellar-plus/lib/stellar-plus/utils/pipeline/plugins/soroban-transaction/channel-accounts/types";
+import { FeeBumpWrapperPlugin } from "stellar-plus/lib/stellar-plus/utils/pipeline/plugins/submit-transaction/fee-bump";
 
 const run = async () => {
-  const network = StellarPlus.Constants.testnet;
+  const networkConfig = StellarPlus.Constants.testnet;
 
   console.log("Initializing opex account");
-  const opex= new StellarPlus.Account.DefaultAccountHandler({
-    network,
+  const opex = new StellarPlus.Account.DefaultAccountHandler({
+    networkConfig,
   });
   await opex.friendbot?.initialize();
 
@@ -247,46 +252,34 @@ const run = async () => {
     header: {
       source: opex.getPublicKey(),
       fee: "10000",
-      timeout: 30,
+      timeout: 45,
     },
     signers: [opex],
   };
 
-  const transactionSubmitter =
-    new StellarPlus.Core.Classic.ChannelAccountsTransactionSubmitter(
-      network,
-      defaultFeeBump
-    );
-  console.log("Initializing Channel Accounts");
+  console.log("Opening Channels");
 
- await transactionSubmitter.registerChannels(
-    await StellarPlus.Utils.ChannelAccountsHandler.openChannels(
-      {
-        numberOfChannels: 15,
-        sponsor: opex,
-        network,
-        txInvocation: defaultFeeBump,
-      }
-    )
-  );
+  const channels = await StellarPlus.Utils.ChannelAccountsHandler.openChannels({
+    numberOfChannels: 15,
+    sponsor: opex,
+    networkConfig,
+    txInvocation: defaultFeeBump,
+  });
+
+  const channelAccountsPlugin =
+    new StellarPlus.Utils.Plugins.classicTransaction.channelAccounts({
+      channels,
+    } as ChannelAccountsPluginConstructorArgs);
 
   console.log("Initializing issuer account");
   const issuerAccount = new StellarPlus.Account.DefaultAccountHandler({
-    network,
+    networkConfig,
   });
   await issuerAccount.friendbot?.initialize();
 
-  const cakeToken = new StellarPlus.Asset.ClassicAssetHandler({
-    code: 'CAKE',
-    issuerPublicKey: issuerAccount.getPublicKey(),
-    network,
-    issuerAccount,
-    transactionSubmitter,
-  });
-
   console.log("Initializing userAccount account");
   const userAccount = new StellarPlus.Account.DefaultAccountHandler({
-    network,
+    networkConfig,
   });
 
   await userAccount.friendbot?.initialize();
@@ -295,16 +288,29 @@ const run = async () => {
     header: {
       source: userAccount.getPublicKey(),
       fee: "1000",
-      timeout: 30,
+      timeout: 45,
     },
-    signers: [],
+    signers: [userAccount],
   };
 
+  const cakeToken = new StellarPlus.Asset.ClassicAssetHandler({
+    code: "CAKE",
+    networkConfig,
+    issuerAccount,
+    options: {
+      classicTransactionPipeline: {
+        plugins: [
+          channelAccountsPlugin,
+          new FeeBumpWrapperPlugin(defaultFeeBump),
+        ],
+      },
+    },
+  });
+
   await cakeToken.addTrustlineAndMint({
-    to: userAccount.getPublicKey(), 
-    amount: 100, 
+    to: userAccount.getPublicKey(),
+    amount: 100,
     ...txInvocationConfig,
-    signers: [userAccount],
   });
 
   const initialTime = Date.now();
@@ -318,9 +324,9 @@ const run = async () => {
     payments.push(
       cakeToken
         .mint({
-          to: userAccount.getPublicKey(), 
-          amount, 
-          ...txInvocationConfig
+          to: userAccount.getPublicKey(),
+          amount,
+          ...txInvocationConfig,
         })
         .then((result) => {
           console.log("Minted: ", amount);
