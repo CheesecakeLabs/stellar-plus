@@ -18,7 +18,7 @@ First, import the necessary components from the StellarPlus library and set the 
 ```typescript
 import { StellarPlus } from "stellar-plus";
 
-const network = StellarPlus.Constants.testnet;
+const networkConfig = StellarPlus.Constants.testnet;
 ```
 {% endcode %}
 
@@ -27,10 +27,10 @@ const network = StellarPlus.Constants.testnet;
 Create two accounts - one for issuing the asset (issuerAccount) and another for distributing it (distributionAccount). Initialize both accounts using the [friendbot.md](../reference/account/helpers/friendbot.md "mention") helper, which is especially useful on the testnet as it funds the accounts with test Lumens.
 
 ```typescript
-issuerAccount = new StellarPlus.Account.DefaultAccountHandler({network});
+issuerAccount = new StellarPlus.Account.DefaultAccountHandler({networkConfig});
 await issuerAccount.friendbot?.initialize();
 
-const distributionAccount = new StellarPlus.Account.DefaultAccountHandler({network});
+const distributionAccount = new StellarPlus.Account.DefaultAccountHandler({networkConfig});
 await distributionAccount.friendbot?.initialize();
 ```
 
@@ -41,8 +41,7 @@ Create an instance of your asset, specifying the asset code(here named 'CAKE '),
 ```typescript
 const cakeToken = new StellarPlus.Asset.ClassicAssetHandler({
   code: 'CAKE',
-  issuerPublicKey: issuerAccount.getPublicKey(),
-  network,
+  networkConfig,
   issuerAccount
 });
 ```
@@ -58,7 +57,7 @@ const txInvocationConfig = {
   header: {
     source: distributionAccount.getPublicKey(),
     fee: "1000",
-    timeout: 30,
+    timeout: 45,
   },
   signers: [distributionAccount],
 };
@@ -71,11 +70,11 @@ These parameters are used to bundle the underlying Stellar transaction and defin
 Create a trustline from the distribution account to the CAKE asset and mint 1,000,000 units of CAKE to the distribution account.
 
 ```typescript
-await cakeToken.addTrustlineAndMint(
-  distributionAccount.getPublicKey(),
-  1000000,
-  txInvocationConfig
-);
+await cakeToken.addTrustlineAndMint({
+    to: distributionAccount.getPublicKey(),
+    amount: 1000000,
+    ...txInvocationConfig,
+  });
 ```
 
 ### Step 6: Check Balance
@@ -97,7 +96,7 @@ As a last additional step, log your distribution account's public key so you can
 console.log("Public key: ", distributionAccount.getPublicKey());
 ```
 
-Searching for the public key in the Stellar Expert should display the account with all of its historical data, balances and more.
+Searching for the public key in the Stellar Expert should display the account with all of its historical data, balances, and more.
 
 <figure><img src="../.gitbook/assets/image (15).png" alt=""><figcaption><p>Distribution account as seen in the Stellar Expert</p></figcaption></figure>
 
@@ -110,44 +109,48 @@ Below is the complete code snippet, encapsulating all the steps outlined in the 
 import { StellarPlus } from "stellar-plus";
 
 const run = async () => {
-  const network = StellarPlus.Constants.testnet;
-  
-  const issuerAccount = new StellarPlus.Account.DefaultAccountHandler({network});
-  await issuerAccount.friendbot?.initialize();
-  
-  const distributionAccount = new StellarPlus.Account.DefaultAccountHandler({network});
-  await distributionAccount.friendbot?.initialize();
-  
-  const cakeToken = new StellarPlus.Asset.ClassicAssetHandler({
-    code: 'CAKE',
-    issuerPublicKey: issuerAccount.getPublicKey(),
-    network,
-    issuerAccount
+  const networkConfig = StellarPlus.Constants.testnet;
+
+  const issuerAccount = new StellarPlus.Account.DefaultAccountHandler({
+    networkConfig,
   });
-  
+  await issuerAccount.friendbot?.initialize();
+
+  const distributionAccount = new StellarPlus.Account.DefaultAccountHandler({
+    networkConfig,
+  });
+  await distributionAccount.friendbot?.initialize();
+
+  const cakeToken = new StellarPlus.Asset.ClassicAssetHandler({
+    code: "CAKE",
+    networkConfig,
+    issuerAccount,
+  });
+
   const txInvocationConfig = {
     header: {
       source: distributionAccount.getPublicKey(),
       fee: "1000",
-      timeout: 30,
+      timeout: 45,
     },
     signers: [distributionAccount],
   };
-  
-  await cakeToken.addTrustlineAndMint(
-    distributionAccount.getPublicKey(),
-    1000000,
-    txInvocationConfig
-  );
-  
+
+  await cakeToken.addTrustlineAndMint({
+    to: distributionAccount.getPublicKey(),
+    amount: 1000000,
+    ...txInvocationConfig,
+  });
+
   console.log(
     "Distribution account balance: ",
     await cakeToken.balance(distributionAccount.getPublicKey())
   );
-  
+
   console.log("Public key: ", distributionAccount.getPublicKey());
-}
+};
 
 run();
+
 ```
 {% endcode %}
