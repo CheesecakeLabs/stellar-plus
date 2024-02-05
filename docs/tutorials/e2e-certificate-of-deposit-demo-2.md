@@ -75,6 +75,7 @@ console.log(logDataPoolRouter);
 
 The profiler also provides the flexibility to apply filters and perform operations on the collected data. Refer to section [Soroban Profiler](broken-reference) for more information on using these features.&#x20;
 
+
 ### Using a custom profiler
 
 It is possible to use your own custom profiler to collect transaction metrics. For this, ensure your method follows this interface:

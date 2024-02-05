@@ -40,7 +40,9 @@ Our target with this demo is to exemplify a direct workflow to how the Stellar P
 
 In this first step, we'll start by defining which network we'll be operating in this demo, which for now is the `testnet`. Then we'll start a new account handler to manage the Issuer account and initialize it with friendbot.\
 \
+
 Once the account is fully created and funded, we'll then create an `TransactionInvocation` object for transactions made by the Issuer account.&#x20;
+
 
 {% code lineNumbers="true" %}
 ```typescript

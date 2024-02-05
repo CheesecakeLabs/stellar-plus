@@ -43,6 +43,7 @@ Similarly to the `postProcess` step, during the `processError` step of the Sorob
 
 
 
+
 ## Using the Profiler Plugin
 
 #### Initializing the Profiler
@@ -314,3 +315,4 @@ const combinedFormattedLog = profiler.data.getLog(combinedOptions);
 ```
 
 In this comprehensive example, the log is first filtered by method name and CPU instruction count, then aggregated for average RAM usage, and finally formatted as CSV. This approach demonstrates how the Profiler's features can be combined to extract tailored insights from smart contract interactions, facilitating detailed performance analysis and reporting.
+

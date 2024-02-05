@@ -1,6 +1,6 @@
 {
   "name": "stellar-plus",
-  "version": "0.6.0",
+  "version": "0.6.2",
   "description": "beta version of stellar-plus, an all-in-one sdk for the Stellar blockchain",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -51,8 +51,8 @@
   },
   "dependencies": {
     "@stellar/freighter-api": "^1.7.1",
-    "axios": "^1.6.2",
     "@stellar/stellar-sdk": "^11.2.1",
+    "axios": "^1.6.2",
     "uuid": "^9.0.1"
   }
 }

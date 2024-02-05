@@ -8,6 +8,7 @@ import { ErrorCodesPipelineBuildTransaction } from 'stellar-plus/core/pipelines/
 import { ErrorCodesPipelineClassicSignRequirements } from 'stellar-plus/core/pipelines/classic-sign-requirements/errors'
 import { ErrorCodesPipelineSimulateTransaction } from 'stellar-plus/core/pipelines/simulate-transaction/errors'
 import { ErrorCodesPipelineSorobanGetTransaction } from 'stellar-plus/core/pipelines/soroban-get-transaction/errors'
+import { ErrorCodesPipelineSubmitTransaction } from 'stellar-plus/core/pipelines/submit-transaction/errors'
 import { ValidationCloudRpcHandlerErrorCodes } from 'stellar-plus/rpc/validation-cloud-handler/errors'
 
 import { AxiosErrorInfo } from './helpers/axios'
@@ -40,6 +41,7 @@ export type ErrorCodes =
   | FreighterAccountHandlerErrorCodes
   | ValidationCloudRpcHandlerErrorCodes
   | ErrorCodesPipelineBuildTransaction
+  | ErrorCodesPipelineSubmitTransaction
   | ErrorCodesPipelineSimulateTransaction
   | ErrorCodesPipelineSorobanGetTransaction
   | ErrorCodesPipelineClassicSignRequirements

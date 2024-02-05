@@ -1,34 +1,27 @@
 import { AccountHandler } from 'stellar-plus/account'
 import {
-  ClassicTransactionPipelineInput,
-  ClassicTransactionPipelineOutput,
-  ClassicTransactionPipelineType,
-} from 'stellar-plus/core/pipelines/classic-transaction/types'
-import {
   SorobanTransactionPipelineInput,
   SorobanTransactionPipelineOutput,
   SorobanTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/soroban-transaction/types'
 import { StellarPlusError } from 'stellar-plus/error'
-import { FeeBumpHeader } from 'stellar-plus/types'
 import { BeltMetadata, BeltPluginType } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 import {
   ChannelAccountsPluginConstructorArgs,
   InputType,
 } from 'stellar-plus/utils/pipeline/plugins/soroban-transaction/channel-accounts/types'
 
-class ChannelAccountsPlugin<Input extends InputType, Output, Type> implements BeltPluginType<Input, Output, Type> {
+export class BaseChannelAccountsPlugin<Input extends InputType, Output, Type>
+  implements BeltPluginType<Input, Output, Type>
+{
   readonly type
   readonly name = 'ChannelAccountsPlugin'
   private freeChannels: AccountHandler[]
 
   private lockedChannels: { channel: AccountHandler; id: string }[] // Channels are allocated to items, and released when the item is processed.
-  private feeBump?: FeeBumpHeader
 
   constructor(typeId: Type, channels?: AccountHandler[]) {
     this.type = typeId
-    // this.feeBump = feeBump
-    // this.horizonHandler = new HorizonHandlerClient(network)
     this.freeChannels = []
     this.lockedChannels = []
     if (channels) {
@@ -136,7 +129,6 @@ class ChannelAccountsPlugin<Input extends InputType, Output, Type> implements Be
       ...item.txInvocation,
       ...{ header: { ...header, source: channel.getPublicKey() } },
       signers: [...item.txInvocation.signers, channel],
-      feeBump: this.feeBump && !item.txInvocation.feeBump ? (this.feeBump as FeeBumpHeader) : item.txInvocation.feeBump,
     }
 
     const updatedItem = {
@@ -147,17 +139,7 @@ class ChannelAccountsPlugin<Input extends InputType, Output, Type> implements Be
   }
 }
 
-export class ClassicChannelAccountsPlugin extends ChannelAccountsPlugin<
-  ClassicTransactionPipelineInput,
-  ClassicTransactionPipelineOutput,
-  ClassicTransactionPipelineType
-> {
-  constructor(args: ChannelAccountsPluginConstructorArgs) {
-    super(ClassicTransactionPipelineType.id, args.channels)
-  }
-}
-
-export class SorobanChannelAccountsPlugin extends ChannelAccountsPlugin<
+export class SorobanChannelAccountsPlugin extends BaseChannelAccountsPlugin<
   SorobanTransactionPipelineInput,
   SorobanTransactionPipelineOutput,
   SorobanTransactionPipelineType
