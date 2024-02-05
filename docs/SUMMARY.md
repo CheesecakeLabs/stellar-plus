@@ -1,7 +1,7 @@
 # Table of contents
 
-- [Welcome](README.md)
-- [Quick Start](quick-start.md)
+* [Welcome](README.md)
+* [Quick Start](quick-start.md)
 
 ## 🎓 Tutorials
 
@@ -22,7 +22,6 @@
 * [Asset](reference/asset/README.md)
   * [Classic Asset Handler](reference/asset/classic-asset-handler.md)
   * [Stellar Asset Contract Handler](reference/asset/stellar-asset-contract-handler.md)
-  * [Soroban Token Handler](reference/asset/soroban-token-handler.md)
   * [Soroban Token Handler](reference/asset/soroban-token-handler.md)
 * [Constants](reference/constants.md)
 * [Contract Clients](reference/contracts/README.md)
