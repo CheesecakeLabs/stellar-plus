@@ -28,4 +28,10 @@ or
 import { StellarPlus } from "stellar-plus";
 ```
 
-##
+
+
+Check out our tutorials section for step-by-step guides on how to use the Stellar Plus library for different use cases :
+
+{% content-ref url="broken-reference" %}
+[Broken link](broken-reference)
+{% endcontent-ref %}
