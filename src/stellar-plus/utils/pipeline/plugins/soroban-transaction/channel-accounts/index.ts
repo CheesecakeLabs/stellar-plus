@@ -5,7 +5,6 @@ import {
   SorobanTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/soroban-transaction/types'
 import { StellarPlusError } from 'stellar-plus/error'
-import { FeeBumpHeader } from 'stellar-plus/types'
 import { BeltMetadata, BeltPluginType } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 import {
   ChannelAccountsPluginConstructorArgs,
@@ -20,12 +19,9 @@ export class BaseChannelAccountsPlugin<Input extends InputType, Output, Type>
   private freeChannels: AccountHandler[]
 
   private lockedChannels: { channel: AccountHandler; id: string }[] // Channels are allocated to items, and released when the item is processed.
-  private feeBump?: FeeBumpHeader
 
   constructor(typeId: Type, channels?: AccountHandler[]) {
     this.type = typeId
-    // this.feeBump = feeBump
-    // this.horizonHandler = new HorizonHandlerClient(network)
     this.freeChannels = []
     this.lockedChannels = []
     if (channels) {
@@ -133,7 +129,6 @@ export class BaseChannelAccountsPlugin<Input extends InputType, Output, Type>
       ...item.txInvocation,
       ...{ header: { ...header, source: channel.getPublicKey() } },
       signers: [...item.txInvocation.signers, channel],
-      feeBump: this.feeBump && !item.txInvocation.feeBump ? (this.feeBump as FeeBumpHeader) : item.txInvocation.feeBump,
     }
 
     const updatedItem = {

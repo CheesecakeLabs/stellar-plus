@@ -97,7 +97,7 @@ The `ContractEngine` class in Stellar Plus provides a set of configurable option
 
     * **Default**: `defaultCostHandler`
     * **Purpose**: A callback function for handling transaction cost details and execution time. Receives `methodName`, `costs`, and `elapsedTime`. When this function is provided, the transaction cost data will be passed through this function instead of being logged directly to the console.
-    * **Integration**: Can be combined with the `Profiler` class from Stellar Plus for in-depth analysis (see the dedicated section on the [soroban-profiler.md](../utils/soroban-profiler.md "mention") class).
+    * **Integration**: Can be combined with the `Profiler` class from Stellar Plus for in-depth analysis (see the dedicated section on the [Broken link](broken-reference "mention") class).
 
     ####
 
