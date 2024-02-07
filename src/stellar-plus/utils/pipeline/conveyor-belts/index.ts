@@ -24,7 +24,8 @@ export class ConveyorBelt<Input, Output, BeltType> implements ConveyorBeltType<I
     try {
       processedItem = (await this.process(preProcessedItem, itemId)) as Output
     } catch (e) {
-      const error = StellarPlusError.fromUnkownError(e)
+      const error = e instanceof StellarPlusError ? e : StellarPlusError.fromUnkownError(e)
+
       const processedError = await this.processError(error, itemId)
       throw processedError
     }

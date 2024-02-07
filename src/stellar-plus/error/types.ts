@@ -6,6 +6,8 @@ import { ChannelAccountsErrorCodes } from 'stellar-plus/channel-accounts/errors'
 import { ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/errors'
 import { ErrorCodesPipelineBuildTransaction } from 'stellar-plus/core/pipelines/build-transaction/errors'
 import { ErrorCodesPipelineClassicSignRequirements } from 'stellar-plus/core/pipelines/classic-sign-requirements/errors'
+import { ErrorCodesPipelineFeeBump } from 'stellar-plus/core/pipelines/fee-bump/errors'
+import { ErrorCodesPipelineSignTransaction } from 'stellar-plus/core/pipelines/sign-transaction/errors'
 import { ErrorCodesPipelineSimulateTransaction } from 'stellar-plus/core/pipelines/simulate-transaction/errors'
 import { ErrorCodesPipelineSorobanGetTransaction } from 'stellar-plus/core/pipelines/soroban-get-transaction/errors'
 import { ErrorCodesPipelineSubmitTransaction } from 'stellar-plus/core/pipelines/submit-transaction/errors'
@@ -36,8 +38,10 @@ export type ErrorCodes =
   | FriendbotErrorCodes
   | ContractEngineErrorCodes
   | ChannelAccountsErrorCodes
+  | ErrorCodesPipelineFeeBump
   | ClassicAssetHandlerErrorCodes
   | DefaultAccountHandlerErrorCodes
+  | ErrorCodesPipelineSignTransaction
   | FreighterAccountHandlerErrorCodes
   | ValidationCloudRpcHandlerErrorCodes
   | ErrorCodesPipelineBuildTransaction
