@@ -1,6 +1,6 @@
 # Profiler Plugin
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 The Profiler plugin can be used to collect data about the Soroban transactions execution, providing valuable insights about the contract application performance and resource consumption. At each execution, the profiler plugin will automatically collect and store data in an internal dataset that can later be queried and/or exported to different formats for logging and output to a file.
 
@@ -23,8 +23,6 @@ For an example implementation of this tool, refer to Cheesecake Lab's profiling 
 
 During the `preProcess` step of the Soroban Transaction pipeline, the Profiler plugin will begin its processing for the current item following the steps below:
 
-
-
 1. Start a timer for the current item
 2. Generate an empty entry in the data log for the current item
 3. Inject data extraction plugins for this item's execution
@@ -35,14 +33,9 @@ During the `preProcess` step of the Soroban Transaction pipeline, the Profiler p
 
 During the `postProcess` step of the Soroban Transaction pipeline, the Profiler plugin stops this item's timer and finalizes the entry in the data log as a successful execution.
 
-
-
 ## processError
 
 Similarly to the `postProcess` step, during the `processError` step of the Soroban Transaction pipeline, the Profiler plugin also stops this item's timer but in this scenario, it finalizes the entry in the data log as a failed execution since it didn't go through the whole pipeline and wasn't fully processed.
-
-
-
 
 ## Using the Profiler Plugin
 
@@ -102,7 +95,7 @@ const sacToken = new StellarPlus.Asset.SACHandler({
 
 ### Data Methods
 
-To access the data collected, one should simply invoke the profiler internal data instance and its methods.&#x20;
+To access the data collected, one should simply invoke the profiler internal data instance and its methods.
 
 ```typescript
  console.log(
@@ -131,8 +124,6 @@ To access the data collected, one should simply invoke the profiler internal dat
 
 * **Arguments**: None.
 * **Returns**: Void. Clears the current log entries.
-
-
 
 ### Filtering Data
 
@@ -198,8 +189,7 @@ const combinedFilter = {
 const log = profiler.data.getLog({ filter: combinedFilter });
 ```
 
-These filters enable targeted logging of contract interactions, making the analysis of smart contract performance more focused and efficient.\
-
+These filters enable targeted logging of contract interactions, making the analysis of smart contract performance more focused and efficient.\\
 
 ### Aggregating Data
 
@@ -268,8 +258,6 @@ This aggregates all resources using the sum method, providing a total view of re
 
 Aggregation in the Soroban Profiler simplifies the analysis of extensive log data, providing key insights into the efficiency and performance of smart contract interactions.
 
-
-
 ### Output Formatting
 
 The Soroban Profiler offers versatile output formatting options, enabling users to transform the aggregated or filtered log data into structured and easily interpretable formats. This feature is particularly useful for reporting and in-depth analysis.
@@ -315,4 +303,3 @@ const combinedFormattedLog = profiler.data.getLog(combinedOptions);
 ```
 
 In this comprehensive example, the log is first filtered by method name and CPU instruction count, then aggregated for average RAM usage, and finally formatted as CSV. This approach demonstrates how the Profiler's features can be combined to extract tailored insights from smart contract interactions, facilitating detailed performance analysis and reporting.
-

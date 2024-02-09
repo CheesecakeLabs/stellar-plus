@@ -7,7 +7,7 @@ Given a transaction or fee bump transaction, this pipeline will verify the list 
 &#x20;
 
 {% hint style="info" %}
-Soroban authorization entries are not handled by this pipeline. A  dedicated Soroban authorization pipeline will released soon.
+Soroban authorization entries are not handled by this pipeline. A  dedicated [Soroban authorization pipeline](sign-transaction-1.md) handles this scenario.
 {% endhint %}
 
 ## Input

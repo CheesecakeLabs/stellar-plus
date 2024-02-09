@@ -14,7 +14,7 @@ layout:
 
 # Classic Signing Requirements
 
-<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 This pipeline is responsible for analyzing a provided transaction to identify which signing thresholds need to be met for each account involved in the envelope according to a Stellar Classic transaction. The process will not analyze Soroban operations therefore it covers the following:
 

@@ -33,6 +33,7 @@
     * [Classic Signing Requirements](reference/core/pipelines/classic-signing-requirements.md)
     * [Fee Bump](reference/core/pipelines/fee-bump.md)
     * [Sign Transaction](reference/core/pipelines/sign-transaction.md)
+    * [Soroban Auth](reference/core/pipelines/sign-transaction-1.md)
     * [Simulate Transaction](reference/core/pipelines/simulate-transaction.md)
     * [Soroban Get Transaction](reference/core/pipelines/soroban-get-transaction.md)
     * [Submit Transaction](reference/core/pipelines/submit-transaction.md)
