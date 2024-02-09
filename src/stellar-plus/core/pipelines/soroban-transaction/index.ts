@@ -47,6 +47,8 @@ import { NetworkConfig } from 'stellar-plus/types'
 
 import { MultiBeltPipeline } from '../../../utils/pipeline/multi-belt-pipeline' //'stellar-plus/utils/pipeline/multi-belt-pipeline'
 import { MultiBeltPipelineOptions } from '../../../utils/pipeline/multi-belt-pipeline/types'
+import { SorobanAuthPipeline } from '../soroban-auth'
+import { SorobanAuthPipelinePlugin, SorobanAuthPipelineType } from '../soroban-auth/types'
 
 export class SorobanTransactionPipeline extends MultiBeltPipeline<
   SorobanTransactionPipelineInput,
@@ -130,7 +132,24 @@ export class SorobanTransactionPipeline extends MultiBeltPipeline<
     // const assembledTransaction = SorobanRpc.assembleTransaction(builtTx, successfulSimulation.response).build()
     const assembledTransaction = successfulSimulation.assembledTransaction
 
-    // Soroban signature belt
+    // ======================= Soroban Auth ==========================
+
+    const sorobanAuthPipelinePlugins = this.getInnerPluginsByType(
+      executionPlugins,
+      'SorobanAuthPipeline' as SorobanAuthPipelineType
+    ) as SorobanAuthPipelinePlugin[]
+
+    const sorobanAuthPipeline = new SorobanAuthPipeline(sorobanAuthPipelinePlugins)
+
+    const sorobanAuthorizedTx = await sorobanAuthPipeline.execute(
+      {
+        transaction: assembledTransaction,
+        simulation: successfulSimulation.response,
+        signers: txInvocation.signers,
+        rpcHandler: this.rpcHandler,
+      },
+      itemId
+    )
 
     // ======================= Calculate classic requirements ==========================
     const classicSignRequirementsPipelinePlugins = this.getInnerPluginsByType(
@@ -140,7 +159,7 @@ export class SorobanTransactionPipeline extends MultiBeltPipeline<
 
     const classicSignRequirementsPipeline = new ClassicSignRequirementsPipeline(classicSignRequirementsPipelinePlugins)
 
-    const classicSignatureRequirements = await classicSignRequirementsPipeline.execute(assembledTransaction, itemId)
+    const classicSignatureRequirements = await classicSignRequirementsPipeline.execute(sorobanAuthorizedTx, itemId)
 
     // ======================= Sign Transaction ==========================
     const signTransactionPipelinePlugins = this.getInnerPluginsByType(
@@ -151,7 +170,7 @@ export class SorobanTransactionPipeline extends MultiBeltPipeline<
     const signTransactionPipeline = new SignTransactionPipeline(signTransactionPipelinePlugins)
     const signedTransaction = await signTransactionPipeline.execute(
       {
-        transaction: assembledTransaction,
+        transaction: sorobanAuthorizedTx,
         signatureRequirements: classicSignatureRequirements,
         signers: txInvocation.signers,
       },

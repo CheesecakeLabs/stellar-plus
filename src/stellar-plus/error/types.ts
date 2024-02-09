@@ -9,6 +9,7 @@ import { ErrorCodesPipelineClassicSignRequirements } from 'stellar-plus/core/pip
 import { ErrorCodesPipelineFeeBump } from 'stellar-plus/core/pipelines/fee-bump/errors'
 import { ErrorCodesPipelineSignTransaction } from 'stellar-plus/core/pipelines/sign-transaction/errors'
 import { ErrorCodesPipelineSimulateTransaction } from 'stellar-plus/core/pipelines/simulate-transaction/errors'
+import { ErrorCodesPipelineSorobanAuth } from 'stellar-plus/core/pipelines/soroban-auth/errors'
 import { ErrorCodesPipelineSorobanGetTransaction } from 'stellar-plus/core/pipelines/soroban-get-transaction/errors'
 import { ErrorCodesPipelineSubmitTransaction } from 'stellar-plus/core/pipelines/submit-transaction/errors'
 import { ValidationCloudRpcHandlerErrorCodes } from 'stellar-plus/rpc/validation-cloud-handler/errors'
@@ -40,6 +41,7 @@ export type ErrorCodes =
   | ChannelAccountsErrorCodes
   | ErrorCodesPipelineFeeBump
   | ClassicAssetHandlerErrorCodes
+  | ErrorCodesPipelineSorobanAuth
   | DefaultAccountHandlerErrorCodes
   | ErrorCodesPipelineSignTransaction
   | FreighterAccountHandlerErrorCodes
