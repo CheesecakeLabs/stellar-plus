@@ -40,10 +40,17 @@ export class SorobanAuthPipeline extends ConveyorBelt<
     // No internal auth to sign
     if (!simulation.result || simulation.result.auth.length === 0) return transaction
 
+    const authEntriesWithoutSourceCredentials: xdr.SorobanAuthorizationEntry[] = this.removeSourceCredentialAuth(
+      simulation.result.auth
+    )
+
+    // Source credentials are handled in the classic signing pipeline
+    if (authEntriesWithoutSourceCredentials.length === 0) return transaction
+
     if (signers.length === 0) throw PSAError.noSignersProvided(extractConveyorBeltErrorMeta(item, this.getMeta(itemId)))
 
     const authEntries: xdr.SorobanAuthorizationEntry[] = []
-    for (const authEntry of simulation.result.auth) {
+    for (const authEntry of authEntriesWithoutSourceCredentials) {
       const requiredSigner = Address.account(
         authEntry.credentials().address().address().accountId().ed25519()
       ).toString()
@@ -151,5 +158,12 @@ export class SorobanAuthPipeline extends ConveyorBelt<
     const expirationLedger = (ledger.sequence + timeout / 5 + 1).toFixed(0)
 
     return Number(expirationLedger)
+  }
+
+  protected removeSourceCredentialAuth(authEntries: xdr.SorobanAuthorizationEntry[]): xdr.SorobanAuthorizationEntry[] {
+    return authEntries.filter((entry) => {
+      const credentials = entry.credentials()
+      return credentials.switch() !== xdr.SorobanCredentialsType.sorobanCredentialsSourceAccount()
+    })
   }
 }
