@@ -1,4 +1,4 @@
-import { SorobanDataBuilder, Asset as StellarAsset, ContractSpec as _ContractSpec, xdr } from '@stellar/stellar-sdk'
+import { ContractSpec, SorobanDataBuilder, Asset as StellarAsset, xdr } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from 'stellar-plus/account'
 import {
@@ -6,8 +6,6 @@ import {
   SupportedInnerPlugins,
 } from 'stellar-plus/core/pipelines/soroban-transaction/types'
 import { EnvelopeHeader, FeeBumpHeader, NetworkConfig, TransactionInvocation } from 'stellar-plus/types'
-
-export type ContractSpec = _ContractSpec
 
 export type ContractEngineConstructorArgs = {
   networkConfig: NetworkConfig
