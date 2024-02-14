@@ -75,9 +75,18 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
     validUntilLedgerSeq: number,
     networkPassphrase: string
   ): Promise<xdr.SorobanAuthorizationEntry> {
-    const keypair = Keypair.fromSecret(this.secretKey)
-    const signedEntry = await authorizeEntry(entry, keypair, validUntilLedgerSeq, networkPassphrase) // Passphrase is necessary! Cannot be removed!
+    try {
+      const keypair = Keypair.fromSecret(this.secretKey)
+      const signedEntry = await authorizeEntry(entry, keypair, validUntilLedgerSeq, networkPassphrase) // Passphrase is necessary! Cannot be removed!
 
-    return signedEntry
+      return signedEntry
+    } catch (e) {
+      throw DAHError.failedToSignAuthorizationEntryError(
+        e as Error,
+        entry.toXDR('base64'),
+        validUntilLedgerSeq,
+        networkPassphrase
+      )
+    }
   }
 }
