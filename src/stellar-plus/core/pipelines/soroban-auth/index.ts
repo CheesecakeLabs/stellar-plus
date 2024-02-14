@@ -35,22 +35,28 @@ export class SorobanAuthPipeline extends ConveyorBelt<
   }
 
   protected async process(item: SorobanAuthPipelineInput, itemId: string): Promise<SorobanAuthPipelineOutput> {
-    const { transaction, simulation, signers, rpcHandler }: SorobanAuthPipelineInput = item
+    const {
+      transaction,
+      simulation,
+      signers,
+      rpcHandler,
+      additionalSorobanAuthToSign,
+      additionalSignedSorobanAuth,
+    }: SorobanAuthPipelineInput = item
 
-    // No internal auth to sign
-    if (!simulation.result || simulation.result.auth.length === 0) return transaction
+    const authEntriesToSign: xdr.SorobanAuthorizationEntry[] = [
+      ...this.removeSourceCredentialAuth(simulation.result?.auth), // Source credentials are handled in the classic signing pipeline
+      ...(additionalSorobanAuthToSign || []), // Additional auth entries to sign can come from other simulations and more complex authorization use cases
+    ]
 
-    const authEntriesWithoutSourceCredentials: xdr.SorobanAuthorizationEntry[] = this.removeSourceCredentialAuth(
-      simulation.result.auth
-    )
-
-    // Source credentials are handled in the classic signing pipeline
-    if (authEntriesWithoutSourceCredentials.length === 0) return transaction
+    if (authEntriesToSign.length === 0 && !additionalSignedSorobanAuth) return transaction
 
     if (signers.length === 0) throw PSAError.noSignersProvided(extractConveyorBeltErrorMeta(item, this.getMeta(itemId)))
 
-    const authEntries: xdr.SorobanAuthorizationEntry[] = []
-    for (const authEntry of authEntriesWithoutSourceCredentials) {
+    const authEntries: xdr.SorobanAuthorizationEntry[] = additionalSignedSorobanAuth
+      ? [...additionalSignedSorobanAuth]
+      : []
+    for (const authEntry of authEntriesToSign) {
       const requiredSigner = Address.account(
         authEntry.credentials().address().address().accountId().ed25519()
       ).toString()
@@ -104,7 +110,7 @@ export class SorobanAuthPipeline extends ConveyorBelt<
     authEntries: xdr.SorobanAuthorizationEntry[],
     sorobanData?: SorobanDataBuilder
   ): Transaction {
-    const op = transaction.toEnvelope().v1().tx().operations()[0] //as Operation.InvokeHostFunction
+    const op = transaction.toEnvelope().v1().tx().operations()[0]
 
     const authorizedOperation = Operation.invokeHostFunction({
       func: op.body().invokeHostFunctionOp().hostFunction(),
@@ -146,12 +152,15 @@ export class SorobanAuthPipeline extends ConveyorBelt<
     rpcHandler: RpcHandler,
     transaction: Transaction
   ): Promise<number> {
-    // The signatures will be valid to the same ledger as the transaction
+    // The signatures will be valid up to the same ledger as the transaction
     if (transaction.ledgerBounds?.maxLedger) {
       return transaction.ledgerBounds.maxLedger
     }
 
-    const timeout = transaction.timeBounds?.maxTime ? Number(transaction.timeBounds?.maxTime) - Date.now() / 1000 : 600 // Arbitrary 10 min default
+    const timeout =
+      transaction.timeBounds?.maxTime && Number(transaction.timeBounds?.maxTime) > 0
+        ? Number(transaction.timeBounds?.maxTime) - Date.now() / 1000
+        : 600 // Arbitrary 10 min default
 
     const ledger = await rpcHandler.getLatestLedger()
 
@@ -160,10 +169,16 @@ export class SorobanAuthPipeline extends ConveyorBelt<
     return Number(expirationLedger)
   }
 
-  protected removeSourceCredentialAuth(authEntries: xdr.SorobanAuthorizationEntry[]): xdr.SorobanAuthorizationEntry[] {
-    return authEntries.filter((entry) => {
-      const credentials = entry.credentials()
-      return credentials.switch() !== xdr.SorobanCredentialsType.sorobanCredentialsSourceAccount()
-    })
+  //
+  // Source credentials are handled in the classic signing pipeline.
+  // This method removes them from the auth entries to be signed.
+  //
+  protected removeSourceCredentialAuth(authEntries?: xdr.SorobanAuthorizationEntry[]): xdr.SorobanAuthorizationEntry[] {
+    return authEntries
+      ? authEntries.filter((entry) => {
+          const credentials = entry.credentials()
+          return credentials.switch() !== xdr.SorobanCredentialsType.sorobanCredentialsSourceAccount()
+        })
+      : []
   }
 }

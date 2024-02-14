@@ -1,4 +1,4 @@
-import { SorobanRpc, Transaction } from '@stellar/stellar-sdk'
+import { SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from 'stellar-plus/account'
 import { RpcHandler } from 'stellar-plus/rpc/types'
@@ -9,6 +9,8 @@ export type SorobanAuthPipelineInput = {
   simulation: SorobanRpc.Api.SimulateTransactionSuccessResponse | SorobanRpc.Api.SimulateTransactionRestoreResponse
   signers: AccountHandler[]
   rpcHandler: RpcHandler
+  additionalSorobanAuthToSign?: xdr.SorobanAuthorizationEntry[]
+  additionalSignedSorobanAuth?: xdr.SorobanAuthorizationEntry[]
 }
 
 export type SorobanAuthPipelineOutput = Transaction
