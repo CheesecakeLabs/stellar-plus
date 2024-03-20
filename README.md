@@ -1,6 +1,11 @@
 
 # Stellar-Plus
-
+<p align="center">
+  <a href="https://badge.fury.io/js/stellar-plus"><img src="https://badge.fury.io/js/stellar-plus.svg" alt="npm version" height="18"></a>
+  <a href="https://www.npmjs.com/package/stellar-sdk">
+    <img alt="Weekly Downloads" src="https://img.shields.io/npm/dw/stellar-plus" />
+  </a>
+</p>
 stellar-plus is an all-in-one Javascript library for building and interacting with the Stellar network. It bundles the main resources from the community into an easy-to-use set of tools and capabilities.
 
 It provides:
