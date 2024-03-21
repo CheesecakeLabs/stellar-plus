@@ -33,7 +33,6 @@ export const extractAxiosErrorInfo = (error: AxiosError): AxiosErrorInfo => {
       url: error.config?.url,
     }
   } else if (error.request) {
-    // The request was made but no response was received
     return {
       type: AxiosErrorTypes.AxiosRequestError,
       message: 'No response received',
@@ -41,7 +40,6 @@ export const extractAxiosErrorInfo = (error: AxiosError): AxiosErrorInfo => {
       url: error.config?.url,
     }
   } else {
-    // Not an Axios error
     return {
       type: AxiosErrorTypes.UnknownError,
       message: error.message || 'An unknown error occurred',

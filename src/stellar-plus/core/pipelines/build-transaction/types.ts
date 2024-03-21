@@ -14,7 +14,6 @@ export type BuildTransactionPipelineInput = {
 
 export type BuildTransactionPipelineOutput = Transaction
 
-// export type BuildTransactionPipelineType = 'BuildTransactionPipeline'
 export enum BuildTransactionPipelineType {
   id = 'BuildTransactionPipeline',
 }

@@ -33,7 +33,6 @@ export class ExtractInvocationOutputFromSimulationPlugin
     const { response, output } = item
 
     if (!response.result) {
-      // throw CEError.simulationMissingResult(simulated)
       throw new Error('simulationMissingResult')
     }
 

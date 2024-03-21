@@ -1,7 +1,6 @@
 import { StellarPlusError } from 'stellar-plus/error'
 
 export enum FreighterAccountHandlerErrorCodes {
-  // FAH0 General
   FAH001 = 'FAH001',
   FAH002 = 'FAH002',
   FAH003 = 'FAH003',

@@ -14,7 +14,6 @@ export type SorobanGetTransactionPipelineOutput = {
   output?: ContractIdOutput & ContractWasmHashOutput & ContractInvocationOutput<string> & FeeChargedOutput
 }
 
-// export type SorobanGetTransactionPipelineType = 'SorobanGetTransactionPipeline'
 export enum SorobanGetTransactionPipelineType {
   id = 'SorobanGetTransactionPipeline',
 }

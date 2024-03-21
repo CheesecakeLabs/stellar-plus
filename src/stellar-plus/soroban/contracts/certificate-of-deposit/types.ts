@@ -69,13 +69,3 @@ export type DepositData = {
   amount: i128
   timestamp: u64
 }
-
-// export type DataKey =
-//   | { tag: "Admin"; values: void }
-//   | { tag: "Asset"; values: void }
-//   | { tag: "CompoundStep"; values: void }
-//   | { tag: "Term"; values: void }
-//   | { tag: "YieldRate"; values: void }
-//   | { tag: "MinDeposit"; values: void }
-//   | { tag: "PenaltyRate"; values: void }
-//   | { tag: "Deposit"; values: readonly [Address] };

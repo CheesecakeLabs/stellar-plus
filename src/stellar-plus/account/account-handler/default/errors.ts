@@ -1,7 +1,6 @@
 import { StellarPlusError } from 'stellar-plus/error'
 
 export enum DefaultAccountHandlerErrorCodes {
-  // DAH0 General
   DAH001 = 'DAH001',
   DAH002 = 'DAH002',
 }
