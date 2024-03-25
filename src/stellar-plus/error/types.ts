@@ -27,12 +27,6 @@ export type StellarPlusErrorObject = {
   meta?: Meta
 }
 
-// export type ErrorSources = FriendbotErrorSources
-// HorizonApi = 'HorizonApi',
-// SorobanRpc = 'SorobanRpc',
-// ClassicTransaction = 'ClassicTransaction',
-// SorobanTransaction = 'SorobanTransaction',
-
 export type ErrorCodes =
   | GeneralErrorCodes
   | FriendbotErrorCodes

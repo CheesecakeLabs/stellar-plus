@@ -97,10 +97,6 @@ export class DefaultRpcHandler implements RpcHandler {
     return await this.server.getNetwork()
   }
 
-  // filters: Api.EventFilter[];
-  //       startLedger?: number;
-  //       cursor?: string;
-  //       limit?: number;
   /**
    *
    * @args {SorobanRpc.GetEventsRequest} request - The events request to get.

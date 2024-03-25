@@ -88,7 +88,6 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
           return await onPublicKeyReceived(publicKey)
         }
       } catch (e) {
-        // console.log("Couldn't retrieve public key from Freighter! ", error)
         throw FAHError.failedToLoadPublicKeyError(e as Error)
       }
     }
@@ -116,7 +115,6 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
         })
         return signedTx
       } catch (e) {
-        // console.log("Couldn't sign transaction with Freighter! ", error)
         throw FAHError.failedToSignTransactionError(e as Error)
       }
     } else {
@@ -142,10 +140,6 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
       return false
     }
 
-    //
-    // REVIEW: Documentation isn't clear, could be that
-    // we don't need both isAllowed and setAllowed
-    //
     const isApplicationAllowed = await this.isApplicationAuthorized()
     if (!isApplicationAllowed) {
       if (enforceConnection) {

@@ -36,7 +36,6 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
    *
    */
   constructor(args: ClassicAssetHandlerConstructorArgs) {
-    // super({ ...args })
     this.code = args.code
     this.issuerPublicKey =
       typeof args.issuerAccount === 'string' ? args.issuerAccount : args.issuerAccount.getPublicKey()
@@ -96,9 +95,6 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
   // /**
   //  * @description - Not implemented in pure classic assets. Only available for Soroban assets.
   //  */
-  // public async allowance(): Promise<bigint> {
-  //   throw new Error('Method not implemented in Classic ssets.')
-  // }
 
   public async approve(): Promise<void> {
     throw new Error('Method not implemented.')
@@ -128,10 +124,6 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
 
     return balanceLine[0] ? Number(balanceLine[0].balance) : 0
   }
-
-  // public async spendable_balance(): Promise<i128> {
-  //   throw new Error('Method not implemented.')
-  // }
 
   /**
    *
@@ -166,14 +158,6 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
     return
   }
 
-  // public async transfer_from(): Promise<void> {
-  //   throw new Error('Method not implemented.')
-  // }
-
-  // public async burn_from(): Promise<void> {
-  //   throw new Error('Method not implemented.')
-  // }
-
   /**
    *
    * @param {string} from - The account id to burn the asset from.
@@ -200,16 +184,6 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
   //
   //
   //
-
-  // public async set_admin(): Promise<void> {
-  //   throw new Error('Method not implemented.')
-  // }
-  // public async admin(): Promise<string> {
-  //   throw new Error('Method not implemented.')
-  // }
-  // public async set_authorized(): Promise<void> {
-  //   throw new Error('Method not implemented.')
-  // }
 
   /**
    *

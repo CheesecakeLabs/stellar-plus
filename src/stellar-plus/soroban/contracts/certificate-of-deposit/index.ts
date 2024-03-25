@@ -64,9 +64,6 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
     await this.invokeContract({
       method: this.methods.deposit,
       methodArgs: { amount, address },
-      // signers: args.signers,
-      // header: args.header,
-      // feeBump: args.feeBump,
       ...(args as TransactionInvocation),
     })
   }
@@ -213,17 +210,7 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
         penalty_rate: penaltyRate as u64,
         allowance_period: args.allowancePeriod as u32,
       },
-      // signers: args.signers,
-      // header: args.header,
-      // feeBump: args.feeBump,
       ...(args as TransactionInvocation),
     })
   }
-
-  // public async extendContractValidity(): Promise<void> {
-  //   const result = await this.invokeContract({
-  //     method: this.methods.extendContractValidity,
-  //     methodArgs: {},
-  //   });
-  // }
 }

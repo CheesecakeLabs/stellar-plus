@@ -15,7 +15,6 @@ export type SimulateTransactionPipelineOutput = {
   assembledTransaction: Transaction
 }
 
-// export type SimulateTransactionPipelineType = 'SimulateTransactionPipeline'
 export enum SimulateTransactionPipelineType {
   id = 'SimulateTransactionPipeline',
 }

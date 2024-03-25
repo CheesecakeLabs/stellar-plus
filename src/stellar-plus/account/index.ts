@@ -4,15 +4,7 @@ import { AccountHandler as _AccountHandler } from 'stellar-plus/account/account-
 import { AccountBaseClient as Base } from 'stellar-plus/account/base'
 import { AccountBase } from 'stellar-plus/account/base/types'
 
-//
-// Export Classes
-//
-
 export { Base, FreighterAccountHandler, DefaultAccountHandler }
 
 export type BaseAccount = AccountBase
 export type AccountHandler = _AccountHandler
-
-//
-// export types
-//

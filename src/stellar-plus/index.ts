@@ -25,17 +25,3 @@ export const Utils = {
 export * as RPC from 'stellar-plus/rpc/index'
 
 export * as Types from 'stellar-plus/types'
-
-// export { TransactionInvocation } from 'stellar-plus/core/types'
-
-// import { DefaultTransactionSubmitter } from "./core/transaction-submitter/classic/default";
-// import { ChannelAccountsTransactionSubmitter } from "./core/transaction-submitter/classic/channel-accounts-submitter";
-// import { ChannelAccounts as ChannelAccountsHandler } from "./channel-accounts";
-
-// export const Core = {
-//   Classic: {
-//     DefaultTransactionSubmitter,
-//     ChannelAccountsTransactionSubmitter,
-//     ChannelAccountsHandler,
-//   },
-// };

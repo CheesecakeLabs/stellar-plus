@@ -2,10 +2,6 @@ import { Horizon } from '@stellar/stellar-sdk'
 
 import { NetworkConfig } from 'stellar-plus/types'
 
-//
-// Allows for account data to be fetched from the network
-// through the Horizon API
-//
 export type AccountDataViewer = {
   getBalances(): Promise<
     (
@@ -15,7 +11,6 @@ export type AccountDataViewer = {
       | Horizon.HorizonApi.BalanceLineLiquidityPool
     )[]
   >
-  // getTransactions(): Promise<void>
 }
 
 export type AccountDataViewerConstructor = {

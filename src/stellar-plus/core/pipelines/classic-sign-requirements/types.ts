@@ -7,7 +7,6 @@ export type ClassicSignRequirementsPipelineInput = Transaction | FeeBumpTransact
 
 export type ClassicSignRequirementsPipelineOutput = SignatureRequirement[]
 
-// export type ClassicSignRequirementsPipelineType = 'ClassicSignRequirementsPipeline'
 export enum ClassicSignRequirementsPipelineType {
   id = 'ClassicSignRequirementsPipeline',
 }

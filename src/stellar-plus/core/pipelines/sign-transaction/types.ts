@@ -12,7 +12,6 @@ export type SignTransactionPipelineInput = {
 
 export type SignTransactionPipelineOutput = Transaction | FeeBumpTransaction
 
-// export type SignTransactionPipelineType = 'SignTransactionPipeline'
 export enum SignTransactionPipelineType {
   id = 'SignTransactionPipeline',
 }

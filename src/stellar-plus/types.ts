@@ -16,9 +16,6 @@ export type Transaction = _Transaction
 
 export type FeeBumpTransaction = _FeeBumpTransaction
 
-//
-// Networks
-//
 export type NetworkConfig = {
   name: NetworksList
   networkPassphrase: string

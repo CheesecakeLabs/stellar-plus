@@ -127,7 +127,6 @@ export class SorobanTransactionPipeline extends MultiBeltPipeline<
     }
 
     // ======================= Assemble ==========================
-    // const assembledTransaction = SorobanRpc.assembleTransaction(builtTx, successfulSimulation.response).build()
     const assembledTransaction = successfulSimulation.assembledTransaction
 
     // Soroban signature belt

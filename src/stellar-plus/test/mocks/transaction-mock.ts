@@ -65,5 +65,3 @@ export const mockTransactionBuilder = {
   }),
   toXDR: jest.fn().mockReturnValue('success'),
 }
-
-// export const mockUnsignedClassicTransaction = new TransactionBuilder(new Account(mockAccount, '123'), { fee: '500' })
