@@ -65,6 +65,7 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
    *
    * @param {xdr.SorobanAuthorizationEntry} entry - The soroban authorization entry to sign.
    * @param {number} validUntilLedgerSeq - The ledger sequence number until which the entry signature is valid.
+   * @param {string} networkPassphrase - The network passphrase.
    *
    * @description - Signs the given Soroban authorization entry with the account's secret key.
    *
