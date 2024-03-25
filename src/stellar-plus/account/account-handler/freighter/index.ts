@@ -4,9 +4,10 @@ import {
   isAllowed,
   isConnected,
   setAllowed,
+  signAuthEntry,
   signTransaction,
 } from '@stellar/freighter-api'
-import { Transaction } from '@stellar/stellar-sdk'
+import { Transaction, xdr } from '@stellar/stellar-sdk'
 
 import {
   FreighterAccHandlerPayload,
@@ -116,6 +117,41 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
         return signedTx
       } catch (e) {
         throw FAHError.failedToSignTransactionError(e as Error)
+      }
+    } else {
+      this.connect()
+      throw FAHError.freighterIsNotConnectedError()
+    }
+  }
+
+  /**
+   *
+   * @param {xdr.SorobanAuthorizationEntry} entry - The soroban authorization entry to sign.
+   * @param {number} validUntilLedgerSeq - The ledger sequence number until which the entry signature is valid.
+   *
+   * @description - Signs the given Soroban authorization entry with the account's secret key.
+   *
+   * @returns {xdr.SorobanAuthorizationEntry} The signed entry.
+   */
+  public async signSorobanAuthEntry(
+    entry: xdr.SorobanAuthorizationEntry,
+    validUntilLedgerSeq: number,
+    networkPassphrase: string
+  ): Promise<xdr.SorobanAuthorizationEntry> {
+    const isFreighterConnected = await this.isFreighterConnected(true)
+
+    if (isFreighterConnected) {
+      if (networkPassphrase !== this.networkConfig.networkPassphrase) {
+        throw FAHError.cannotSignForThisNetwork(networkPassphrase, this.networkConfig.networkPassphrase)
+      }
+
+      try {
+        const signedEntryXdr = await signAuthEntry(entry.toXDR('base64'), { accountToSign: this.publicKey })
+        const signedEntry = xdr.SorobanAuthorizationEntry.fromXDR(signedEntryXdr, 'base64')
+
+        return signedEntry
+      } catch (e) {
+        throw FAHError.failedToSignAuthEntryError(e as Error)
       }
     } else {
       this.connect()

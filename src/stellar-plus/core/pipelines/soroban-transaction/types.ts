@@ -17,6 +17,8 @@ import { TransactionInvocation } from 'stellar-plus/types'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
 import { BeltPluginType, GenericPlugin } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
+import { SorobanAuthPipelinePlugin } from '../soroban-auth/types'
+
 export enum SorobanTransactionPipelineType {
   id = 'SorobanTransactionPipeline',
 }
@@ -41,6 +43,7 @@ export type SupportedInnerPlugins =
   | SignTransactionPipelinePlugin
   | SubmitTransactionPipelinePlugin
   | SorobanGetTransactionPipelinePlugin
+  | SorobanAuthPipelinePlugin
 
 export type SorobanTransactionPipeline = ConveyorBelt<
   SorobanTransactionPipelineInput,

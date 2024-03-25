@@ -1,4 +1,4 @@
-import { SorobanRpc, Transaction } from '@stellar/stellar-sdk'
+import { SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import {
   SimulateTransactionPipelineInput,

@@ -1,5 +1,6 @@
 import {
   Address as StellarAddress,
+  ContractSpec as _ContractSpec,
   FeeBumpTransaction as _FeeBumpTransaction,
   Transaction as _Transaction,
 } from '@stellar/stellar-sdk'
@@ -48,5 +49,6 @@ export type Address = StellarAddress | string
 export type TransactionInvocation = _TransactionInvocation
 export type EnvelopeHeader = _EnvelopeHeader
 export type FeeBumpHeader = _FeeBumpHeader
+export type ContractSpec = _ContractSpec
 
 export * as Errors from 'stellar-plus/error/types'

@@ -1,4 +1,4 @@
-import { FeeBumpTransaction, Keypair, Transaction } from '@stellar/stellar-sdk'
+import { FeeBumpTransaction, Keypair, Transaction, authorizeEntry, xdr } from '@stellar/stellar-sdk'
 
 import { DefaultAccountHandler, DefaultAccountHandlerPayload } from 'stellar-plus/account/account-handler/default/types'
 import { AccountBaseClient } from 'stellar-plus/account/base'
@@ -58,6 +58,36 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
       return tx.toXDR() as TransactionXdr
     } catch (e) {
       throw DAHError.failedToSignTransactionError(e as Error)
+    }
+  }
+
+  /**
+   *
+   * @param {xdr.SorobanAuthorizationEntry} entry - The soroban authorization entry to sign.
+   * @param {number} validUntilLedgerSeq - The ledger sequence number until which the entry signature is valid.
+   * @param {string} networkPassphrase - The network passphrase.
+   *
+   * @description - Signs the given Soroban authorization entry with the account's secret key.
+   *
+   * @returns {xdr.SorobanAuthorizationEntry} The signed entry.
+   */
+  public async signSorobanAuthEntry(
+    entry: xdr.SorobanAuthorizationEntry,
+    validUntilLedgerSeq: number,
+    networkPassphrase: string
+  ): Promise<xdr.SorobanAuthorizationEntry> {
+    try {
+      const keypair = Keypair.fromSecret(this.secretKey)
+      const signedEntry = await authorizeEntry(entry, keypair, validUntilLedgerSeq, networkPassphrase) // Passphrase is necessary! Cannot be removed!
+
+      return signedEntry
+    } catch (e) {
+      throw DAHError.failedToSignAuthorizationEntryError(
+        e as Error,
+        entry.toXDR('base64'),
+        validUntilLedgerSeq,
+        networkPassphrase
+      )
     }
   }
 }

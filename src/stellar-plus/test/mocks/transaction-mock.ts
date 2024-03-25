@@ -1,3 +1,7 @@
+import { Buffer } from 'buffer'
+
+import { xdr } from '@stellar/stellar-sdk'
+
 import { FeeBumpHeader, TransactionInvocation, TransactionXdr } from 'stellar-plus/types'
 
 import { AccountHandler } from '../../account/account-handler/types'
@@ -29,6 +33,14 @@ export function mockAccountHandler(accountKey = mockAccount): AccountHandler {
     sign(_tx: any): TransactionXdr {
       return 'success'
     },
+    signSorobanAuthEntry(
+      _entry: any,
+      _validUntilLedgerSeq: number,
+      _networkPassphrase: string
+    ): Promise<xdr.SorobanAuthorizationEntry> {
+      return Promise.resolve(xdr.SorobanAuthorizationEntry.fromXDR(Buffer.from('success')))
+    },
+
     getPublicKey(): string {
       return accountKey
     },

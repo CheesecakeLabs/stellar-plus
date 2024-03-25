@@ -40,6 +40,7 @@ import {
   BuildTransactionPipelineOutput,
   BuildTransactionPipelineType,
 } from '../pipelines/build-transaction/types'
+import { SorobanTransactionPipelineOutput } from '../pipelines/soroban-transaction/types'
 
 export class ContractEngine {
   private spec: ContractSpec
@@ -196,10 +197,8 @@ export class ContractEngine {
    * console.log(output) // 'myValue'
    * ```
    */
-  protected async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
-    this.requireContractId()
-
-    return await this.invokeContract(args, true)
+  public async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
+    return await this.runTransactionPipeline(args, true)
   }
 
   /**
@@ -232,10 +231,18 @@ export class ContractEngine {
    * console.log(output) // 3
    * ```
    */
-  protected async invokeContract(
+  public async invokeContract(
     args: SorobanInvokeArgs<object> | SorobanSimulateArgs<object>,
     simulateOnly: boolean = false
   ): Promise<unknown> {
+    const result = await this.runTransactionPipeline(args, simulateOnly)
+    return result.output?.value
+  }
+
+  public async runTransactionPipeline(
+    args: SorobanInvokeArgs<object> | SorobanSimulateArgs<object>,
+    simulateOnly: boolean = false
+  ): Promise<SorobanTransactionPipelineOutput> {
     this.requireContractId()
 
     const { method, methodArgs } = args
@@ -262,9 +269,8 @@ export class ContractEngine {
       },
     })
 
-    return result.output?.value
+    return result as SorobanTransactionPipelineOutput
   }
-
   //==========================================
   // Meta Management Methods
   //==========================================
