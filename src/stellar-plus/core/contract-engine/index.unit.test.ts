@@ -518,7 +518,7 @@ describe('ContractEngine', () => {
 
       await expect(
         contractEngine.wrapAndDeployClassicAsset({ asset: MOCKED_STELLAR_ASSET, ...MOCKED_TX_INVOCATION })
-      ).rejects.toThrowError(CEError.failedToWrapAsset(StellarPlusError.unexpectedError()))
+      ).rejects.toThrow(CEError.failedToWrapAsset(StellarPlusError.unexpectedError()))
     })
 
     it('should surface exceptions from the transaction pipeline when deploying a contract', async () => {
@@ -537,7 +537,7 @@ describe('ContractEngine', () => {
         },
       })
 
-      await expect(contractEngine.deploy(MOCKED_TX_INVOCATION)).rejects.toThrowError(
+      await expect(contractEngine.deploy(MOCKED_TX_INVOCATION)).rejects.toThrow(
         CEError.failedToDeployContract(StellarPlusError.unexpectedError())
       )
     })
@@ -557,7 +557,7 @@ describe('ContractEngine', () => {
         },
       })
 
-      await expect(contractEngine.uploadWasm(MOCKED_TX_INVOCATION)).rejects.toThrowError(
+      await expect(contractEngine.uploadWasm(MOCKED_TX_INVOCATION)).rejects.toThrow(
         CEError.failedToUploadWasm(StellarPlusError.unexpectedError())
       )
     })
@@ -577,7 +577,7 @@ describe('ContractEngine', () => {
         },
       })
 
-      await expect(contractEngine.invokeContract(MOCKED_SOROBAN_INVOKE_ARGS)).rejects.toThrowError(
+      await expect(contractEngine.invokeContract(MOCKED_SOROBAN_INVOKE_ARGS)).rejects.toThrow(
         StellarPlusError.unexpectedError()
       )
     })
@@ -597,7 +597,7 @@ describe('ContractEngine', () => {
         },
       })
 
-      await expect(contractEngine.readFromContract(MOCKED_SOROBAN_INVOKE_ARGS)).rejects.toThrowError(
+      await expect(contractEngine.readFromContract(MOCKED_SOROBAN_INVOKE_ARGS)).rejects.toThrow(
         StellarPlusError.unexpectedError()
       )
     })
