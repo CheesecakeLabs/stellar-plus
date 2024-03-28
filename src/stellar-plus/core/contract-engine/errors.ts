@@ -17,6 +17,7 @@ export enum ContractEngineErrorCodes {
   CE006 = 'CE006',
   CE007 = 'CE007',
   CE008 = 'CE008',
+  CE009 = 'CE009',
 
   // CE1 Simulation
   CE100 = 'CE100',
@@ -119,6 +120,16 @@ const contractCodeMissingLiveUntilLedgerSeq = (
   })
 }
 
+const contractEngineClassFailedToInitialize = () => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE009,
+    message: 'Contract engine class failed to initialize!',
+    source: 'ContractEngine',
+    details:
+      'Contract engine class failed to initialize because of missing parameters! The Contract Engine must be initialized with either the wasm file, the wasm hash, or the contract ID. Please review the initialization parameters and try again.',
+  })
+}
+
 const simulationFailed = (simulation: SorobanRpc.Api.SimulateTransactionErrorResponse): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE101,
@@ -183,7 +194,7 @@ const failedToUploadWasm = (error: StellarPlusError): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE201,
     message: 'Failed to upload wasm!',
-    source: 'SorobanTransactionProcessor',
+    source: 'ContractEngine',
     details:
       'The wasm file could not be uploaded. Review the meta error to identify the underlying cause for this issue.',
     meta: { message: error.message, error: error },
@@ -194,7 +205,7 @@ const failedToDeployContract = (error: StellarPlusError): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE202,
     message: 'Failed to deploy contract!',
-    source: 'SorobanTransactionProcessor',
+    source: 'ContractEngine',
     details:
       'The contract could not be deployed. Review the meta error to identify the underlying cause for this issue.',
     meta: { message: error.message, ...error.meta },
@@ -205,7 +216,7 @@ const failedToWrapAsset = (error: StellarPlusError): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE203,
     message: 'Failed to wrap asset!',
-    source: 'SorobanTransactionProcessor',
+    source: 'ContractEngine',
     details: 'The asset could not be wrapped. Review the meta error to identify the underlying cause for this issue.',
     meta: { message: error.message, ...error.meta },
   })
@@ -222,6 +233,7 @@ export const CEError = {
   contractInstanceMissingLiveUntilLedgerSeq,
   contractCodeNotFound,
   contractCodeMissingLiveUntilLedgerSeq,
+  contractEngineClassFailedToInitialize,
   transactionNeedsRestore,
   simulationMissingResult,
   restoreOptionNotSet,
