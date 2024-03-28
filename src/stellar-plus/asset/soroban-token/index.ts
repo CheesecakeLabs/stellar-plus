@@ -14,14 +14,19 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    *
    * @args args
    * @param {NetworkConfig} args.networkConfig - Network to connect to
-   * @param {ContractSpec=} args.spec - Contract specification object
-   * @param {string=} args.contractId - Contract ID
-   * @param {RpcHandler=} args.rpcHandler - RPC Handler
+   * @param args.contractParameters - Contract parameters
+   * @param {ContractSpec=} args.contractParameters.spec - Contract specification
+   * @param {string=} args.contractParameters.contractId - Contract ID
    * @param {Buffer=} args.wasm - Contract WASM file as Buffer
    * @param {string=} args.wasmHash - Contract WASM hash identifier
+   * @param {Options=} args.options - Contract options
+   * @param {SorobanTransactionPipelineOptions=} args.options.sorobanTransactionPipeline - Soroban transaction pipeline options. Allows for customizing how transaction pipeline will be executed for this contract.
    *
    * @description Create a new SorobanTokenHandler instance to interact with a Soroban Token contract.
    * This class is a subclass of ContractEngine and implements the Soroban token interface.
+   * The contract spec is set to the default Soroban Token spec. When initializing the contract, the spec can be overridden with a custom spec.
+   * The contract ID, WASM file, and WASM hash can be provided to initialize the contract with the given parameters. At least one of these parameters must be provided.
+   *
    */
   constructor(args: SorobanTokenHandlerConstructorArgs) {
     super({

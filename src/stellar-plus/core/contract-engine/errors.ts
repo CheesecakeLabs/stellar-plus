@@ -113,6 +113,15 @@ const contractCodeMissingLiveUntilLedgerSeq = (
   })
 }
 
+const contractEngineClassFailedToInitialize = () => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE009,
+    message: 'Contract engine class failed to initialize!',
+    source: 'ContractEngine',
+    details:
+      'Contract engine class failed to initialize because of missing parameters! The Contract Engine must be initialized with either the wasm file, the wasm hash, or the contract ID. Please review the initialization parameters and try again.',
+  })
+}
 
 const failedToUploadWasm = (error: StellarPlusError): StellarPlusError => {
   return new StellarPlusError({
@@ -155,6 +164,7 @@ export const CEError = {
   contractInstanceMissingLiveUntilLedgerSeq,
   contractCodeNotFound,
   contractCodeMissingLiveUntilLedgerSeq,
+  contractEngineClassFailedToInitialize,
   failedToUploadWasm,
   failedToDeployContract,
   failedToWrapAsset,
