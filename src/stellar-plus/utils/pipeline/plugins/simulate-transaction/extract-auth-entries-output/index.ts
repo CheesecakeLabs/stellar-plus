@@ -24,6 +24,8 @@ export class ExtractAuthEntriesFromSimulationPlugin
     const { response, output } = item
 
     if (!response.result) {
+      // TODO:
+      // implement error handling here and migrate older CE Error
       // throw CEError.simulationMissingResult(simulated)
       throw new Error('simulationMissingResult')
     }
