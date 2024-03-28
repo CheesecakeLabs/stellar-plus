@@ -158,6 +158,7 @@ export const CEError = {
   contractInstanceMissingLiveUntilLedgerSeq,
   contractCodeNotFound,
   contractCodeMissingLiveUntilLedgerSeq,
+  contractEngineClassFailedToInitialize,
   failedToUploadWasm,
   failedToDeployContract,
   failedToWrapAsset,
