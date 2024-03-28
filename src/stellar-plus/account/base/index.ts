@@ -8,7 +8,7 @@ export class AccountBaseClient extends AccountHelpers implements AccountBase {
    *
    * @args {} payload - The payload for the account. Additional parameters may be provided to enable different helpers.
    * @param {string} payload.publicKey The public key of the account.
-   * @param {NetworkConfig=} payload.networkConfig The network to use.
+   * @param {NetworkConfig=} payload.networkConfig The network config for the target network.
    *
    * @description - The base account is used for handling accounts with no management actions.
    */

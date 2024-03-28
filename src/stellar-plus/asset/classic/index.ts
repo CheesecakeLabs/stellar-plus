@@ -26,10 +26,10 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
   /**
    *
    * @param {string} code - The asset code.
-   * @param {string} issuerPublicKey - The public key of the asset issuer.
-   * @param {NetworkConfig} networkConfig - The network to use.
-   * @param {AccountHandler=} issuerAccount - The issuer account handler. When provided, it'll enable management functions and be used to sign transactions as the issuer.
-   * @param {TransactionSubmitter=} transactionSubmitter - The transaction submitter to use.
+   * @param {string | AccountHandler} issuerAccount - The issuer account. When an account handler is provided, it'll enable management functions and be used to sign transactions as the issuer.
+   * @param {NetworkConfig} networkConfig - The network configuration to use.
+   * @param {ClassicTransactionPipelineOptions} options - The options for the classic transaction pipeline.
+     @param {ClassicTransactionPipelineOptions} options.classicTransactionPipeline - The options for the classic transaction pipeline. These allow for custom configurations for how the transaction pipeline will operate for this asset.
    *
    * @description - The Classic asset handler is used for handling classic assets with user-based and management functionalities.
    *
@@ -92,9 +92,9 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
     return this.code
   }
 
-  // /**
-  //  * @description - Not implemented in pure classic assets. Only available for Soroban assets.
-  //  */
+  /**
+   * @description - Not implemented in the current version for pure classic assets. Only available for Soroban assets.
+   */
 
   public async approve(): Promise<void> {
     throw new Error('Method not implemented.')
@@ -186,10 +186,10 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
   //
 
   /**
-   *
+   * @args
    * @param {string} to - The account id to mint the asset to.
    * @param {i128} amount - The amount of the asset to mint.
-   * @param {TransactionInvocation} txInvocation - The transaction invocation object. The Issuer account will be automatically added as a signer.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object spread. The Issuer account will be automatically added as a signer.
    *
    * @description - Mints the given amount of the asset to the 'to' account.
    * @requires - The issuer account to be set in the asset.
@@ -241,7 +241,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
    *
    * @param {string} to - The account id to mint the asset to.
    * @param {number} amount - The amount of the asset to mint.
-   * @param {TransactionInvocation} txInvocation - The transaction invocation object. The  The Issuer account will be automatically added as a signer.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object spread. The Issuer account will be automatically added as a signer.
    *
    * @requires - The issuer account to be set in the asset.
    * @requires - The 'to' account to be set as a signer in the transaction invocation.
@@ -289,7 +289,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
   /**
    *
    * @param {string} to - The account id to add the trustline.
-   * @param {TransactionInvocation} txInvocation - The transaction invocation object.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object spread.
    *
    * @requires - The 'to' account to be set as a signer in the transaction invocation.
    *
