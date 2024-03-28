@@ -17,6 +17,7 @@ export enum ContractEngineErrorCodes {
   CE006 = 'CE006',
   CE007 = 'CE007',
   CE008 = 'CE008',
+  CE009 = 'CE009',
 
   // CE1 Meta
   CE101 = 'CE101',
@@ -112,11 +113,12 @@ const contractCodeMissingLiveUntilLedgerSeq = (
   })
 }
 
+
 const failedToUploadWasm = (error: StellarPlusError): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE101,
     message: 'Failed to upload wasm!',
-    source: 'SorobanTransactionProcessor',
+    source: 'ContractEngine',
     details:
       'The wasm file could not be uploaded. Review the meta error to identify the underlying cause for this issue.',
     meta: { message: error.message, error: error },
@@ -127,7 +129,7 @@ const failedToDeployContract = (error: StellarPlusError): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE102,
     message: 'Failed to deploy contract!',
-    source: 'SorobanTransactionProcessor',
+    source: 'ContractEngine',
     details:
       'The contract could not be deployed. Review the meta error to identify the underlying cause for this issue.',
     meta: { message: error.message, ...error.meta },
@@ -138,7 +140,7 @@ const failedToWrapAsset = (error: StellarPlusError): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE103,
     message: 'Failed to wrap asset!',
-    source: 'SorobanTransactionProcessor',
+    source: 'ContractEngine',
     details: 'The asset could not be wrapped. Review the meta error to identify the underlying cause for this issue.',
     meta: { message: error.message, ...error.meta },
   })

@@ -104,6 +104,9 @@ export class ContractEngine {
     this.contractId = contractParameters.contractId
     this.wasm = contractParameters.wasm
     this.wasmHash = contractParameters.wasmHash
+
+    if (!this.contractId && !this.wasm && !this.wasmHash) throw CEError.contractEngineClassFailedToInitialize()
+
     this.options = { ...options }
 
     this.sorobanTransactionPipeline = new SorobanTransactionPipeline(networkConfig, {
