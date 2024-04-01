@@ -199,6 +199,20 @@ describe('BuildTransactionPipeline', () => {
       ).rejects.toThrow('Could not add operations!')
       expect(TransactionBuilder).toHaveBeenCalledWith({}, transactionBuilderOptions)
     })
+
+    it('should throw error building operation', async () => {
+      ;(TransactionBuilder as unknown as jest.Mock).mockImplementationOnce(() => {
+        return {
+          setTimeout: jest.fn(),
+          build: jest.fn(() => {
+            throw new Error('error')
+          }),
+        }
+      })
+
+      await expect(buildTransactionPipeline.execute(MOCKED_BT_INPUT)).rejects.toThrow('Could not build transaction!')
+      expect(TransactionBuilder).toHaveBeenCalledWith({}, transactionBuilderOptions)
+    })
   })
 
   describe('Process', () => {
