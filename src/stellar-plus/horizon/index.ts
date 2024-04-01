@@ -5,7 +5,7 @@ import { HorizonHandler } from 'stellar-plus/horizon/types'
 import { NetworkConfig } from 'stellar-plus/types'
 
 export class HorizonHandlerClient implements HorizonHandler {
-  private networkConfig: NetworkConfig
+  public networkConfig: NetworkConfig
   public server: Horizon.Server
 
   /**
