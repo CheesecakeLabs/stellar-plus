@@ -1,25 +1,10 @@
-import {
-  Account,
-  Asset,
-  Claimant,
-  FeeBumpTransaction,
-  Operation,
-  OperationType,
-  Transaction,
-  TransactionBuilder,
-  xdr,
-} from '@stellar/stellar-sdk'
+import { Account, Asset, Claimant, Operation, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
 import { ClassicSignRequirementsPipeline } from './index'
 import { SignatureRequirement, SignatureThreshold } from 'stellar-plus/core/types'
 import { Constants } from 'stellar-plus'
 import { CSRError } from './errors'
-import { ConveyorBeltErrorMeta, extractConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
-import {
-  ClassicSignRequirementsPipelineInput,
-  ClassicSignRequirementsPipelineOutput,
-  ClassicSignRequirementsPipelineType,
-} from './types'
-import { Meta } from 'stellar-plus/error/types'
+import { ConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
+import { ClassicSignRequirementsPipelineInput, ClassicSignRequirementsPipelineType } from './types'
 import { BeltMetadata } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
 const MOCKED_PK_A = 'GACF23GKVFTU77K6W6PWSVN7YBM63UHDULILIEXJO6FR4YKMJ7FW3DTI'
@@ -27,8 +12,6 @@ const MOCKED_PK_B = 'GB3MXH633VRECLZRUAR3QCLQJDMXNYNHKZCO6FJEWXVWSUEIS7NU376P'
 const MOCKED_PK_C = 'GCPXAF4S5MBXA3DRNBA7XYP55S6F3UN2ZJRAS72BXEJMD7JVMGIGCKNA'
 
 const MOCKED_ACCOUNT_A = new Account(MOCKED_PK_A, '100')
-const MOCKED_ACCOUNT_B = new Account(MOCKED_PK_B, '100')
-const MOCKED_ACCOUNT_C = new Account(MOCKED_PK_C, '100')
 
 const TESTNET_PASSPHRASE = Constants.testnet.networkPassphrase
 const MOCKED_FEE = '100'
@@ -50,13 +33,13 @@ describe('ClassicSignRequirementsPipeline', () => {
       expect(pipeline).toBeDefined()
     })
   })
-
   describe('errors', () => {
     it('should throw error if internal process fails', async () => {
       const pipeline = new ClassicSignRequirementsPipeline()
-
+      jest.spyOn(pipeline as any, 'bundleSignatureRequirements').mockImplementation(() => {
+        throw new Error('mocked error')
+      })
       const transaction = new TransactionBuilder(MOCKED_ACCOUNT_A, MOCKED_TX_OPTIONS).build()
-
       const MOCKED_PROCESS_FAILED_ERROR = CSRError.processFailed(
         new Error('mocked error'),
         {
@@ -70,9 +53,6 @@ describe('ClassicSignRequirementsPipeline', () => {
         transaction
       )
 
-      jest.spyOn(pipeline as any, 'bundleSignatureRequirements').mockImplementation(() => {
-        throw new Error('mocked error')
-      })
       await expect(pipeline.execute(transaction)).rejects.toThrow(MOCKED_PROCESS_FAILED_ERROR.message)
       await expect(pipeline.execute(transaction)).rejects.toHaveProperty('code', MOCKED_PROCESS_FAILED_ERROR.code)
     })
@@ -80,14 +60,16 @@ describe('ClassicSignRequirementsPipeline', () => {
 
   describe('core requirement calculation', () => {
     it('should return signature requirements for an envelope source without operations', async () => {
+      const expectedResult = [{ publicKey: MOCKED_PK_A, thresholdLevel: SignatureThreshold.medium }]
       const pipeline = new ClassicSignRequirementsPipeline()
       const transaction = new TransactionBuilder(MOCKED_ACCOUNT_A, MOCKED_TX_OPTIONS).build()
-      const expectedResult = [{ publicKey: MOCKED_PK_A, thresholdLevel: SignatureThreshold.medium }]
+
       await expect(pipeline.execute(transaction)).resolves.toHaveLength(expectedResult.length)
       await expect(pipeline.execute(transaction)).resolves.toEqual(expect.arrayContaining(expectedResult))
     })
 
     it('should return signature requirements for a fee bump envelope', async () => {
+      const expectedResult = [{ publicKey: MOCKED_PK_B, thresholdLevel: SignatureThreshold.low }]
       const pipeline = new ClassicSignRequirementsPipeline()
       const transaction = new TransactionBuilder(MOCKED_ACCOUNT_A, MOCKED_TX_OPTIONS).build()
       const feeBumpTransaction = TransactionBuilder.buildFeeBumpTransaction(
@@ -96,58 +78,61 @@ describe('ClassicSignRequirementsPipeline', () => {
         transaction,
         TESTNET_PASSPHRASE
       )
-      const expectedResult = [{ publicKey: MOCKED_PK_B, thresholdLevel: SignatureThreshold.low }]
 
       await expect(pipeline.execute(feeBumpTransaction)).resolves.toHaveLength(expectedResult.length)
       await expect(pipeline.execute(feeBumpTransaction)).resolves.toEqual(expect.arrayContaining(expectedResult))
     })
 
     it('should return signature requirements for an envelope source with one operation from same source', async () => {
+      const expectedResult = [{ publicKey: MOCKED_PK_A, thresholdLevel: SignatureThreshold.medium }]
       const pipeline = new ClassicSignRequirementsPipeline()
       const transaction = new TransactionBuilder(MOCKED_ACCOUNT_A, MOCKED_TX_OPTIONS)
         .addOperation(Operation.payment({ destination: MOCKED_PK_B, asset: Asset.native(), amount: '10' }))
         .build()
-      const expectedResult = [{ publicKey: MOCKED_PK_A, thresholdLevel: SignatureThreshold.medium }]
+
       await expect(pipeline.execute(transaction)).resolves.toHaveLength(expectedResult.length)
       await expect(pipeline.execute(transaction)).resolves.toEqual(expect.arrayContaining(expectedResult))
     })
 
     it('should return signature requirements for an envelope source with one operation from different source', async () => {
+      const expectedResult = [
+        { publicKey: MOCKED_PK_A, thresholdLevel: SignatureThreshold.medium },
+        { publicKey: MOCKED_PK_C, thresholdLevel: SignatureThreshold.medium },
+      ]
       const pipeline = new ClassicSignRequirementsPipeline()
       const transaction = new TransactionBuilder(MOCKED_ACCOUNT_A, MOCKED_TX_OPTIONS)
         .addOperation(
           Operation.payment({ destination: MOCKED_PK_B, asset: Asset.native(), amount: '10', source: MOCKED_PK_C })
         )
         .build()
-      const expectedResult = [
-        { publicKey: MOCKED_PK_A, thresholdLevel: SignatureThreshold.medium },
-        { publicKey: MOCKED_PK_C, thresholdLevel: SignatureThreshold.medium },
-      ]
+
       await expect(pipeline.execute(transaction)).resolves.toHaveLength(expectedResult.length)
       await expect(pipeline.execute(transaction)).resolves.toEqual(expect.arrayContaining(expectedResult))
     })
 
     it('should return signature requirements for an envelope source with one operation of higher threshold for same source', async () => {
+      const expectedResult = [{ publicKey: MOCKED_PK_A, thresholdLevel: SignatureThreshold.high }]
       const pipeline = new ClassicSignRequirementsPipeline()
       const transaction = new TransactionBuilder(MOCKED_ACCOUNT_A, MOCKED_TX_OPTIONS)
         .addOperation(Operation.setOptions({ signer: { ed25519PublicKey: MOCKED_PK_B, weight: 2 } }))
         .build()
-      const expectedResult = [{ publicKey: MOCKED_PK_A, thresholdLevel: SignatureThreshold.high }]
+
       await expect(pipeline.execute(transaction)).resolves.toHaveLength(expectedResult.length)
       await expect(pipeline.execute(transaction)).resolves.toEqual(expect.arrayContaining(expectedResult))
     })
 
     it('should return signature requirements for an envelope source with one operation of higher threshold for different source', async () => {
+      const expectedResult = [
+        { publicKey: MOCKED_PK_A, thresholdLevel: SignatureThreshold.medium },
+        { publicKey: MOCKED_PK_C, thresholdLevel: SignatureThreshold.high },
+      ]
       const pipeline = new ClassicSignRequirementsPipeline()
       const transaction = new TransactionBuilder(MOCKED_ACCOUNT_A, MOCKED_TX_OPTIONS)
         .addOperation(
           Operation.setOptions({ signer: { ed25519PublicKey: MOCKED_PK_B, weight: 2 }, source: MOCKED_PK_C })
         )
         .build()
-      const expectedResult = [
-        { publicKey: MOCKED_PK_A, thresholdLevel: SignatureThreshold.medium },
-        { publicKey: MOCKED_PK_C, thresholdLevel: SignatureThreshold.high },
-      ]
+
       await expect(pipeline.execute(transaction)).resolves.toHaveLength(expectedResult.length)
       await expect(pipeline.execute(transaction)).resolves.toEqual(expect.arrayContaining(expectedResult))
     })
@@ -169,17 +154,20 @@ describe('ClassicSignRequirementsPipeline', () => {
           transactionBuilder.addOperation(op)
         })
         const transaction = transactionBuilder.build()
+
         return pipeline.execute(transaction).then((result) => expect(result).toEqual(expected))
       }
     })
 
     it('should return threshold medium for createAccount operation', async () => {
       const operation = Operation.createAccount({ destination: MOCKED_PK_B, startingBalance: '10' })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
 
     it('should return threshold medium for payment operation', async () => {
       const operation = Operation.payment({ destination: MOCKED_PK_B, asset: Asset.native(), amount: '10' })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
 
@@ -191,6 +179,7 @@ describe('ClassicSignRequirementsPipeline', () => {
         destination: MOCKED_PK_B,
         destAsset: Asset.native(),
       })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
 
@@ -202,6 +191,7 @@ describe('ClassicSignRequirementsPipeline', () => {
         destination: MOCKED_PK_B,
         destAsset: Asset.native(),
       })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
     it('should return threshold medium for manageSellOffer operation', async () => {
@@ -211,6 +201,7 @@ describe('ClassicSignRequirementsPipeline', () => {
         amount: '10',
         price: '1',
       })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
 
@@ -221,6 +212,7 @@ describe('ClassicSignRequirementsPipeline', () => {
         buyAmount: '10',
         price: '1',
       })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
 
@@ -231,44 +223,52 @@ describe('ClassicSignRequirementsPipeline', () => {
         amount: '10',
         price: '1',
       })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
     it('should return threshold high for setOptions operation with signer', async () => {
       const operation = Operation.setOptions({ signer: { ed25519PublicKey: MOCKED_PK_B, weight: 1 } })
+
       await testOperationRequirement([operation], [expectedHigh])
     })
     it('should return threshold high for setOptions operation with masterWeight', async () => {
       const operation = Operation.setOptions({ masterWeight: 1 })
+
       await testOperationRequirement([operation], [expectedHigh])
     })
     it('should return threshold high for setOptions operation with lowThreshold', async () => {
       const operation = Operation.setOptions({ lowThreshold: 1 })
+
       await testOperationRequirement([operation], [expectedHigh])
     })
     it('should return threshold high for setOptions operation with medThreshold', async () => {
       const operation = Operation.setOptions({ medThreshold: 1 })
+
       await testOperationRequirement([operation], [expectedHigh])
     })
     it('should return threshold high for setOptions operation with highThreshold', async () => {
       const operation = Operation.setOptions({ highThreshold: 1 })
+
       await testOperationRequirement([operation], [expectedHigh])
     })
 
     it('should return threshold medium for setOptions operation without any threshold', async () => {
       const emptySetOptionsOperation = Operation.setOptions({})
-      await testOperationRequirement([emptySetOptionsOperation], [expectedMedium])
       const homeDomainSetOptionsOperation = Operation.setOptions({ homeDomain: 'example.com' })
-      await testOperationRequirement([homeDomainSetOptionsOperation], [expectedMedium])
       const setFlagsSetOptionsOperation = Operation.setOptions({ setFlags: 1 })
-      await testOperationRequirement([setFlagsSetOptionsOperation], [expectedMedium])
       const clearFlagsSetOptionsOperation = Operation.setOptions({ clearFlags: 1 })
-      await testOperationRequirement([clearFlagsSetOptionsOperation], [expectedMedium])
       const inflationDestinationSetOptionsOperation = Operation.setOptions({ inflationDest: MOCKED_PK_B })
+
+      await testOperationRequirement([emptySetOptionsOperation], [expectedMedium])
+      await testOperationRequirement([homeDomainSetOptionsOperation], [expectedMedium])
+      await testOperationRequirement([setFlagsSetOptionsOperation], [expectedMedium])
+      await testOperationRequirement([clearFlagsSetOptionsOperation], [expectedMedium])
       await testOperationRequirement([inflationDestinationSetOptionsOperation], [expectedMedium])
     })
 
     it('should return threshold medium changeTrust operation', async () => {
       const operation = Operation.changeTrust({ asset: Asset.native() })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
 
@@ -288,6 +288,7 @@ describe('ClassicSignRequirementsPipeline', () => {
 
     it('should return threshold high for accountMerge operation', async () => {
       const operation = Operation.accountMerge({ destination: MOCKED_PK_B })
+
       await testOperationRequirement([operation], [expectedHigh])
     })
 
@@ -296,6 +297,7 @@ describe('ClassicSignRequirementsPipeline', () => {
         name: 'key',
         value: Buffer.from('value'),
       })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
 
@@ -303,8 +305,8 @@ describe('ClassicSignRequirementsPipeline', () => {
       // If the source of the envelope was the same account as the one allowing the trust
       // the threshold would be medium due to the envelope requirement.
       // To properly test the low threshold requirement, we need to use a different account as the source.
-
       const operation = Operation.bumpSequence({ bumpTo: '1', source: MOCKED_PK_C })
+
       await testOperationRequirement([operation], [expectedMedium, { ...expectedLow, publicKey: MOCKED_PK_C }])
     })
 
@@ -314,6 +316,7 @@ describe('ClassicSignRequirementsPipeline', () => {
         amount: '10',
         claimants: [new Claimant(MOCKED_PK_B)],
       })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
 
@@ -321,79 +324,77 @@ describe('ClassicSignRequirementsPipeline', () => {
       const operation = Operation.claimClaimableBalance({
         balanceId: '000000007a10d2aa862a610c88bdb1aacf3abf54160b09bec9adc62cfe4e0431e6b8b4c3',
       })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
 
     it('should return threshold medium for beginSponsoringFutureReserves operation', async () => {
       const operation = Operation.beginSponsoringFutureReserves({ sponsoredId: MOCKED_PK_B })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
 
     it('should return threshold medium for endSponsoringFutureReserves operation', async () => {
       const operation = Operation.endSponsoringFutureReserves({ source: MOCKED_PK_A })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
 
     it('should return threshold medium for revokeSponsorship operation variations', async () => {
       const revokeAccountOperation = Operation.revokeAccountSponsorship({ source: MOCKED_PK_C, account: MOCKED_PK_B })
-
-      await testOperationRequirement(
-        [revokeAccountOperation],
-        [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
-      )
-
       const revokeTrustlineOperation = Operation.revokeTrustlineSponsorship({
         source: MOCKED_PK_C,
         account: MOCKED_PK_B,
         asset: Asset.native(),
       })
-      await testOperationRequirement(
-        [revokeTrustlineOperation],
-        [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
-      )
-
       const revokeOfferOperation = Operation.revokeOfferSponsorship({
         source: MOCKED_PK_C,
         seller: MOCKED_PK_B,
         offerId: '1',
       })
-      await testOperationRequirement(
-        [revokeOfferOperation],
-        [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
-      )
-
       const revokeDataOperation = Operation.revokeDataSponsorship({
         source: MOCKED_PK_C,
         account: MOCKED_PK_B,
         name: 'key',
       })
-      await testOperationRequirement(
-        [revokeDataOperation],
-        [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
-      )
-
       const revokeClaimableBalanceOperation = Operation.revokeClaimableBalanceSponsorship({
         source: MOCKED_PK_C,
         balanceId: '000000007a10d2aa862a610c88bdb1aacf3abf54160b09bec9adc62cfe4e0431e6b8b4c3',
       })
-      await testOperationRequirement(
-        [revokeClaimableBalanceOperation],
-        [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
-      )
-
       const revokeLiquidityPoolOperation = Operation.revokeLiquidityPoolSponsorship({
         source: MOCKED_PK_C,
         liquidityPoolId: '076bbb9f17f8d47209515a345420d40ea1ebcd3cb6a370ea0d56fc12dbf084cb',
       })
-      await testOperationRequirement(
-        [revokeLiquidityPoolOperation],
-        [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
-      )
       const revokeSignerOperation = Operation.revokeSignerSponsorship({
         source: MOCKED_PK_C,
         account: MOCKED_PK_B,
         signer: { ed25519PublicKey: MOCKED_PK_B },
       })
+
+      await testOperationRequirement(
+        [revokeAccountOperation],
+        [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
+      )
+      await testOperationRequirement(
+        [revokeTrustlineOperation],
+        [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
+      )
+      await testOperationRequirement(
+        [revokeOfferOperation],
+        [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
+      )
+      await testOperationRequirement(
+        [revokeDataOperation],
+        [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
+      )
+      await testOperationRequirement(
+        [revokeClaimableBalanceOperation],
+        [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
+      )
+      await testOperationRequirement(
+        [revokeLiquidityPoolOperation],
+        [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
+      )
       await testOperationRequirement(
         [revokeSignerOperation],
         [expectedMedium, { ...expectedMedium, publicKey: MOCKED_PK_C }]
@@ -402,12 +403,14 @@ describe('ClassicSignRequirementsPipeline', () => {
 
     it('should return threshold medium for clawback operation', async () => {
       const operation = Operation.clawback({ from: MOCKED_PK_B, amount: '10', asset: Asset.native() })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
     it('should return threshold medium for clawbackClaimableBalance operation', async () => {
       const operation = Operation.clawbackClaimableBalance({
         balanceId: '000000007a10d2aa862a610c88bdb1aacf3abf54160b09bec9adc62cfe4e0431e6b8b4c3',
       })
+
       await testOperationRequirement([operation], [expectedMedium])
     })
 
@@ -415,7 +418,6 @@ describe('ClassicSignRequirementsPipeline', () => {
       // If the source of the envelope was the same account as the one allowing the trust
       // the threshold would be medium due to the envelope requirement.
       // To properly test the low threshold requirement, we need to use a different account as the source.
-
       const operation = Operation.setTrustLineFlags({
         asset: Asset.native(),
         source: MOCKED_PK_C,
@@ -424,6 +426,7 @@ describe('ClassicSignRequirementsPipeline', () => {
           authorized: true,
         },
       })
+
       await testOperationRequirement([operation], [expectedMedium, { ...expectedLow, publicKey: MOCKED_PK_C }])
     })
 
