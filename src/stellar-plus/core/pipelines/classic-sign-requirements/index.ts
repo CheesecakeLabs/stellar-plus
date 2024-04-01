@@ -121,11 +121,11 @@ export class ClassicSignRequirementsPipeline extends ConveyorBelt<
 
       case xdr.OperationType.setOptions().name:
         if (
-          !(operation as Operation.SetOptions).masterWeight &&
-          !(operation as Operation.SetOptions).signer &&
-          !(operation as Operation.SetOptions).lowThreshold &&
-          !(operation as Operation.SetOptions).medThreshold &&
-          !(operation as Operation.SetOptions).highThreshold
+          (operation as Operation.SetOptions).masterWeight ||
+          (operation as Operation.SetOptions).signer ||
+          (operation as Operation.SetOptions).lowThreshold ||
+          (operation as Operation.SetOptions).medThreshold ||
+          (operation as Operation.SetOptions).highThreshold
         ) {
           thresholdLevel = SignatureThreshold.high
         }
