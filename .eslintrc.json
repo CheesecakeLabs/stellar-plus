@@ -2,9 +2,9 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": ["tsconfig.json"]
+    "project": ["tsconfig.json"],
+    "exclude": "commitlint.config.js"
   },
-  "exclude": "commitlint.config.js",
   "plugins": ["@typescript-eslint", "prettier", "unicorn", "import"],
   "extends": [
     "eslint:recommended",
