@@ -79,7 +79,7 @@ export class ClassicSignRequirementsPipeline extends ConveyorBelt<
 
     let thresholdLevel = SignatureThreshold.medium
 
-    switch (operation.type) {
+    switch (operation.type as string) {
       case xdr.OperationType.createAccount().name:
         return {
           publicKey: setSourceSigner(operation.source),
@@ -150,7 +150,7 @@ export class ClassicSignRequirementsPipeline extends ConveyorBelt<
       case xdr.OperationType.accountMerge().name:
         return {
           publicKey: setSourceSigner(operation.source),
-          thresholdLevel,
+          thresholdLevel: SignatureThreshold.high,
         }
 
       case xdr.OperationType.manageData().name:
@@ -190,6 +190,13 @@ export class ClassicSignRequirementsPipeline extends ConveyorBelt<
         }
 
       case xdr.OperationType.revokeSponsorship().name:
+      case 'revokeAccountSponsorship':
+      case 'revokeTrustlineSponsorship':
+      case 'revokeOfferSponsorship':
+      case 'revokeDataSponsorship':
+      case 'revokeClaimableBalanceSponsorship':
+      case 'revokeLiquidityPoolSponsorship':
+      case 'revokeSignerSponsorship':
         return {
           publicKey: setSourceSigner(operation.source),
           thresholdLevel,
