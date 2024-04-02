@@ -1,27 +1,34 @@
-import exp from 'constants'
 import { Constants } from 'stellar-plus'
 import { BuildTransactionPipeline } from 'stellar-plus/core/pipelines/build-transaction'
+import {
+  BuildTransactionPipelinePlugin,
+  BuildTransactionPipelineType,
+} from 'stellar-plus/core/pipelines/build-transaction/types'
 import { ClassicSignRequirementsPipeline } from 'stellar-plus/core/pipelines/classic-sign-requirements'
+import {
+  ClassicSignRequirementsPipelinePlugin,
+  ClassicSignRequirementsPipelineType,
+} from 'stellar-plus/core/pipelines/classic-sign-requirements/types'
 import { ClassicTransactionPipeline } from 'stellar-plus/core/pipelines/classic-transaction'
 import {
   ClassicTransactionPipelineInput,
   ClassicTransactionPipelinePlugin,
   ClassicTransactionPipelineType,
-  SupportedInnerPlugins,
 } from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { SignTransactionPipeline } from 'stellar-plus/core/pipelines/sign-transaction'
+import {
+  SignTransactionPipelinePlugin,
+  SignTransactionPipelineType,
+} from 'stellar-plus/core/pipelines/sign-transaction/types'
 import { SubmitTransactionPipeline } from 'stellar-plus/core/pipelines/submit-transaction'
+import {
+  SubmitTransactionPipelinePlugin,
+  SubmitTransactionPipelineType,
+} from 'stellar-plus/core/pipelines/submit-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/types'
 import { ClassicChannelAccountsPlugin } from 'stellar-plus/utils/pipeline/plugins/classic-transaction/channel-accounts'
 import { DebugPlugin } from 'stellar-plus/utils/pipeline/plugins/generic/debug'
 import { FeeBumpWrapperPlugin } from 'stellar-plus/utils/pipeline/plugins/submit-transaction/fee-bump'
-import { BuildTransactionPipelinePlugin, BuildTransactionPipelineType } from '../build-transaction/types'
-import {
-  ClassicSignRequirementsPipelinePlugin,
-  ClassicSignRequirementsPipelineType,
-} from '../classic-sign-requirements/types'
-import { SignTransactionPipelinePlugin, SignTransactionPipelineType } from '../sign-transaction/types'
-import { SubmitTransactionPipelinePlugin, SubmitTransactionPipelineType } from '../submit-transaction/types'
 
 jest.mock('stellar-plus/core/pipelines/build-transaction', () => ({
   BuildTransactionPipeline: jest.fn().mockImplementation(() => ({
