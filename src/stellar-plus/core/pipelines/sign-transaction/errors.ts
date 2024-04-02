@@ -21,9 +21,9 @@ const noRequirementsProvided = (
 ): StellarPlusError => {
   return new StellarPlusError({
     code: ErrorCodesPipelineSignTransaction.PSIG001,
-    message: 'No signers provided!',
+    message: 'No signature requirements provided!',
     source: 'PipelineSignTransaction',
-    details: `No signers provided. Review your transaction workflow to ensure the proper signers are being provided for the transaction.`,
+    details: `No signature requirements provided for the transaction. It is possible to use the classicSignRequirements pipeline to automatically identify Stellar Classic signature requirements for a given transaction.`,
     meta: {
       transactionData: extractTransactionData(transaction),
       conveyorBeltErrorMeta,
@@ -36,9 +36,9 @@ const noSignersProvided = (
 ): StellarPlusError => {
   return new StellarPlusError({
     code: ErrorCodesPipelineSignTransaction.PSIG002,
-    message: 'No signature requirements provided!',
+    message: 'No signers provided!',
     source: 'PipelineSignTransaction',
-    details: `No signature requirements provided for the transaction. It is possible to use the classicSignRequirements pipeline to automatically identify Stellar Classic signature requirements for a given transaction.`,
+    details: `No signers provided. Review your transaction workflow to ensure the proper signers are being provided for the transaction.`,
     meta: {
       transactionData: extractTransactionData(transaction),
       conveyorBeltErrorMeta,
