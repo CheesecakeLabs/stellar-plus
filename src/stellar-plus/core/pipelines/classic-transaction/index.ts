@@ -67,7 +67,6 @@ export class ClassicTransactionPipeline extends MultiBeltPipeline<
     if (options?.executionPlugins) executionPlugins.push(...options.executionPlugins)
 
     // ======================= Build Transaction ==========================
-
     const buildTransactionPipelinePlugins = this.getInnerPluginsByType(
       executionPlugins,
       'BuildTransactionPipeline' as BuildTransactionPipelineType
