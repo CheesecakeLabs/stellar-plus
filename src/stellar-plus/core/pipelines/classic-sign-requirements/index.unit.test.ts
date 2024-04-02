@@ -1,11 +1,14 @@
 import { Account, Asset, Claimant, Operation, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
-import { ClassicSignRequirementsPipeline } from './index'
-import { SignatureRequirement, SignatureThreshold } from 'stellar-plus/core/types'
+
 import { Constants } from 'stellar-plus'
-import { CSRError } from './errors'
+import { SignatureRequirement, SignatureThreshold } from 'stellar-plus/core/types'
 import { ConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
-import { ClassicSignRequirementsPipelineInput, ClassicSignRequirementsPipelineType } from './types'
 import { BeltMetadata } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
+
+import { CSRError } from './errors'
+import { ClassicSignRequirementsPipelineInput, ClassicSignRequirementsPipelineType } from './types'
+
+import { ClassicSignRequirementsPipeline } from './index'
 
 const MOCKED_PK_A = 'GACF23GKVFTU77K6W6PWSVN7YBM63UHDULILIEXJO6FR4YKMJ7FW3DTI'
 const MOCKED_PK_B = 'GB3MXH633VRECLZRUAR3QCLQJDMXNYNHKZCO6FJEWXVWSUEIS7NU376P'
@@ -36,6 +39,7 @@ describe('ClassicSignRequirementsPipeline', () => {
   describe('errors', () => {
     it('should throw error if internal process fails', async () => {
       const pipeline = new ClassicSignRequirementsPipeline()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(pipeline as any, 'bundleSignatureRequirements').mockImplementation(() => {
         throw new Error('mocked error')
       })
@@ -140,7 +144,7 @@ describe('ClassicSignRequirementsPipeline', () => {
 
   describe('operations threshold calculation', () => {
     let transactionBuilder: TransactionBuilder
-    let testOperationRequirement: Function
+    let testOperationRequirement: (operations: xdr.Operation[], expected: SignatureRequirement[]) => Promise<void>
 
     const pipeline = new ClassicSignRequirementsPipeline()
     const expectedLow = { publicKey: MOCKED_PK_A, thresholdLevel: SignatureThreshold.low }
@@ -149,7 +153,7 @@ describe('ClassicSignRequirementsPipeline', () => {
 
     beforeEach(() => {
       transactionBuilder = new TransactionBuilder(MOCKED_ACCOUNT_A, MOCKED_TX_OPTIONS)
-      testOperationRequirement = (operations: xdr.Operation[], expected: SignatureRequirement[]) => {
+      testOperationRequirement = (operations: xdr.Operation[], expected: SignatureRequirement[]): Promise<void> => {
         operations.forEach((op) => {
           transactionBuilder.addOperation(op)
         })

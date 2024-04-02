@@ -1,4 +1,4 @@
-import { SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
+import { SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import {
   SimulateTransactionPipelineInput,
@@ -28,7 +28,6 @@ export class SimulateTransactionPipeline extends ConveyorBelt<
     itemId: string
   ): Promise<SimulateTransactionPipelineOutput> {
     const { transaction, rpcHandler }: SimulateTransactionPipelineInput = item as SimulateTransactionPipelineInput
-
     let simulationResponse: SorobanRpc.Api.SimulateTransactionResponse
 
     try {
@@ -44,14 +43,14 @@ export class SimulateTransactionPipeline extends ConveyorBelt<
     if (SorobanRpc.Api.isSimulationRestore(simulationResponse) && simulationResponse.result) {
       return {
         response: simulationResponse as SorobanRpc.Api.SimulateTransactionRestoreResponse,
-        assembledTransaction: this.assembleTransaction(transaction, simulationResponse),
+        assembledTransaction: this.assembleTransaction(transaction, simulationResponse, item, itemId),
       } as SimulateTransactionPipelineOutput
     }
 
     if (SorobanRpc.Api.isSimulationSuccess(simulationResponse)) {
       return {
         response: simulationResponse as SorobanRpc.Api.SimulateTransactionSuccessResponse,
-        assembledTransaction: this.assembleTransaction(transaction, simulationResponse),
+        assembledTransaction: this.assembleTransaction(transaction, simulationResponse, item, itemId),
       } as SimulateTransactionPipelineOutput
     }
 
@@ -63,12 +62,19 @@ export class SimulateTransactionPipeline extends ConveyorBelt<
 
   private assembleTransaction(
     transaction: Transaction,
-    simulationResponse: SorobanRpc.Api.SimulateTransactionSuccessResponse
+    simulationResponse: SorobanRpc.Api.SimulateTransactionSuccessResponse,
+    item: SimulateTransactionPipelineInput,
+    itemId: string
   ): Transaction {
     try {
       return SorobanRpc.assembleTransaction(transaction, simulationResponse).build()
-    } catch (e) {
-      throw new Error('assembleTransaction failed')
+    } catch (error) {
+      throw PSIError.failedToAssembleTransaction(
+        error as Error,
+        simulationResponse,
+        transaction,
+        extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
+      )
     }
   }
 }
