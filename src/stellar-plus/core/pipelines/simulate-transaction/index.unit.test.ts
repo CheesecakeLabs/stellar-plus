@@ -2,12 +2,14 @@ import { Account, SorobanDataBuilder, SorobanRpc, TransactionBuilder, xdr } from
 
 import { Constants } from 'stellar-plus'
 import { SimulateTransactionPipeline } from 'stellar-plus/core/pipelines/simulate-transaction'
+import { PSIError } from 'stellar-plus/core/pipelines/simulate-transaction/errors'
+import {
+  SimulateTransactionPipelineInput,
+  SimulateTransactionPipelineType,
+} from 'stellar-plus/core/pipelines/simulate-transaction/types'
 import { ConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { BeltMetadata } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
-
-import { PSIError } from './errors'
-import { SimulateTransactionPipelineInput, SimulateTransactionPipelineType } from './types'
 
 const MOCKED_SIMULATION_RESPONSE_BASE = {
   events: [],
@@ -47,15 +49,9 @@ const MOCKED_INVALID_SIMULATION_RESPONSE =
   MOCKED_SIMULATION_RESPONSE_BASE as unknown as SorobanRpc.Api.SimulateTransactionResponse
 
 const MOCKED_PK_A = 'GACF23GKVFTU77K6W6PWSVN7YBM63UHDULILIEXJO6FR4YKMJ7FW3DTI'
-// const MOCKED_PK_B = 'GB3MXH633VRECLZRUAR3QCLQJDMXNYNHKZCO6FJEWXVWSUEIS7NU376P'
-// const MOCKED_PK_C = 'GCPXAF4S5MBXA3DRNBA7XYP55S6F3UN2ZJRAS72BXEJMD7JVMGIGCKNA'
-
 const MOCKED_ACCOUNT_A = new Account(MOCKED_PK_A, '100')
-
 const TESTNET_PASSPHRASE = Constants.testnet.networkPassphrase
 const MOCKED_FEE = '100'
-// const MOCKED_BUMP_FEE = '101'
-
 const MOCKED_TX_OPTIONS: TransactionBuilder.TransactionBuilderOptions = {
   fee: MOCKED_FEE,
   networkPassphrase: TESTNET_PASSPHRASE,
@@ -64,7 +60,6 @@ const MOCKED_TX_OPTIONS: TransactionBuilder.TransactionBuilderOptions = {
     maxTime: 0,
   },
 }
-
 const MOCKED_TRANSACTION = new TransactionBuilder(MOCKED_ACCOUNT_A, MOCKED_TX_OPTIONS).build()
 const MOCKED_EXCEPTION = new Error('simulateTransaction failed')
 
@@ -82,10 +77,6 @@ const mockConveyorBeltErrorMeta = (
 }
 
 describe('SimulateTransactionPipeline', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
   describe('Initialization', () => {
     it('should initialize the pipeline successfully', async () => {
       const pipeline = new SimulateTransactionPipeline()
