@@ -7,6 +7,7 @@ import {
   SignTransactionPipelinePlugin,
   SignTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/sign-transaction/types'
+import { StellarPlusError } from 'stellar-plus/error'
 import { extractConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
 
@@ -64,7 +65,11 @@ export class SignTransactionPipeline extends ConveyorBelt<
           )
         }
       } else {
-        throw new Error('Multisignature support not implemented yet')
+        throw StellarPlusError.unexpectedError({
+          message: 'Multisignature support not implemented yet',
+          source: 'PipelineSignTransaction',
+          details: `The signer has a signature schema. The signature schema is: ${signer.signatureSchema}.`,
+        })
       }
     }
 
