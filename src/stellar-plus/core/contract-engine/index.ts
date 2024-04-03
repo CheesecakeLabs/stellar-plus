@@ -105,7 +105,7 @@ export class ContractEngine {
     this.wasm = contractParameters.wasm
     this.wasmHash = contractParameters.wasmHash
 
-    if (!this.contractId && !this.wasm && !this.wasmHash) throw CEError.contractEngineClassFailedToInitialize()
+    // if (!this.contractId && !this.wasm && !this.wasmHash) throw CEError.contractEngineClassFailedToInitialize()
 
     this.options = { ...options }
 
