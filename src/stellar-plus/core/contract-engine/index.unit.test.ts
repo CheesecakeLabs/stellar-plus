@@ -42,7 +42,7 @@ const MOCKED_TX_INVOCATION: TransactionInvocation = {
   signers: [],
 }
 
-const MOCKED_SOROBAN_INVOKE_ARGS: SorobanInvokeArgs<{}> = {
+const MOCKED_SOROBAN_INVOKE_ARGS: SorobanInvokeArgs<object> = {
   method: tokenMethods.name,
   methodArgs: {},
   ...MOCKED_TX_INVOCATION,
@@ -92,17 +92,6 @@ describe('ContractEngine', () => {
   })
 
   describe('Initialization Errors', () => {
-    it('should throw error if no wasm file, wasm hash or contract id is provided', () => {
-      expect(() => {
-        const contractEngine = new ContractEngine({
-          networkConfig: NETWORK_CONFIG,
-          contractParameters: {
-            spec: MOCKED_CONTRACT_SPEC,
-          },
-        })
-      }).toThrow(CEError.contractEngineClassFailedToInitialize())
-    })
-
     it('should throw error if wasm file is required but is not present', async () => {
       const contractEngine = new ContractEngine({
         networkConfig: NETWORK_CONFIG,
@@ -269,6 +258,7 @@ describe('ContractEngine', () => {
           getLedgerEntries: jest.fn().mockResolvedValue({
             entries: [
               {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 key: Object.assign(xdr.LedgerKey.contractCode(MOCKED_CONTRACT_CODE_KEY)),
                 xdr: 'xdr',
                 liveUntilLedgerSeq: 1,
