@@ -8,11 +8,11 @@ import {
   SubmitTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/submit-transaction/types'
 import { extractConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
+import { HorizonHandlerClient } from 'stellar-plus/horizon'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
 
 import { PSUError } from './errors'
-import { HorizonHandlerClient } from 'stellar-plus/horizon'
 
 export class SubmitTransactionPipeline extends ConveyorBelt<
   SubmitTransactionPipelineInput,
