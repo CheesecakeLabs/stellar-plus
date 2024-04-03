@@ -1,3 +1,5 @@
+import { xdr } from '@stellar/stellar-sdk'
+
 import { FeeBumpHeader, TransactionInvocation } from 'stellar-plus/types'
 
 import { AccountHandler, SignatureSchema } from '../../account/account-handler/types'
@@ -43,14 +45,20 @@ export function mockSignatureSchema(
   }
 }
 
-export function mockAccountHandler(
-  accountKey = mockAccount,
-  outputSignedTransaction?: string,
+export function mockAccountHandler({
+  accountKey = 'mockAccount',
+  outputSignedTransaction,
+  outputSignedAuthEntry,
+  signatureSchema,
+}: {
+  accountKey?: string
+  outputSignedTransaction?: string
+  outputSignedAuthEntry?: xdr.SorobanAuthorizationEntry
   signatureSchema?: SignatureSchema
-): jest.Mocked<AccountHandler> {
+}): jest.Mocked<AccountHandler> {
   return {
     sign: jest.fn().mockReturnValue(outputSignedTransaction ?? 'success'),
-    signSorobanAuthEntry: jest.fn().mockResolvedValue('success'),
+    signSorobanAuthEntry: jest.fn().mockReturnValue(outputSignedAuthEntry ?? xdr.SorobanAuthorizationEntry),
     getPublicKey: jest.fn().mockReturnValue(accountKey),
     signatureSchema,
   }
@@ -58,14 +66,14 @@ export function mockAccountHandler(
 
 export function mockFeeBumpHeader(signerKey = mockAccount): FeeBumpHeader {
   return {
-    signers: [mockAccountHandler(signerKey)],
+    signers: [mockAccountHandler({ accountKey: signerKey })],
     header: mockHeader(signerKey),
   }
 }
 
 export function mockTransactionInvocation(signerKey = mockAccount): TransactionInvocation {
   return {
-    signers: [mockAccountHandler(signerKey)],
+    signers: [mockAccountHandler({ accountKey: signerKey })],
     header: mockHeader(signerKey),
     feeBump: mockFeeBumpHeader(signerKey),
   }

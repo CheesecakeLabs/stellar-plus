@@ -26,7 +26,10 @@ const MOCKED_SIGNATURE_REQUIREMENTS = [
     thresholdLevel: 1,
   },
 ]
-const MOCKED_SIGNER = mockAccountHandler(MOCKED_KEYPAIRS[0].publicKey(), MOCKED_SIGNED_TRANSACTION_XDR)
+const MOCKED_SIGNER = mockAccountHandler({
+  accountKey: MOCKED_KEYPAIRS[0].publicKey(),
+  outputSignedTransaction: MOCKED_SIGNED_TRANSACTION_XDR,
+})
 const MOCKED_SIGNERS = [MOCKED_SIGNER]
 const MOCKED_ST_INPUT: STInput = {
   transaction: MOCKED_UNSIGNED_TRANSACTION,
@@ -58,8 +61,14 @@ describe('SignTransactionPipeline', () => {
 
     it('should sign transaction successfully with multiple signers', async () => {
       const mockedSigners = MOCKED_SIGNERS.concat(
-        mockAccountHandler(MOCKED_KEYPAIRS[1].publicKey(), MOCKED_SIGNED_TRANSACTION_XDR),
-        mockAccountHandler(MOCKED_KEYPAIRS[2].publicKey(), MOCKED_SIGNED_TRANSACTION_XDR)
+        mockAccountHandler({
+          accountKey: MOCKED_KEYPAIRS[1].publicKey(),
+          outputSignedTransaction: MOCKED_SIGNED_TRANSACTION_XDR,
+        }),
+        mockAccountHandler({
+          accountKey: MOCKED_KEYPAIRS[2].publicKey(),
+          outputSignedTransaction: MOCKED_SIGNED_TRANSACTION_XDR,
+        })
       )
       const mockedInput = {
         ...MOCKED_ST_INPUT,
@@ -76,8 +85,14 @@ describe('SignTransactionPipeline', () => {
 
     it('should sign transaction successfully with multiple signers and multiple requirements', async () => {
       const mockedSigners = MOCKED_SIGNERS.concat(
-        mockAccountHandler(MOCKED_KEYPAIRS[1].publicKey(), MOCKED_SIGNED_TRANSACTION_XDR),
-        mockAccountHandler(MOCKED_KEYPAIRS[2].publicKey(), MOCKED_SIGNED_TRANSACTION_XDR)
+        mockAccountHandler({
+          accountKey: MOCKED_KEYPAIRS[1].publicKey(),
+          outputSignedTransaction: MOCKED_SIGNED_TRANSACTION_XDR,
+        }),
+        mockAccountHandler({
+          accountKey: MOCKED_KEYPAIRS[2].publicKey(),
+          outputSignedTransaction: MOCKED_SIGNED_TRANSACTION_XDR,
+        })
       )
       const mockedSignatureRequirements = MOCKED_SIGNATURE_REQUIREMENTS.concat(
         {
@@ -104,9 +119,18 @@ describe('SignTransactionPipeline', () => {
 
     it('should sign transaction successfully with same signer multiple times', async () => {
       const mockedSigners = MOCKED_SIGNERS.concat(
-        mockAccountHandler(MOCKED_KEYPAIRS[0].publicKey(), MOCKED_SIGNED_TRANSACTION_XDR),
-        mockAccountHandler(MOCKED_KEYPAIRS[0].publicKey(), MOCKED_SIGNED_TRANSACTION_XDR),
-        mockAccountHandler(MOCKED_KEYPAIRS[0].publicKey(), MOCKED_SIGNED_TRANSACTION_XDR)
+        mockAccountHandler({
+          accountKey: MOCKED_KEYPAIRS[0].publicKey(),
+          outputSignedTransaction: MOCKED_SIGNED_TRANSACTION_XDR,
+        }),
+        mockAccountHandler({
+          accountKey: MOCKED_KEYPAIRS[0].publicKey(),
+          outputSignedTransaction: MOCKED_SIGNED_TRANSACTION_XDR,
+        }),
+        mockAccountHandler({
+          accountKey: MOCKED_KEYPAIRS[0].publicKey(),
+          outputSignedTransaction: MOCKED_SIGNED_TRANSACTION_XDR,
+        })
       )
       const mockedInput = {
         ...MOCKED_ST_INPUT,
@@ -122,9 +146,18 @@ describe('SignTransactionPipeline', () => {
 
     it('should throw error if try to sign with same signer and requirements multiple times', async () => {
       const mockedSigners = MOCKED_SIGNERS.concat(
-        mockAccountHandler(MOCKED_KEYPAIRS[0].publicKey(), MOCKED_SIGNED_TRANSACTION_XDR),
-        mockAccountHandler(MOCKED_KEYPAIRS[0].publicKey(), MOCKED_SIGNED_TRANSACTION_XDR),
-        mockAccountHandler(MOCKED_KEYPAIRS[0].publicKey(), MOCKED_SIGNED_TRANSACTION_XDR)
+        mockAccountHandler({
+          accountKey: MOCKED_KEYPAIRS[0].publicKey(),
+          outputSignedTransaction: MOCKED_SIGNED_TRANSACTION_XDR,
+        }),
+        mockAccountHandler({
+          accountKey: MOCKED_KEYPAIRS[0].publicKey(),
+          outputSignedTransaction: MOCKED_SIGNED_TRANSACTION_XDR,
+        }),
+        mockAccountHandler({
+          accountKey: MOCKED_KEYPAIRS[0].publicKey(),
+          outputSignedTransaction: MOCKED_SIGNED_TRANSACTION_XDR,
+        })
       )
       const mockedSignatureRequirements = MOCKED_SIGNATURE_REQUIREMENTS.concat(
         {
@@ -174,7 +207,7 @@ describe('SignTransactionPipeline', () => {
     it('should throw error if signature requirements does not contain signer public key', async () => {
       const mockedInput = {
         ...MOCKED_ST_INPUT,
-        signers: [mockAccountHandler('anotherPublicKey')],
+        signers: [mockAccountHandler({ accountKey: 'anotherPublicKey' })],
       }
 
       await expect(signTransactionPipeline.execute(mockedInput)).rejects.toThrow('The signer was not found!')
@@ -200,11 +233,11 @@ describe('SignTransactionPipeline', () => {
 
     it('should throw error if signer contains signatureSchema', async () => {
       const signatureSchema = mockSignatureSchema()
-      const mockedSigner = mockAccountHandler(
-        MOCKED_KEYPAIRS[0].publicKey(),
-        MOCKED_SIGNED_TRANSACTION_XDR,
-        signatureSchema
-      )
+      const mockedSigner = mockAccountHandler({
+        accountKey: MOCKED_KEYPAIRS[0].publicKey(),
+        outputSignedTransaction: MOCKED_SIGNED_TRANSACTION_XDR,
+        signatureSchema: signatureSchema,
+      })
       const mockedInput = {
         ...MOCKED_ST_INPUT,
         signers: [mockedSigner],
