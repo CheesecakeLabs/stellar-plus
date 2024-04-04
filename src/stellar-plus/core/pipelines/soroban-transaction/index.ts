@@ -198,7 +198,9 @@ export class SorobanTransactionPipeline extends MultiBeltPipeline<
       'SorobanGetTransactionPipeline' as SorobanGetTransactionPipelineType
     ) as SorobanGetTransactionPipelinePlugin[]
 
-    const sorobanGetTransactionPipeline = new SorobanGetTransactionPipeline(sorobanGetTransactionPipelinePlugins)
+    const sorobanGetTransactionPipeline = new SorobanGetTransactionPipeline({
+      plugins: sorobanGetTransactionPipelinePlugins,
+    })
 
     const sorobanGetTransactionResult = await sorobanGetTransactionPipeline.execute(
       {

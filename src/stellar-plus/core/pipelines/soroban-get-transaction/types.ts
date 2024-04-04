@@ -3,6 +3,11 @@ import { FeeBumpTransaction, SorobanRpc, Transaction } from '@stellar/stellar-sd
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { BeltPluginType, GenericPlugin } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
+export type SorobanGetTransactionPipelineConstructor = {
+  plugins?: SorobanGetTransactionPipelinePlugin[]
+  options?: SorobanGetTransactionOptions
+}
+
 export type SorobanGetTransactionPipelineInput = {
   sorobanSubmission: SorobanRpc.Api.SendTransactionResponse
   rpcHandler: RpcHandler

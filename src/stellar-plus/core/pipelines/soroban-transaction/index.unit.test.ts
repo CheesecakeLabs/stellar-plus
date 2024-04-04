@@ -23,6 +23,7 @@ import { SorobanAuthPipeline } from 'stellar-plus/core/pipelines/soroban-auth'
 import { SorobanAuthPipelinePlugin, SorobanAuthPipelineType } from 'stellar-plus/core/pipelines/soroban-auth/types'
 import { SorobanGetTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-get-transaction'
 import {
+  SorobanGetTransactionPipelineConstructor,
   SorobanGetTransactionPipelinePlugin,
   SorobanGetTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
@@ -279,7 +280,9 @@ describe('Soroban Transaction Pipeline', () => {
 
       await pipeline.execute(MOCKED_PIPELINE_ITEM)
 
-      expect(MOCKED_SOROBAN_GET_TRANSACTION_PIPELINE).toHaveBeenCalledWith([MOCKED_SOROBAN_GET_TRANSACTION_PLUGIN])
+      expect(MOCKED_SOROBAN_GET_TRANSACTION_PIPELINE).toHaveBeenCalledWith({
+        plugins: [MOCKED_SOROBAN_GET_TRANSACTION_PLUGIN],
+      } as SorobanGetTransactionPipelineConstructor)
     })
   })
   describe('Core functionalities', () => {
@@ -413,7 +416,9 @@ describe('Soroban Transaction Pipeline', () => {
 
       await pipeline.execute(MOCKED_ITEM_WITH_PLUGINS)
 
-      expect(MOCKED_SOROBAN_GET_TRANSACTION_PIPELINE).toHaveBeenCalledWith([MOCKED_SOROBAN_GET_TRANSACTION_PLUGIN])
+      expect(MOCKED_SOROBAN_GET_TRANSACTION_PIPELINE).toHaveBeenCalledWith({
+        plugins: [MOCKED_SOROBAN_GET_TRANSACTION_PLUGIN],
+      } as SorobanGetTransactionPipelineConstructor)
     })
   })
 })
