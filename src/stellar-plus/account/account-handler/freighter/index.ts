@@ -7,7 +7,7 @@ import {
   signAuthEntry,
   signTransaction,
 } from '@stellar/freighter-api'
-import { Transaction, xdr } from '@stellar/stellar-sdk'
+import { FeeBumpTransaction, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import {
   FreighterAccHandlerPayload,
@@ -103,7 +103,7 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
    * @description - Sign a transaction with Freighter and return the signed transaction. If signerpublicKey is provided, it will be used to specifically request Freighter to sign with that account.
    *
    */
-  public async sign(tx: Transaction): Promise<string> {
+  public async sign(tx: Transaction | FeeBumpTransaction): Promise<string> {
     const isFreighterConnected = await this.isFreighterConnected(true)
 
     if (isFreighterConnected) {
@@ -226,7 +226,6 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
    */
   public async isNetworkCorrect(): Promise<boolean> {
     const networkDetails = await getNetworkDetails()
-
     if (networkDetails.networkPassphrase !== this.networkConfig.networkPassphrase) {
       throw FAHError.connectedToWrongNetworkError(this.networkConfig.name)
     }
