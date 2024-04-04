@@ -1,15 +1,16 @@
 import { Account, SorobanRpc, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
+
 import { Constants } from 'stellar-plus'
 import { SorobanGetTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-get-transaction'
+import { SGTError } from 'stellar-plus/core/pipelines/soroban-get-transaction/errors'
 import {
   SorobanGetTransactionOptions,
   SorobanGetTransactionPipelineInput,
   SorobanGetTransactionPipelinePlugin,
   SorobanGetTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
-import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
-import { SGTError } from './errors'
 import { ConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
+import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
 import { BeltMetadata } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
 jest.mock('stellar-plus/rpc/default-handler', () => ({
