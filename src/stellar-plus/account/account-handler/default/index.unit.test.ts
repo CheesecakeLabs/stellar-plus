@@ -139,5 +139,24 @@ describe('DefaultAccountHandler', () => {
       }).toThrow(DAHError.failedToSignTransactionError(new Error('Mocked error')))
       expect(spySign).toHaveBeenCalledExactlyOnceWith(keypair)
     })
+
+    it('should throw an error if the authorizeEntry cannot be signed', async () => {
+      const keypair = Keypair.random()
+      MOCKED_AUTHORIZE_ENTRY.mockImplementationOnce(() => {
+        throw new Error('Mocked error')
+      })
+      const dah = new DefaultAccountHandlerClient({ networkConfig: TESTNET_CONFIG, secretKey: keypair.secret() })
+
+      await expect(
+        dah.signSorobanAuthEntry(MOCKED_SOROBAN_AUTH_ENTRY, 123, TESTNET_CONFIG.networkPassphrase)
+      ).rejects.toThrow(
+        DAHError.failedToSignAuthorizationEntryError(
+          new Error('Mocked error'),
+          'mocked auth entry xdr',
+          123,
+          TESTNET_CONFIG.networkPassphrase
+        )
+      )
+    })
   })
 })
