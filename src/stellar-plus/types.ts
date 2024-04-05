@@ -5,6 +5,7 @@ import {
   Transaction as _Transaction,
 } from '@stellar/stellar-sdk'
 
+import { NetworkConfig as _NetworkConfig } from 'stellar-plus/constants'
 import {
   EnvelopeHeader as _EnvelopeHeader,
   FeeBumpHeader as _FeeBumpHeader,
@@ -17,20 +18,7 @@ export type Transaction = _Transaction
 
 export type FeeBumpTransaction = _FeeBumpTransaction
 
-export type NetworkConfig = {
-  name: NetworksList
-  networkPassphrase: string
-  rpcUrl: string
-  horizonUrl: string
-  friendbotUrl?: string
-}
-
-export enum NetworksList {
-  testnet = 'testnet',
-  futurenet = 'futurenet',
-  mainnet = 'mainnet',
-  custom = 'custom',
-}
+export type NetworkConfig = _NetworkConfig
 
 export type u32 = number
 export type i32 = number
