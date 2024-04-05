@@ -6,9 +6,9 @@ import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
 import { SGTError } from './errors'
 import {
   SorobanGetTransactionOptions,
+  SorobanGetTransactionPipelineConstructor,
   SorobanGetTransactionPipelineInput,
   SorobanGetTransactionPipelineOutput,
-  SorobanGetTransactionPipelinePlugin,
   SorobanGetTransactionPipelineType,
 } from './types'
 
@@ -19,15 +19,12 @@ export class SorobanGetTransactionPipeline extends ConveyorBelt<
 > {
   protected options: SorobanGetTransactionOptions
 
-  constructor(
-    plugins?: SorobanGetTransactionPipelinePlugin[],
-    options: SorobanGetTransactionOptions = { defaultSecondsToWait: 30, useEnvelopeTimeout: true }
-  ) {
+  constructor({ plugins, options }: SorobanGetTransactionPipelineConstructor = {}) {
     super({
       type: SorobanGetTransactionPipelineType.id,
       plugins: plugins || [],
     })
-    this.options = options
+    this.options = options || { defaultSecondsToWait: 30, useEnvelopeTimeout: true }
   }
 
   //    Waits for the given transaction to be processed by the Soroban server.
