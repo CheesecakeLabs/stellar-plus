@@ -1,4 +1,17 @@
-import { NetworkConfig, NetworksList } from 'stellar-plus/types'
+export type NetworkConfig = {
+  name: NetworksList
+  networkPassphrase: string
+  rpcUrl: string
+  horizonUrl: string
+  friendbotUrl?: string
+}
+
+export enum NetworksList {
+  testnet = 'testnet',
+  futurenet = 'futurenet',
+  mainnet = 'mainnet',
+  custom = 'custom',
+}
 
 const networksConfig: { [key: string]: NetworkConfig } = {
   futurenet: {

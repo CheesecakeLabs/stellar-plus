@@ -1,6 +1,5 @@
 import { Horizon as HorizonNamespace, Operation, Asset as StellarAsset } from '@stellar/stellar-sdk'
 
-import { HorizonHandler } from 'stellar-plus'
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import {
   ClassicAssetHandlerConstructorArgs,
@@ -10,6 +9,7 @@ import { AssetTypes } from 'stellar-plus/asset/types'
 import { ClassicTransactionPipeline } from 'stellar-plus/core/pipelines/classic-transaction'
 import { ClassicTransactionPipelineOptions } from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
+import { HorizonHandlerClient as HorizonHandler } from 'stellar-plus/horizon'
 
 import { CAHError } from './errors'
 
@@ -21,7 +21,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
   private asset: StellarAsset
   private horizonHandler: HorizonHandler
 
-  private classicTrasactionPipeline: ClassicTransactionPipeline
+  private classicTransactionPipeline: ClassicTransactionPipeline
 
   /**
    *
@@ -53,7 +53,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
 
     this.asset = new StellarAsset(args.code, this.issuerPublicKey)
 
-    this.classicTrasactionPipeline = new ClassicTransactionPipeline(
+    this.classicTransactionPipeline = new ClassicTransactionPipeline(
       args.networkConfig,
       args.options?.classicTransactionPipeline as ClassicTransactionPipelineOptions
     )
@@ -150,7 +150,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: from,
     })
 
-    await this.classicTrasactionPipeline.execute({
+    await this.classicTransactionPipeline.execute({
       txInvocation,
       operations: [transferOp],
     })
@@ -219,7 +219,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: this.asset.getIssuer(),
     })
 
-    const result = await this.classicTrasactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [mintOp],
     })
@@ -278,7 +278,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: this.asset.getIssuer(),
     })
 
-    const result = await this.classicTrasactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [addTrustlineOp, mintOp],
     })
@@ -311,7 +311,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       asset: this.asset,
     })
 
-    const result = await this.classicTrasactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation,
       operations: [addTrustlineOp],
     })
