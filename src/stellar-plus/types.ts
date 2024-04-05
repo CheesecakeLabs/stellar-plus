@@ -5,6 +5,7 @@ import {
 } from '@stellar/stellar-sdk'
 import { Spec as _Spec } from '@stellar/stellar-sdk/contract'
 
+import { NetworkConfig as _NetworkConfig } from 'stellar-plus/constants'
 import {
   EnvelopeHeader as _EnvelopeHeader,
   FeeBumpHeader as _FeeBumpHeader,
