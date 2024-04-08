@@ -6,7 +6,6 @@ import { AxiosErrorTypes, extractAxiosErrorInfo } from 'stellar-plus/error/helpe
 export enum AccountBaseErrorCodes {
   // AB0 General
   AB001 = 'AB001',
-  AB002 = 'AB002',
 
   // AB1 Account creation
   AB100 = 'AB100',
@@ -30,19 +29,9 @@ const friendbotNotAvailableError = (error?: Error): StellarPlusError => {
   })
 }
 
-const accountHasNoValidPublicKeyError = (error?: Error): StellarPlusError => {
-  return new StellarPlusError({
-    code: AccountBaseErrorCodes.AB002,
-    message: 'Account has no valid public key!',
-    source: 'AccountBase',
-    details:
-      'The account has no valid public key. Make sure that this account instance has been initialized correctly and contains a valid public key.',
-    meta: { error },
-  })
-}
-
 const failedToCreateAccountWithFriendbotError = (error?: Error): StellarPlusError => {
   const axiosError = extractAxiosErrorInfo(error as AxiosError)
+
   if (axiosError.type === AxiosErrorTypes.AxiosRequestError) {
     return new StellarPlusError({
       code: AccountBaseErrorCodes.AB101,
@@ -97,7 +86,6 @@ const failedToLoadBalances = (error?: Error): StellarPlusError => {
 }
 
 export const ABError = {
-  accountHasNoValidPublicKeyError,
   failedToCreateAccountWithFriendbotError,
   friendbotNotAvailableError,
   horizonHandlerNotAvailableError,
