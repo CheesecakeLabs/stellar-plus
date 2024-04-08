@@ -96,14 +96,23 @@ describe('Classic Asset Handler', () => {
       expect(asset.type).toBe('credit_alphanum12')
     })
 
-    it('should initialize the type as native if the code is XLM', () => {
+    it('should initialize the type as native if the code is XLM as has no issuer', () => {
+      const asset = new ClassicAssetHandler({
+        code: 'XLM',
+        networkConfig: TESTNET_CONFIG,
+      })
+
+      expect(asset.type).toBe('native')
+    })
+
+    it('should initialize the type as credit_alphanum4 if the code is XLM as has an issuer', () => {
       const asset = new ClassicAssetHandler({
         code: 'XLM',
         issuerAccount: MOCKED_PK,
         networkConfig: TESTNET_CONFIG,
       })
 
-      expect(asset.type).toBe('native')
+      expect(asset.type).toBe('credit_alphanum4')
     })
 
     it('should accept options for the Classic Transaction pipeline', () => {
@@ -203,7 +212,6 @@ describe('Classic Asset Handler', () => {
             balances: [
               {
                 asset_code: 'XLM',
-                asset_issuer: MOCKED_PK,
                 balance: mockedBalance,
                 asset_type: 'native',
               },
@@ -219,7 +227,6 @@ describe('Classic Asset Handler', () => {
       }))
       const asset = new ClassicAssetHandler({
         code: 'XLM',
-        issuerAccount: MOCKED_PK,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -260,7 +267,7 @@ describe('Classic Asset Handler', () => {
         networkConfig: TESTNET_CONFIG,
       })
       const mockedTxInvocation = {
-        header: { source: MOCKED_PK, fee: '100', timeout: 100 },
+        header: { source: MOCKED_PK, fee: '100', timeout: 45 },
         signers: [mockedAccountHandler],
       }
       const spyExecute = jest.spyOn((asset as any).classicTransactionPipeline, 'execute').mockResolvedValue({})
@@ -289,7 +296,7 @@ describe('Classic Asset Handler', () => {
         networkConfig: TESTNET_CONFIG,
       })
       const mockedTxInvocation = {
-        header: { source: MOCKED_PK, fee: '100', timeout: 100 },
+        header: { source: MOCKED_PK, fee: '100', timeout: 45 },
         signers: [mockedAccountHandler],
       }
       const spyTransfer = jest.spyOn(asset as any, 'transfer').mockResolvedValue({})
@@ -316,7 +323,7 @@ describe('Classic Asset Handler', () => {
         networkConfig: TESTNET_CONFIG,
       })
       const mockedTxInvocation = {
-        header: { source: mockedUserAccountHandler.getPublicKey(), fee: '100', timeout: 100 },
+        header: { source: mockedUserAccountHandler.getPublicKey(), fee: '100', timeout: 45 },
         signers: [mockedUserAccountHandler],
       }
       const spyExecute = jest.spyOn((asset as any).classicTransactionPipeline, 'execute').mockResolvedValue({})
@@ -345,7 +352,7 @@ describe('Classic Asset Handler', () => {
         networkConfig: TESTNET_CONFIG,
       })
       const mockedTxInvocation = {
-        header: { source: MOCKED_PK, fee: '100', timeout: 100 },
+        header: { source: MOCKED_PK, fee: '100', timeout: 45 },
         signers: [mockedAccountHandler],
       }
       const spyExecute = jest.spyOn((asset as any).classicTransactionPipeline, 'execute').mockResolvedValue({})
@@ -371,7 +378,7 @@ describe('Classic Asset Handler', () => {
         networkConfig: TESTNET_CONFIG,
       })
       const mockedTxInvocation = {
-        header: { source: mockedUserAccountHandler.getPublicKey(), fee: '100', timeout: 100 },
+        header: { source: mockedUserAccountHandler.getPublicKey(), fee: '100', timeout: 45 },
         signers: [mockedUserAccountHandler],
       }
       const spyExecute = jest.spyOn((asset as any).classicTransactionPipeline, 'execute').mockResolvedValue({})
@@ -424,7 +431,7 @@ describe('Classic Asset Handler', () => {
         networkConfig: TESTNET_CONFIG,
       })
       const mockedTxInvocation = {
-        header: { source: MOCKED_PK_B, fee: '100', timeout: 100 },
+        header: { source: MOCKED_PK_B, fee: '100', timeout: 45 },
         signers: [mockAccountHandler({ accountKey: MOCKED_PK_B })],
       }
       const spyExecute = jest.spyOn((asset as any).classicTransactionPipeline, 'execute').mockResolvedValue({})

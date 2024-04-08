@@ -8,7 +8,7 @@ import { NetworkConfig } from 'stellar-plus/types'
 
 export type ClassicAsset = AssetType & {
   code: string
-  issuerPublicKey: string
+  issuerPublicKey?: string
   type: AssetTypes.native | AssetTypes.credit_alphanum4 | AssetTypes.credit_alphanum12
 }
 
@@ -16,7 +16,7 @@ export type ClassicAssetHandler = ClassicAsset & ClassicTokenInterface & Classic
 
 export type ClassicAssetHandlerConstructorArgs = {
   code: string
-  issuerAccount: string | AccountHandler
+  issuerAccount?: string | AccountHandler
   networkConfig: NetworkConfig
 
   options?: {

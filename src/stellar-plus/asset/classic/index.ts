@@ -15,7 +15,7 @@ import { CAHError } from './errors'
 
 export class ClassicAssetHandler implements IClassicAssetHandler {
   public code: string
-  public issuerPublicKey: string
+  public issuerPublicKey?: string
   public type: AssetTypes.native | AssetTypes.credit_alphanum4 | AssetTypes.credit_alphanum12
   private issuerAccount?: AccountHandler
   private asset: StellarAsset
@@ -37,17 +37,23 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
    */
   constructor(args: ClassicAssetHandlerConstructorArgs) {
     this.code = args.code
-    this.issuerPublicKey =
-      typeof args.issuerAccount === 'string' ? args.issuerAccount : args.issuerAccount.getPublicKey()
-
-    this.issuerAccount = typeof args.issuerAccount === 'string' ? undefined : args.issuerAccount
-
     this.type =
-      args.code === 'XLM'
+      args.code === 'XLM' && !args.issuerAccount
         ? AssetTypes.native
         : args.code.length <= 4
           ? AssetTypes.credit_alphanum4
           : AssetTypes.credit_alphanum12
+
+    // provided Public key for issuer
+    if (args.issuerAccount && typeof args.issuerAccount === 'string') {
+      this.issuerPublicKey = args.issuerAccount
+    }
+
+    // provided Account Handler for issuer
+    if (args.issuerAccount && typeof args.issuerAccount !== 'string') {
+      this.issuerAccount = args.issuerAccount
+      this.issuerPublicKey = args.issuerAccount.getPublicKey()
+    }
 
     this.horizonHandler = new HorizonHandler(args.networkConfig)
 
@@ -171,6 +177,12 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
    * @description - Burns the given amount of the asset from the 'from' account.
    */
   public async burn(args: { from: string; amount: number } & TransactionInvocation): Promise<void> {
+    if (this.type === AssetTypes.native) {
+      throw "You can't burn XLM"
+    }
+    if (!this.issuerPublicKey) {
+      throw "Missing issuer public key. Can't burn asset."
+    }
     return this.transfer({ ...args, to: this.issuerPublicKey })
   }
 
