@@ -3,23 +3,27 @@ import { AxiosError } from 'axios'
 import { StellarPlusError } from 'stellar-plus/error'
 import { AxiosErrorTypes, extractAxiosErrorInfo } from 'stellar-plus/error/helpers/axios'
 
-export enum FriendbotErrorCodes {
-  // F0 General
-  FB001 = 'FB001',
-  FB002 = 'FB002',
-  FB003 = 'FB003',
-  // F1 Account creation
-  FB100 = 'FB100',
-  FB101 = 'FB101',
-  FB102 = 'FB102',
-  FB103 = 'FB103',
+export enum AccountBaseErrorCodes {
+  // AB0 General
+  AB001 = 'AB001',
+  AB002 = 'AB002',
+
+  // AB1 Account creation
+  AB100 = 'AB100',
+  AB101 = 'AB101',
+  AB102 = 'AB102',
+  AB103 = 'AB103',
+
+  // AB2 Loading from Horizon
+  AB200 = 'AB200',
+  AB201 = 'AB201',
 }
 
 const friendbotNotAvailableError = (error?: Error): StellarPlusError => {
   return new StellarPlusError({
-    code: FriendbotErrorCodes.FB001,
+    code: AccountBaseErrorCodes.AB001,
     message: 'Friendbot not available!',
-    source: 'Friendbot',
+    source: 'AccountBase',
     details:
       'Friendbot is only available in test networks such as the Testnet and Futurenet. Make sure that the Network configuration object contains a valid Friendbot URL.',
     meta: { error },
@@ -28,9 +32,9 @@ const friendbotNotAvailableError = (error?: Error): StellarPlusError => {
 
 const accountHasNoValidPublicKeyError = (error?: Error): StellarPlusError => {
   return new StellarPlusError({
-    code: FriendbotErrorCodes.FB002,
+    code: AccountBaseErrorCodes.AB002,
     message: 'Account has no valid public key!',
-    source: 'Friendbot',
+    source: 'AccountBase',
     details:
       'The account has no valid public key. Make sure that this account instance has been initialized correctly and contains a valid public key.',
     meta: { error },
@@ -41,9 +45,9 @@ const failedToCreateAccountWithFriendbotError = (error?: Error): StellarPlusErro
   const axiosError = extractAxiosErrorInfo(error as AxiosError)
   if (axiosError.type === AxiosErrorTypes.AxiosRequestError) {
     return new StellarPlusError({
-      code: FriendbotErrorCodes.FB101,
+      code: AccountBaseErrorCodes.AB101,
       message: 'Failed request when initializing account with friendbot!',
-      source: 'Friendbot',
+      source: 'AccountBase',
       details:
         'The request failed when initializing the account with the friendbot. Make sure that the network is available and that friendbot URL is correct.',
       meta: { axiosError, error },
@@ -52,9 +56,9 @@ const failedToCreateAccountWithFriendbotError = (error?: Error): StellarPlusErro
 
   if (axiosError.type === AxiosErrorTypes.AxiosResponseError) {
     return new StellarPlusError({
-      code: FriendbotErrorCodes.FB102,
+      code: AccountBaseErrorCodes.AB102,
       message: 'Failed response when initializing account with friendbot!',
-      source: 'Friendbot',
+      source: 'AccountBase',
       details:
         'Received a failed response when initializing the account with the friendbot. Make sure the account has not been already initialized.',
       meta: { axiosError, error },
@@ -62,16 +66,40 @@ const failedToCreateAccountWithFriendbotError = (error?: Error): StellarPlusErro
   }
 
   return new StellarPlusError({
-    code: FriendbotErrorCodes.FB100,
+    code: AccountBaseErrorCodes.AB100,
     message: 'Unknown error when initializing account with friendbot!',
-    source: 'Friendbot',
+    source: 'AccountBase',
     details: 'An unexpected error occured during the friendbot invocation to initialize an account.',
     meta: { axiosError, error },
   })
 }
 
-export const FBError = {
+const horizonHandlerNotAvailableError = (error?: Error): StellarPlusError => {
+  return new StellarPlusError({
+    code: AccountBaseErrorCodes.AB200,
+    message: 'Horizon handler not available!',
+    source: 'AccountBase',
+    details:
+      'Horizon handler is not available. Make sure that the Horizon handler is correctly initialized by providing an instance of Horizon handler or a network configuration when instancing the account.',
+    meta: { error },
+  })
+}
+
+const failedToLoadBalances = (error?: Error): StellarPlusError => {
+  return new StellarPlusError({
+    code: AccountBaseErrorCodes.AB201,
+    message: 'Failed to load balances!',
+    source: 'AccountBase',
+    details:
+      'Failed to load the account balances from the Horizon server. Make sure that the Horizon handler is correctly initialized and that the account has been correctly initialized.',
+    meta: { error },
+  })
+}
+
+export const ABError = {
   accountHasNoValidPublicKeyError,
   failedToCreateAccountWithFriendbotError,
   friendbotNotAvailableError,
+  horizonHandlerNotAvailableError,
+  failedToLoadBalances,
 }

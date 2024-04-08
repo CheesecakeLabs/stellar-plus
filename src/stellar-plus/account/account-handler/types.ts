@@ -1,7 +1,8 @@
 import { FeeBumpTransaction, Transaction, xdr } from '@stellar/stellar-sdk'
 
+import { HorizonHandler } from 'stellar-plus'
 import { AccountBase } from 'stellar-plus/account/base/types'
-import { AccountHelpersPayload } from 'stellar-plus/account/helpers/types'
+import { NetworkConfig } from 'stellar-plus/constants'
 import { TransactionXdr } from 'stellar-plus/types'
 
 export type AccountHandler = AccountBase & {
@@ -15,7 +16,10 @@ export type AccountHandler = AccountBase & {
   signatureSchema?: SignatureSchema
 }
 
-export type AccountHandlerPayload = AccountHelpersPayload
+export type AccountHandlerPayload = {
+  networkConfig?: NetworkConfig
+  horizonHandler?: HorizonHandler
+}
 
 export type SignatureSchema = {
   threasholds: {
