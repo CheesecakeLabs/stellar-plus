@@ -16,8 +16,8 @@ export class DefaultAccountHandlerClient extends AccountBaseClient implements De
    * @param {NetworkConfig} payload.networkConfig The network to use.
    * @description - The default account handler is used for handling and creating new accounts by directly manipulating the secret key.
    */
-  constructor(payload: DefaultAccountHandlerPayload) {
-    const secretKey = payload.secretKey as string
+  constructor(payload?: DefaultAccountHandlerPayload) {
+    const secretKey = payload?.secretKey as string
     try {
       const keypair = secretKey ? Keypair.fromSecret(secretKey) : Keypair.random()
 
