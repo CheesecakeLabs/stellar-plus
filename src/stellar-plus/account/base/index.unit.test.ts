@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 
 import { AccountBase } from 'stellar-plus/account/base'
 import { ABError } from 'stellar-plus/account/base/errors'
 import { testnet } from 'stellar-plus/constants'
+import { AxiosErrorTypes } from 'stellar-plus/error/helpers/axios'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
 
 jest.mock('axios', () => {
@@ -110,12 +111,40 @@ describe('Base Account Handler', () => {
       })
     })
 
-    it('should throw an error if the friendbot fails', async () => {
+    it('should throw an error if friendbot fails to initialize the account', async () => {
       const mockedError = new Error('Failed to initialize with friendbot')
       MOCKED_AXIOS_GET.mockRejectedValue(mockedError)
 
       await expect(account.initializeWithFriendbot()).rejects.toThrow(
         ABError.failedToCreateAccountWithFriendbotError(mockedError)
+      )
+    })
+
+    it('should throw an error if the request to friendbot fails', async () => {
+      const mockedAxiosError = jest.mocked({
+        message: 'Failed request',
+        type: AxiosErrorTypes.AxiosRequestError,
+        request: {},
+      }) as unknown as AxiosError
+
+      MOCKED_AXIOS_GET.mockRejectedValue(mockedAxiosError)
+
+      await expect(account.initializeWithFriendbot()).rejects.toThrow(
+        ABError.failedToCreateAccountWithFriendbotError(mockedAxiosError)
+      )
+    })
+
+    it('should throw an error if the response from friendbot fails', async () => {
+      const mockedAxiosError = jest.mocked({
+        message: 'Failed response',
+        type: AxiosErrorTypes.AxiosResponseError,
+        response: {},
+      }) as unknown as AxiosError
+
+      MOCKED_AXIOS_GET.mockRejectedValue(mockedAxiosError)
+
+      await expect(account.initializeWithFriendbot()).rejects.toThrow(
+        ABError.failedToCreateAccountWithFriendbotError(mockedAxiosError)
       )
     })
 
@@ -127,7 +156,7 @@ describe('Base Account Handler', () => {
       expect(mockedLoadAccount).toHaveBeenCalledExactlyOnceWith(MOCKED_PK)
     })
 
-    it('should throw an error if the friebot is not available', async () => {
+    it('should throw an error if the friendbot is not available', async () => {
       account = new AccountBase({ publicKey: MOCKED_PK })
 
       await expect(account.initializeWithFriendbot()).rejects.toThrow(ABError.friendbotNotAvailableError())
