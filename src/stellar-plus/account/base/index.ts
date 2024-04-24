@@ -3,8 +3,8 @@ import axios from 'axios'
 
 import { ABError } from 'stellar-plus/account/base/errors'
 import { AccountBasePayload, AccountBase as AccountBaseType } from 'stellar-plus/account/base/types'
-import { NetworkConfig } from 'stellar-plus/constants'
 import { HorizonHandlerClient as HorizonHandler } from 'stellar-plus/horizon/'
+import { NetworkConfig } from 'stellar-plus/network'
 
 export class AccountBase implements AccountBaseType {
   protected publicKey: string

@@ -2,12 +2,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import axios, { AxiosError } from 'axios'
 
-import { TestNet } from 'stellar-plus/network'
 import { AccountBase } from 'stellar-plus/account/base'
 import { ABError } from 'stellar-plus/account/base/errors'
-import { testnet } from 'stellar-plus/constants'
 import { AxiosErrorTypes } from 'stellar-plus/error/helpers/axios'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
+import { TestNet } from 'stellar-plus/network'
 
 jest.mock('axios', () => {
   const originalModule = jest.requireActual('axios')
@@ -25,7 +24,6 @@ const TESTNET_CONFIG = TestNet()
 const MOCKED_PK = 'GAUFIAL2LV2OV7EA4NTXZDVPQASGI5Y3EXZV2HQS3UUWMZ7UWJDQURYS'
 
 describe('Base Account Handler', () => {
-
   describe('Initialization', () => {
     it('should initialize the base account handler with a public key', () => {
       const account = new AccountBase({ publicKey: MOCKED_PK })
