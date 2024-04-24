@@ -20,6 +20,7 @@ import {
   SimulationErrorInfo,
 } from 'stellar-plus/error/helpers/soroban-rpc'
 import { TransactionData, TransactionInvocationMeta } from 'stellar-plus/error/helpers/transaction'
+import { DefaultHorizonHandlerErrorCodes } from 'stellar-plus/horizon/errors'
 import { DefaultRpcHandlerErrorCodes } from 'stellar-plus/rpc/default-handler/errors'
 import { ValidationCloudRpcHandlerErrorCodes } from 'stellar-plus/rpc/validation-cloud-handler/errors'
 
@@ -42,6 +43,7 @@ export type ErrorCodes =
   | ClassicAssetHandlerErrorCodes
   | ErrorCodesPipelineSorobanAuth
   | DefaultAccountHandlerErrorCodes
+  | DefaultHorizonHandlerErrorCodes
   | ErrorCodesPipelineSignTransaction
   | FreighterAccountHandlerErrorCodes
   | ValidationCloudRpcHandlerErrorCodes
