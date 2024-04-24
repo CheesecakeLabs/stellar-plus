@@ -61,6 +61,8 @@ export function mockAccountHandler({
     signSorobanAuthEntry: jest.fn().mockReturnValue(outputSignedAuthEntry ?? xdr.SorobanAuthorizationEntry),
     getPublicKey: jest.fn().mockReturnValue(accountKey),
     signatureSchema,
+    getBalances: jest.fn().mockReturnValue([]),
+    initializeWithFriendbot: jest.fn(),
   }
 }
 
