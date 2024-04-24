@@ -1,6 +1,6 @@
 import { DefaultAccountHandlerErrorCodes } from 'stellar-plus/account/account-handler/default/errors'
 import { FreighterAccountHandlerErrorCodes } from 'stellar-plus/account/account-handler/freighter/errors'
-import { FriendbotErrorCodes } from 'stellar-plus/account/helpers/friendbot/errors'
+import { AccountBaseErrorCodes } from 'stellar-plus/account/base/errors'
 import { ClassicAssetHandlerErrorCodes } from 'stellar-plus/asset/classic/errors'
 import { ChannelAccountsErrorCodes } from 'stellar-plus/channel-accounts/errors'
 import { ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/errors'
@@ -35,7 +35,7 @@ export type StellarPlusErrorObject = {
 
 export type ErrorCodes =
   | GeneralErrorCodes
-  | FriendbotErrorCodes
+  | AccountBaseErrorCodes
   | ContractEngineErrorCodes
   | ChannelAccountsErrorCodes
   | ErrorCodesPipelineFeeBump
