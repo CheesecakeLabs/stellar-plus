@@ -1,16 +1,16 @@
 import { Account, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
 
-import { Constants } from 'stellar-plus'
 import { SimulateTransactionPipeline } from 'stellar-plus/core/pipelines/simulate-transaction'
 import { SorobanAuthPipeline } from 'stellar-plus/core/pipelines/soroban-auth'
 import { PSAError } from 'stellar-plus/core/pipelines/soroban-auth/errors'
 import { SorobanAuthPipelineInput, SorobanAuthPipelineType } from 'stellar-plus/core/pipelines/soroban-auth/types'
 import { ConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
+import { TestNet } from 'stellar-plus/network'
 import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
 import { mockAccountHandler } from 'stellar-plus/test/mocks/transaction-mock'
 import { BeltMetadata } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
-const TESTNET_NETWORK_CONFIG = Constants.testnet
+const TESTNET_NETWORK_CONFIG = TestNet()
 const MOCKED_TRANSACTION_OUTPUT = new Transaction(
   'AAAAAgAAAAA/s0szuJKLyO2bQJ0DxXjYA2p8sf8kTBjkhAVTV64DQgAAAGQAAAAAAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAABQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
   TESTNET_NETWORK_CONFIG.networkPassphrase

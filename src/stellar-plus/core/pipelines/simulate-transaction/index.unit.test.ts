@@ -1,6 +1,5 @@
 import { Account, SorobanDataBuilder, SorobanRpc, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
 
-import { Constants } from 'stellar-plus'
 import { SimulateTransactionPipeline } from 'stellar-plus/core/pipelines/simulate-transaction'
 import { PSIError } from 'stellar-plus/core/pipelines/simulate-transaction/errors'
 import {
@@ -8,6 +7,7 @@ import {
   SimulateTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/simulate-transaction/types'
 import { ConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
+import { TestNet } from 'stellar-plus/network'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { BeltMetadata } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
@@ -50,7 +50,7 @@ const MOCKED_INVALID_SIMULATION_RESPONSE =
 
 const MOCKED_PK_A = 'GACF23GKVFTU77K6W6PWSVN7YBM63UHDULILIEXJO6FR4YKMJ7FW3DTI'
 const MOCKED_ACCOUNT_A = new Account(MOCKED_PK_A, '100')
-const TESTNET_PASSPHRASE = Constants.testnet.networkPassphrase
+const TESTNET_PASSPHRASE = TestNet().networkPassphrase
 const MOCKED_FEE = '100'
 const MOCKED_TX_OPTIONS: TransactionBuilder.TransactionBuilderOptions = {
   fee: MOCKED_FEE,

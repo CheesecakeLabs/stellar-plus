@@ -2,12 +2,12 @@ import { Asset, Operation } from '@stellar/stellar-base'
 import { Horizon, TransactionBuilder } from '@stellar/stellar-sdk'
 import { AccountResponse } from '@stellar/stellar-sdk/lib/horizon'
 
-import { testnet } from 'stellar-plus/constants'
 import {
   BuildTransactionPipelineInput as BTInput,
   BuildTransactionPipelineOutput as BTOutput,
 } from 'stellar-plus/core/pipelines/build-transaction/types'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
+import { TestNet } from 'stellar-plus/network'
 
 import { BuildTransactionPipeline } from '.'
 
@@ -33,7 +33,7 @@ jest.mock('@stellar/stellar-sdk', () => ({
 export function createMockedHorizonHandler(): jest.Mocked<HorizonHandler> {
   return {
     loadAccount: jest.fn().mockResolvedValue({} as AccountResponse),
-    server: new Horizon.Server(testnet.horizonUrl),
+    server: new Horizon.Server(TestNet().horizonUrl as string),
   }
 }
 

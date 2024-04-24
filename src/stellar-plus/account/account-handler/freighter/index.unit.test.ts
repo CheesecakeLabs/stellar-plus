@@ -3,7 +3,7 @@ import { FeeBumpTransaction, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import { FreighterAccountHandlerClient } from 'stellar-plus/account/account-handler/freighter'
 import { FAHError } from 'stellar-plus/account/account-handler/freighter/errors'
-import { testnet } from 'stellar-plus/constants'
+import { TestNet } from 'stellar-plus/network'
 
 jest.mock('@stellar/freighter-api', () => ({
   getPublicKey: jest.fn(),
@@ -35,14 +35,14 @@ const mockFreighterGetPublicKey = (pk: string): void => {
 }
 
 const mockFreighterGetNetworkDetailsTestnet = (): void => {
-  MOCKED_GET_NETWORK_DETAILS.mockResolvedValue({ networkPassphrase: testnet.networkPassphrase })
+  MOCKED_GET_NETWORK_DETAILS.mockResolvedValue({ networkPassphrase: TestNet().networkPassphrase })
 }
 
 const mockFreighterGetNetworkDetailsWrongNetwork = (): void => {
   MOCKED_GET_NETWORK_DETAILS.mockResolvedValue({ networkPassphrase: 'wrong network' })
 }
 
-const TESTNET_CONFIG = testnet
+const TESTNET_CONFIG = TestNet()
 
 const MOCKED_PK = 'GAUFIAL2LV2OV7EA4NTXZDVPQASGI5Y3EXZV2HQS3UUWMZ7UWJDQURYS'
 

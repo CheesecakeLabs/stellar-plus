@@ -1,4 +1,3 @@
-import { Constants } from 'stellar-plus'
 import { BuildTransactionPipeline } from 'stellar-plus/core/pipelines/build-transaction'
 import {
   BuildTransactionPipelinePlugin,
@@ -25,6 +24,7 @@ import {
   SubmitTransactionPipelinePlugin,
   SubmitTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/submit-transaction/types'
+import { TestNet } from 'stellar-plus/network'
 import { TransactionInvocation } from 'stellar-plus/types'
 import { ClassicChannelAccountsPlugin } from 'stellar-plus/utils/pipeline/plugins/classic-transaction/channel-accounts'
 import { DebugPlugin } from 'stellar-plus/utils/pipeline/plugins/generic/debug'
@@ -84,7 +84,7 @@ const MOCKED_SUBMIT_TRANSACTION_PLUGIN = jest.mocked({
   type: 'SubmitTransactionPipeline' as SubmitTransactionPipelineType,
 }) as unknown as SubmitTransactionPipelinePlugin
 
-const TESTNET_NETWORK_CONFIG = Constants.testnet
+const TESTNET_NETWORK_CONFIG = TestNet()
 
 const MOCKED_TX_INVOCATION: TransactionInvocation = {
   header: {
