@@ -24,7 +24,9 @@ export class DefaultRpcHandler implements RpcHandler {
       throw DRHError.missingRpcUrl()
     }
 
-    this.server = new SorobanRpc.Server(this.networkConfig.rpcUrl)
+    const serverOpts = networkConfig.allowHttp ? { allowHttp: true } : {}
+
+    this.server = new SorobanRpc.Server(this.networkConfig.rpcUrl, serverOpts)
   }
 
   /**
