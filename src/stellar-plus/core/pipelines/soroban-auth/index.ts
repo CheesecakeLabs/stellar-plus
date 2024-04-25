@@ -49,7 +49,8 @@ export class SorobanAuthPipeline extends ConveyorBelt<
       ...(additionalSorobanAuthToSign || []), // Additional auth entries to sign can come from other simulations and more complex authorization use cases
     ]
 
-    if (authEntriesToSign.length === 0 && !additionalSignedSorobanAuth) return transaction
+    if (authEntriesToSign.length === 0 && (!additionalSignedSorobanAuth || additionalSignedSorobanAuth.length < 1))
+      return transaction
 
     if (signers.length === 0) throw PSAError.noSignersProvided(extractConveyorBeltErrorMeta(item, this.getMeta(itemId)))
 

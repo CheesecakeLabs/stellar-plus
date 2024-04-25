@@ -6,9 +6,8 @@ import { plugins } from './utils/pipeline/plugins'
 
 export * as Account from 'stellar-plus/account/index'
 export * as Asset from 'stellar-plus/asset/index'
-export * as Constants from 'stellar-plus/constants'
+export * as Network from 'stellar-plus/network'
 export { HorizonHandlerClient as HorizonHandler } from 'stellar-plus/horizon/index'
-export { SorobanHandlerClient as SorobanHandler } from 'stellar-plus/soroban/index'
 
 export { Core } from 'stellar-plus/core/index'
 

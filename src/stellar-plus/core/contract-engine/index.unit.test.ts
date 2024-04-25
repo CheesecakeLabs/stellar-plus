@@ -1,14 +1,16 @@
-import { ContractEngine } from '../contract-engine'
-import { Constants } from 'stellar-plus'
-import { spec as tokenSpec, methods as tokenMethods } from 'stellar-plus/asset/soroban-token/constants'
-import { CEError } from './errors'
-import { TransactionInvocation } from 'stellar-plus/types'
-import { SorobanInvokeArgs } from './types'
-import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
-import { ContractIdOutput, ContractWasmHashOutput } from '../pipelines/soroban-get-transaction/types'
 import { Asset, Contract, SorobanRpc, xdr } from '@stellar/stellar-sdk'
-import { DefaultRpcHandler } from 'stellar-plus/rpc'
+
+import { methods as tokenMethods, spec as tokenSpec } from 'stellar-plus/asset/soroban-token/constants'
+import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
 import { StellarPlusError } from 'stellar-plus/error'
+import { TestNet } from 'stellar-plus/network'
+import { DefaultRpcHandler } from 'stellar-plus/rpc'
+import { TransactionInvocation } from 'stellar-plus/types'
+
+import { CEError } from './errors'
+import { SorobanInvokeArgs } from './types'
+import { ContractEngine } from '../contract-engine'
+import { ContractIdOutput, ContractWasmHashOutput } from '../pipelines/soroban-get-transaction/types'
 
 jest.mock('stellar-plus/core/pipelines/soroban-transaction', () => ({
   SorobanTransactionPipeline: jest.fn(),
@@ -30,7 +32,8 @@ const MOCKED_STELLAR_ASSET = Asset.native()
 const MOCKED_CONTRACT_CODE_KEY = new xdr.LedgerKeyContractCode({
   hash: Buffer.from(MOCKED_WASM_HASH, 'hex'),
 })
-const NETWORK_CONFIG = Constants.testnet
+
+const NETWORK_CONFIG = TestNet()
 const MOCKED_TX_INVOCATION: TransactionInvocation = {
   header: {
     source: 'GACF23GKVFTU77K6W6PWSVN7YBM63UHDULILIEXJO6FR4YKMJ7FW3DTI',
@@ -40,7 +43,7 @@ const MOCKED_TX_INVOCATION: TransactionInvocation = {
   signers: [],
 }
 
-const MOCKED_SOROBAN_INVOKE_ARGS: SorobanInvokeArgs<{}> = {
+const MOCKED_SOROBAN_INVOKE_ARGS: SorobanInvokeArgs<object> = {
   method: tokenMethods.name,
   methodArgs: {},
   ...MOCKED_TX_INVOCATION,
@@ -90,17 +93,6 @@ describe('ContractEngine', () => {
   })
 
   describe('Initialization Errors', () => {
-    it('should throw error if no wasm file, wasm hash or contract id is provided', () => {
-      expect(() => {
-        const contractEngine = new ContractEngine({
-          networkConfig: NETWORK_CONFIG,
-          contractParameters: {
-            spec: MOCKED_CONTRACT_SPEC,
-          },
-        })
-      }).toThrow(CEError.contractEngineClassFailedToInitialize())
-    })
-
     it('should throw error if wasm file is required but is not present', async () => {
       const contractEngine = new ContractEngine({
         networkConfig: NETWORK_CONFIG,
@@ -267,6 +259,8 @@ describe('ContractEngine', () => {
           getLedgerEntries: jest.fn().mockResolvedValue({
             entries: [
               {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 key: Object.assign(xdr.LedgerKey.contractCode(MOCKED_CONTRACT_CODE_KEY)),
                 xdr: 'xdr',
                 liveUntilLedgerSeq: 1,

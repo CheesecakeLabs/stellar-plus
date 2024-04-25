@@ -1,6 +1,5 @@
 import { Horizon as HorizonNamespace, Operation, Asset as StellarAsset } from '@stellar/stellar-sdk'
 
-import { HorizonHandler } from 'stellar-plus'
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import {
   ClassicAssetHandlerConstructorArgs,
@@ -10,18 +9,19 @@ import { AssetTypes } from 'stellar-plus/asset/types'
 import { ClassicTransactionPipeline } from 'stellar-plus/core/pipelines/classic-transaction'
 import { ClassicTransactionPipelineOptions } from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
+import { HorizonHandlerClient as HorizonHandler } from 'stellar-plus/horizon'
 
 import { CAHError } from './errors'
 
 export class ClassicAssetHandler implements IClassicAssetHandler {
   public code: string
-  public issuerPublicKey: string
+  public issuerPublicKey?: string
   public type: AssetTypes.native | AssetTypes.credit_alphanum4 | AssetTypes.credit_alphanum12
   private issuerAccount?: AccountHandler
   private asset: StellarAsset
   private horizonHandler: HorizonHandler
 
-  private classicTrasactionPipeline: ClassicTransactionPipeline
+  private classicTransactionPipeline: ClassicTransactionPipeline
 
   /**
    *
@@ -37,23 +37,29 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
    */
   constructor(args: ClassicAssetHandlerConstructorArgs) {
     this.code = args.code
-    this.issuerPublicKey =
-      typeof args.issuerAccount === 'string' ? args.issuerAccount : args.issuerAccount.getPublicKey()
-
-    this.issuerAccount = typeof args.issuerAccount === 'string' ? undefined : args.issuerAccount
-
     this.type =
-      args.code === 'XLM'
+      args.code === 'XLM' && !args.issuerAccount
         ? AssetTypes.native
         : args.code.length <= 4
           ? AssetTypes.credit_alphanum4
           : AssetTypes.credit_alphanum12
 
+    // provided Public key for issuer
+    if (args.issuerAccount && typeof args.issuerAccount === 'string') {
+      this.issuerPublicKey = args.issuerAccount
+    }
+
+    // provided Account Handler for issuer
+    if (args.issuerAccount && typeof args.issuerAccount !== 'string') {
+      this.issuerAccount = args.issuerAccount
+      this.issuerPublicKey = args.issuerAccount.getPublicKey()
+    }
+
     this.horizonHandler = new HorizonHandler(args.networkConfig)
 
     this.asset = new StellarAsset(args.code, this.issuerPublicKey)
 
-    this.classicTrasactionPipeline = new ClassicTransactionPipeline(
+    this.classicTransactionPipeline = new ClassicTransactionPipeline(
       args.networkConfig,
       args.options?.classicTransactionPipeline as ClassicTransactionPipelineOptions
     )
@@ -150,7 +156,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: from,
     })
 
-    await this.classicTrasactionPipeline.execute({
+    await this.classicTransactionPipeline.execute({
       txInvocation,
       operations: [transferOp],
     })
@@ -171,6 +177,12 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
    * @description - Burns the given amount of the asset from the 'from' account.
    */
   public async burn(args: { from: string; amount: number } & TransactionInvocation): Promise<void> {
+    if (this.type === AssetTypes.native) {
+      throw "You can't burn XLM"
+    }
+    if (!this.issuerPublicKey) {
+      throw "Missing issuer public key. Can't burn asset."
+    }
     return this.transfer({ ...args, to: this.issuerPublicKey })
   }
 
@@ -219,7 +231,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: this.asset.getIssuer(),
     })
 
-    const result = await this.classicTrasactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [mintOp],
     })
@@ -278,7 +290,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: this.asset.getIssuer(),
     })
 
-    const result = await this.classicTrasactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [addTrustlineOp, mintOp],
     })
@@ -311,7 +323,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       asset: this.asset,
     })
 
-    const result = await this.classicTrasactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation,
       operations: [addTrustlineOp],
     })

@@ -1,8 +1,15 @@
-import { AccountBase, AccountBasePayload } from 'stellar-plus/account/base/types'
-import { AccountHelpers } from 'stellar-plus/account/helpers'
+import { Horizon } from '@stellar/stellar-sdk'
+import axios from 'axios'
 
-export class AccountBaseClient extends AccountHelpers implements AccountBase {
+import { ABError } from 'stellar-plus/account/base/errors'
+import { AccountBasePayload, AccountBase as AccountBaseType } from 'stellar-plus/account/base/types'
+import { HorizonHandlerClient as HorizonHandler } from 'stellar-plus/horizon/'
+import { NetworkConfig } from 'stellar-plus/network'
+
+export class AccountBase implements AccountBaseType {
   protected publicKey: string
+  protected networkConfig?: NetworkConfig
+  protected horizonHandler?: HorizonHandler
 
   /**
    *
@@ -13,10 +20,15 @@ export class AccountBaseClient extends AccountHelpers implements AccountBase {
    * @description - The base account is used for handling accounts with no management actions.
    */
   constructor(payload: AccountBasePayload) {
-    super(payload)
-    const { publicKey } = payload as { publicKey: string }
+    const { publicKey, networkConfig, horizonHandler } = payload
 
     this.publicKey = publicKey
+    this.networkConfig = networkConfig
+    this.horizonHandler = horizonHandler as HorizonHandler
+
+    if (this.networkConfig && !this.horizonHandler) {
+      this.horizonHandler = new HorizonHandler(this.networkConfig)
+    }
   }
 
   /**
@@ -26,5 +38,67 @@ export class AccountBaseClient extends AccountHelpers implements AccountBase {
    */
   getPublicKey(): string {
     return this.publicKey
+  }
+
+  /**
+   *
+   * @returns {void}
+   * @description - Initialize the account with the friendbot and funds it with 10.000 XLM.
+   */
+  public async initializeWithFriendbot(): Promise<void> {
+    this.requireTestNetwork()
+
+    try {
+      await axios.get(
+        `${this.networkConfig!.friendbotUrl}?addr=${encodeURIComponent(this.publicKey)}` // friendbot URL in networkConfig validated in requireTestNetwork()
+      )
+
+      return
+    } catch (e) {
+      throw ABError.failedToCreateAccountWithFriendbotError(e as Error)
+    }
+  }
+
+  /**
+   *
+   * @returns {Horizon.BalanceLine[]} A list of the account's balances.
+   * @description - The account's balances are retrieved from the Horizon server and provided in a list, including all assets.
+   */
+  public async getBalances(): Promise<
+    (
+      | Horizon.HorizonApi.BalanceLineNative
+      | Horizon.HorizonApi.BalanceLineAsset<'credit_alphanum4'>
+      | Horizon.HorizonApi.BalanceLineAsset<'credit_alphanum12'>
+      | Horizon.HorizonApi.BalanceLineLiquidityPool
+    )[]
+  > {
+    this.requireHorizonHandler()
+
+    try {
+      const account = await this.horizonHandler!.loadAccount(this.publicKey) // Horizon handler validated in requireHorizonHandler()
+      return account.balances
+    } catch (error) {
+      throw ABError.failedToLoadBalances(error as Error)
+    }
+  }
+
+  /**
+   *
+   * @description - Throws an error if the network is not a test network.
+   */
+  protected requireTestNetwork(): void {
+    if (!this.networkConfig?.friendbotUrl) {
+      throw ABError.friendbotNotAvailableError()
+    }
+  }
+
+  /**
+   *
+   * @description - Throws an error if the horizon handler is not set
+   */
+  protected requireHorizonHandler(): void {
+    if (!this.horizonHandler) {
+      throw ABError.horizonHandlerNotAvailableError()
+    }
   }
 }

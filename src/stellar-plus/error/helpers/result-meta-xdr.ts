@@ -6,24 +6,22 @@ export const extractSorobanResultXdrOpErrorCode = (resultXdr: xdr.TransactionRes
     return resultXdrObject.result().results()[0].tr().value().switch().name
   }
   try {
-    if (resultXdr.result?.().results !== undefined
-      && typeof resultXdr.result?.().results === 'function') {
+    if (resultXdr.result?.().results !== undefined && typeof resultXdr.result?.().results === 'function') {
       return resultXdr.result?.().results?.()[0].tr?.().value?.().switch?.().name
     }
   } catch (error) {
-    console.log("Xdr don't have results: %s", error)
+    // "Xdr don't have results"
+    //TODO: Evaluate if we should treat this in some way
   }
   try {
-    if (resultXdr.result?.().switch !== undefined
-      && typeof resultXdr.result?.().switch === 'function') {
+    if (resultXdr.result?.().switch !== undefined && typeof resultXdr.result?.().switch === 'function') {
       return resultXdr.result?.().switch?.().name
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.log('Fail in decode xdr: %s, Error: %s', resultXdr, error)
-    return "fail_in_decode_xdr"
+    return 'fail_in_decode_xdr'
   }
-  return "not_found"
+  return 'not_found'
 }
 
 export enum SorobanOpCodes {
