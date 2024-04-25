@@ -1,11 +1,11 @@
 import { Keypair, TransactionBuilder } from '@stellar/stellar-sdk'
 
-import { testnet } from 'stellar-plus/constants'
 import { SignTransactionPipeline } from 'stellar-plus/core/pipelines/sign-transaction'
 import {
   SignTransactionPipelineInput as STInput,
   SignTransactionPipelineOutput as STOutput,
 } from 'stellar-plus/core/pipelines/sign-transaction/types'
+import { TestNet } from 'stellar-plus/network'
 import { mockAccountHandler, mockSignatureSchema } from 'stellar-plus/test/mocks/transaction-mock'
 
 const MOCKED_KEYPAIRS = [
@@ -13,7 +13,7 @@ const MOCKED_KEYPAIRS = [
   Keypair.fromSecret('SA2WW3DO6AVJQO5V4MU64DSDL34FRXVIQXIUMKS7JMAENCCI3ORMQVLA'),
   Keypair.fromSecret('SCHH7OAC6MC4NF3TG2JML56WJT5U7ZE355USOKGXZCQ2FCJZEX62OEKR'),
 ]
-const TESTNET_PASSPHRASE = testnet.networkPassphrase
+const TESTNET_PASSPHRASE = TestNet().networkPassphrase
 const MOCKED_UNSGINED_TRANSACTION_XDR =
   'AAAAAgAAAAC8CrO4sEcs28O8U8KWvl4CpiGpCgRlbEwf2fp21SRe0gAAAGQADg/kAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAABQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
 const MOCKED_SIGNED_TRANSACTION_XDR =

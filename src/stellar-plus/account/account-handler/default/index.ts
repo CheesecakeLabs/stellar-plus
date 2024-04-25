@@ -1,12 +1,11 @@
 import { FeeBumpTransaction, Keypair, Transaction, authorizeEntry, xdr } from '@stellar/stellar-sdk'
 
+import { DAHError } from 'stellar-plus/account/account-handler/default/errors'
 import { DefaultAccountHandler, DefaultAccountHandlerPayload } from 'stellar-plus/account/account-handler/default/types'
-import { AccountBaseClient } from 'stellar-plus/account/base'
+import { AccountBase } from 'stellar-plus/account/base'
 import { TransactionXdr } from 'stellar-plus/types'
 
-import { DAHError } from './errors'
-
-export class DefaultAccountHandlerClient extends AccountBaseClient implements DefaultAccountHandler {
+export class DefaultAccountHandlerClient extends AccountBase implements DefaultAccountHandler {
   protected secretKey: string
 
   /**

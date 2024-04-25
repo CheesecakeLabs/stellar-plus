@@ -1,9 +1,9 @@
 import { Asset, Contract, SorobanRpc, xdr } from '@stellar/stellar-sdk'
 
-import { Constants } from 'stellar-plus'
 import { methods as tokenMethods, spec as tokenSpec } from 'stellar-plus/asset/soroban-token/constants'
 import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
 import { StellarPlusError } from 'stellar-plus/error'
+import { TestNet } from 'stellar-plus/network'
 import { DefaultRpcHandler } from 'stellar-plus/rpc'
 import { TransactionInvocation } from 'stellar-plus/types'
 
@@ -32,7 +32,7 @@ const MOCKED_STELLAR_ASSET = Asset.native()
 const MOCKED_CONTRACT_CODE_KEY = new xdr.LedgerKeyContractCode({
   hash: Buffer.from(MOCKED_WASM_HASH, 'hex'),
 })
-const NETWORK_CONFIG = Constants.testnet
+const NETWORK_CONFIG = TestNet()
 const MOCKED_TX_INVOCATION: TransactionInvocation = {
   header: {
     source: 'GACF23GKVFTU77K6W6PWSVN7YBM63UHDULILIEXJO6FR4YKMJ7FW3DTI',

@@ -4,7 +4,7 @@ import { FeeBumpTransaction, Keypair, Transaction, authorizeEntry, xdr } from '@
 
 import { DefaultAccountHandlerClient } from 'stellar-plus/account/account-handler/default'
 import { DAHError } from 'stellar-plus/account/account-handler/default/errors'
-import { testnet } from 'stellar-plus/constants'
+import { TestNet } from 'stellar-plus/network'
 
 jest.mock('@stellar/stellar-sdk', () => {
   // The mock doesnt spread the whole originalModule because some internal exported objects cause failures
@@ -30,7 +30,7 @@ const MOCKED_SOROBAN_AUTH_ENTRY = {
   toXDR: jest.fn(),
 } as xdr.SorobanAuthorizationEntry
 
-const TESTNET_CONFIG = testnet
+const TESTNET_CONFIG = TestNet()
 
 describe('DefaultAccountHandler', () => {
   describe('Initialization', () => {
