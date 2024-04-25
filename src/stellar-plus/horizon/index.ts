@@ -22,7 +22,7 @@ export class HorizonHandlerClient implements HorizonHandler {
       throw DHHError.missingHorizonUrl()
     }
 
-    const serverOpts = networkConfig.allowHttp ? { allowHttp: true } : {}
+    const serverOpts = { allowHttp: networkConfig.allowHttp }
 
     this.server = new Horizon.Server(this.networkConfig.horizonUrl, serverOpts)
   }
