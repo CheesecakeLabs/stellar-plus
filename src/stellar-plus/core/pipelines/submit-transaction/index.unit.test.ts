@@ -1,15 +1,15 @@
 import { SorobanRpc, TransactionBuilder } from '@stellar/stellar-sdk'
 
-import { testnet } from 'stellar-plus/constants'
 import { SubmitTransactionPipeline } from 'stellar-plus/core/pipelines/submit-transaction'
 import {
   SubmitTransactionPipelineInput as STInput,
   SubmitTransactionPipelineOutput as STOutput,
 } from 'stellar-plus/core/pipelines/submit-transaction/types'
 import { HorizonHandlerClient } from 'stellar-plus/horizon'
+import { TestNet } from 'stellar-plus/network'
 import { DefaultRpcHandler } from 'stellar-plus/rpc'
 
-const TESTNET_PASSPHRASE = testnet.networkPassphrase
+const TESTNET_PASSPHRASE = TestNet().networkPassphrase
 const MOCKED_TRANSACTION_XDR =
   'AAAAAgAAAAC8CrO4sEcs28O8U8KWvl4CpiGpCgRlbEwf2fp21SRe0gAAAGQADg/kAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAABQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB1SRe0gAAAEBH30tw2MS4pbpLZ8RbEBTLxF2xalFGJRLfDhgcbildNTgujl6hbNxmw2qltop/SZfe34R4q9v+KVhp5pQ4DmkL'
 const MOCKED_TRANSACTION = TransactionBuilder.fromXDR(MOCKED_TRANSACTION_XDR, TESTNET_PASSPHRASE)
@@ -24,8 +24,8 @@ const MOCKED_ST_OUTPUT: STOutput = {
     paging_token: 'paging_token',
   },
 }
-const HORIZON_HANDLER = new HorizonHandlerClient(testnet)
-const RPC_HANDLER = new DefaultRpcHandler(testnet)
+const HORIZON_HANDLER = new HorizonHandlerClient(TestNet())
+const RPC_HANDLER = new DefaultRpcHandler(TestNet())
 const MOCKED_ST_INPUT: STInput = {
   transaction: MOCKED_TRANSACTION,
   networkHandler: HORIZON_HANDLER,

@@ -1,6 +1,6 @@
 import { Horizon } from '@stellar/stellar-sdk'
 
-import { StellarPlusError } from 'stellar-plus/error'
+import { DHHError } from 'stellar-plus/horizon/errors'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
 import { NetworkConfig } from 'stellar-plus/types'
 
@@ -17,7 +17,14 @@ export class HorizonHandlerClient implements HorizonHandler {
    */
   constructor(networkConfig: NetworkConfig) {
     this.networkConfig = networkConfig
-    this.server = new Horizon.Server(this.networkConfig.horizonUrl)
+
+    if (!this.networkConfig.horizonUrl) {
+      throw DHHError.missingHorizonUrl()
+    }
+
+    const serverOpts = { allowHttp: networkConfig.allowHttp }
+
+    this.server = new Horizon.Server(this.networkConfig.horizonUrl, serverOpts)
   }
 
   /**
@@ -32,11 +39,7 @@ export class HorizonHandlerClient implements HorizonHandler {
     try {
       return await this.server.loadAccount(accountId)
     } catch (error) {
-      throw StellarPlusError.unexpectedError({
-        error: error as Error,
-        message: 'Failed to load account from Horizon server.',
-        source: 'HorizonHandlerClient',
-      })
+      throw DHHError.failedToLoadAccount()
     }
   }
 }

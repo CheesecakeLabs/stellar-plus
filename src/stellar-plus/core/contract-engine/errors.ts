@@ -1,11 +1,6 @@
 import { SorobanRpc } from '@stellar/stellar-sdk'
 
 import { StellarPlusError } from 'stellar-plus/error'
-import {
-  extractSimulationBaseData,
-  extractSimulationErrorData,
-  extractSimulationRestoreData,
-} from 'stellar-plus/error/helpers/soroban-rpc'
 
 export enum ContractEngineErrorCodes {
   // CE0 General
@@ -113,7 +108,7 @@ const contractCodeMissingLiveUntilLedgerSeq = (
   })
 }
 
-const contractEngineClassFailedToInitialize = () => {
+const contractEngineClassFailedToInitialize = (): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE009,
     message: 'Contract engine class failed to initialize!',

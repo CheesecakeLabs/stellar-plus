@@ -13,6 +13,7 @@ import { RpcHandler } from 'stellar-plus/rpc/types'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
 
 import { PSUError } from './errors'
+import { HorizonHandlerClient } from 'stellar-plus/horizon'
 
 export class SubmitTransactionPipeline extends ConveyorBelt<
   SubmitTransactionPipelineInput,

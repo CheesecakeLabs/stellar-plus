@@ -4,8 +4,8 @@ import { Address, ContractSpec } from '@stellar/stellar-sdk'
 
 import { SorobanTokenHandler } from 'stellar-plus/asset/soroban-token'
 import { spec as DEFAULT_SPEC, methods } from 'stellar-plus/asset/soroban-token/constants'
-import { testnet } from 'stellar-plus/constants'
 import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
+import { TestNet } from 'stellar-plus/network'
 import { TransactionInvocation } from 'stellar-plus/types'
 
 jest.mock('stellar-plus/core/pipelines/soroban-transaction', () => ({
@@ -15,7 +15,7 @@ jest.mock('stellar-plus/core/pipelines/soroban-transaction', () => ({
 const MOCKED_SOROBAN_TRANSACTION_PIPELINE = SorobanTransactionPipeline as jest.Mock
 const MOCKED_EXECUTE = jest.fn().mockResolvedValue({})
 
-const NETWORK_CONFIG = testnet
+const NETWORK_CONFIG = TestNet()
 
 const MOCKED_CONTRACT_ID = 'CBJT4BOMRHYKHZ6HF3QG4YR7Q63BE44G73M4MALDTQ3SQVUZDE7GN35I'
 const MOCKED_WASM_HASH = 'eb94566536d7f56c353b4760f6e359eca3631b70d295820fb6de55a796e019ae'

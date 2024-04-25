@@ -1,6 +1,6 @@
 import { DefaultAccountHandlerErrorCodes } from 'stellar-plus/account/account-handler/default/errors'
 import { FreighterAccountHandlerErrorCodes } from 'stellar-plus/account/account-handler/freighter/errors'
-import { FriendbotErrorCodes } from 'stellar-plus/account/helpers/friendbot/errors'
+import { AccountBaseErrorCodes } from 'stellar-plus/account/base/errors'
 import { ClassicAssetHandlerErrorCodes } from 'stellar-plus/asset/classic/errors'
 import { ChannelAccountsErrorCodes } from 'stellar-plus/channel-accounts/errors'
 import { ContractEngineErrorCodes } from 'stellar-plus/core/contract-engine/errors'
@@ -12,12 +12,17 @@ import { ErrorCodesPipelineSimulateTransaction } from 'stellar-plus/core/pipelin
 import { ErrorCodesPipelineSorobanAuth } from 'stellar-plus/core/pipelines/soroban-auth/errors'
 import { ErrorCodesPipelineSorobanGetTransaction } from 'stellar-plus/core/pipelines/soroban-get-transaction/errors'
 import { ErrorCodesPipelineSubmitTransaction } from 'stellar-plus/core/pipelines/submit-transaction/errors'
+import { AxiosErrorInfo } from 'stellar-plus/error/helpers/axios'
+import { SubmitTransactionMetaInfo, TransactionDiagnostic } from 'stellar-plus/error/helpers/horizon'
+import {
+  GetTransactionErrorInfo,
+  SendTransactionErrorInfo,
+  SimulationErrorInfo,
+} from 'stellar-plus/error/helpers/soroban-rpc'
+import { TransactionData, TransactionInvocationMeta } from 'stellar-plus/error/helpers/transaction'
+import { DefaultHorizonHandlerErrorCodes } from 'stellar-plus/horizon/errors'
+import { DefaultRpcHandlerErrorCodes } from 'stellar-plus/rpc/default-handler/errors'
 import { ValidationCloudRpcHandlerErrorCodes } from 'stellar-plus/rpc/validation-cloud-handler/errors'
-
-import { AxiosErrorInfo } from './helpers/axios'
-import { SubmitTransactionMetaInfo, TransactionDiagnostic } from './helpers/horizon'
-import { GetTransactionErrorInfo, SendTransactionErrorInfo, SimulationErrorInfo } from './helpers/soroban-rpc'
-import { TransactionData, TransactionInvocationMeta } from './helpers/transaction'
 
 export type StellarPlusErrorObject = {
   code: ErrorCodes
@@ -30,13 +35,15 @@ export type StellarPlusErrorObject = {
 
 export type ErrorCodes =
   | GeneralErrorCodes
-  | FriendbotErrorCodes
+  | AccountBaseErrorCodes
   | ContractEngineErrorCodes
   | ChannelAccountsErrorCodes
   | ErrorCodesPipelineFeeBump
+  | DefaultRpcHandlerErrorCodes
   | ClassicAssetHandlerErrorCodes
   | ErrorCodesPipelineSorobanAuth
   | DefaultAccountHandlerErrorCodes
+  | DefaultHorizonHandlerErrorCodes
   | ErrorCodesPipelineSignTransaction
   | FreighterAccountHandlerErrorCodes
   | ValidationCloudRpcHandlerErrorCodes

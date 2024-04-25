@@ -1,6 +1,5 @@
 import { Account, SorobanRpc, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
 
-import { Constants } from 'stellar-plus'
 import { SorobanGetTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-get-transaction'
 import { SGTError } from 'stellar-plus/core/pipelines/soroban-get-transaction/errors'
 import {
@@ -10,6 +9,7 @@ import {
   SorobanGetTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
 import { ConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
+import { TestNet } from 'stellar-plus/network'
 import { DefaultRpcHandler } from 'stellar-plus/rpc/default-handler'
 import { BeltMetadata } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
@@ -21,7 +21,7 @@ jest.mock('stellar-plus/rpc/default-handler', () => ({
 
 const MOCKED_RPC_HANDLER = DefaultRpcHandler as jest.Mock
 
-const TESTNET_CONFIG = Constants.testnet
+const TESTNET_CONFIG = TestNet()
 const MOCKED_PK_A = 'GACF23GKVFTU77K6W6PWSVN7YBM63UHDULILIEXJO6FR4YKMJ7FW3DTI'
 const MOCKED_ACCOUNT_A = new Account(MOCKED_PK_A, '100')
 

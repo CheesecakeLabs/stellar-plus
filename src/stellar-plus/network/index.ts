@@ -4,6 +4,7 @@ export type NetworkConfig = {
   rpcUrl?: string
   horizonUrl?: string
   friendbotUrl?: string
+  allowHttp?: boolean
 }
 
 export enum NetworksList {
@@ -20,6 +21,7 @@ export const TestNet = (): NetworkConfig => {
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
     friendbotUrl: 'https://friendbot.stellar.org',
     horizonUrl: 'https://horizon-testnet.stellar.org',
+    allowHttp: false,
   }
 }
 
@@ -30,6 +32,7 @@ export const FutureNet = (): NetworkConfig => {
     rpcUrl: 'https://rpc-futurenet.stellar.org:443',
     friendbotUrl: 'https://friendbot-futurenet.stellar.org',
     horizonUrl: 'https://horizon-futurenet.stellar.org',
+    allowHttp: false,
   }
 }
 
@@ -39,20 +42,20 @@ export const MainNet = (): NetworkConfig => {
     networkPassphrase: 'Public Global Stellar Network ; September 2015',
     rpcUrl: '',
     horizonUrl: 'https://horizon.stellar.org',
+    allowHttp: false,
   }
 }
-
-export const CustomNet = (
-  networkPassphrase: string,
-  rpcUrl?: string,
-  horizonUrl?: string,
+export type CustomNetworkPayload = {
+  networkPassphrase: string
+  rpcUrl?: string
+  horizonUrl?: string
   friendbotUrl?: string
-): NetworkConfig => {
+  allowHttp?: boolean
+}
+
+export const CustomNet = (payload: CustomNetworkPayload): NetworkConfig => {
   return {
     name: NetworksList.custom,
-    networkPassphrase,
-    rpcUrl,
-    horizonUrl,
-    friendbotUrl,
+    ...payload,
   }
 }

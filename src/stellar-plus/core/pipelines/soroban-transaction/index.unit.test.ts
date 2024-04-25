@@ -1,4 +1,3 @@
-import { Constants } from 'stellar-plus'
 import { BuildTransactionPipeline } from 'stellar-plus/core/pipelines/build-transaction'
 import {
   BuildTransactionPipelinePlugin,
@@ -38,6 +37,7 @@ import {
   SubmitTransactionPipelinePlugin,
   SubmitTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/submit-transaction/types'
+import { TestNet } from 'stellar-plus/network'
 import { TransactionInvocation } from 'stellar-plus/types'
 import { DebugPlugin } from 'stellar-plus/utils/pipeline/plugins/generic/debug'
 import { SorobanChannelAccountsPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-transaction/channel-accounts'
@@ -137,7 +137,7 @@ const MOCKED_SOROBAN_GET_TRANSACTION_PLUGIN = jest.mocked({
   type: 'SorobanGetTransactionPipeline' as SorobanGetTransactionPipelineType,
 }) as unknown as SorobanGetTransactionPipelinePlugin
 
-const TESTNET_NETWORK_CONFIG = Constants.testnet
+const TESTNET_NETWORK_CONFIG = TestNet()
 
 const MOCKED_TX_INVOCATION: TransactionInvocation = {
   header: {
