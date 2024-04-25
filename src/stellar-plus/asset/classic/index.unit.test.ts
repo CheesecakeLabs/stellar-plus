@@ -4,7 +4,6 @@
 
 import { ClassicAssetHandler } from 'stellar-plus/asset/classic'
 import { CAHError } from 'stellar-plus/asset/classic/errors'
-import { testnet } from 'stellar-plus/constants'
 import {
   BuildTransactionPipelinePlugin,
   BuildTransactionPipelineType,
@@ -14,6 +13,7 @@ import {
   ClassicTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { HorizonHandlerClient } from 'stellar-plus/horizon'
+import { TestNet } from 'stellar-plus/network'
 import { mockAccountHandler } from 'stellar-plus/test/mocks/transaction-mock'
 import { TransactionInvocation } from 'stellar-plus/types'
 
@@ -43,7 +43,7 @@ jest.mock('stellar-plus/horizon', () => ({
 
 const MOCKED_HORIZON_HANDLER = HorizonHandlerClient as jest.Mock
 
-const TESTNET_CONFIG = testnet
+const TESTNET_CONFIG = TestNet()
 const MOCKED_PK = 'GACF23GKVFTU77K6W6PWSVN7YBM63UHDULILIEXJO6FR4YKMJ7FW3DTI'
 const MOCKED_PK_B = 'GBCBCTQ6YH3XFYDDGARNGYSS2LGTX5CA6P3P2K6ODSRNBKKK7BWMEEVM'
 

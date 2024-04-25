@@ -1,8 +1,8 @@
 import { Account, Asset, Claimant, Operation, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
 
-import { Constants } from 'stellar-plus'
 import { SignatureRequirement, SignatureThreshold } from 'stellar-plus/core/types'
 import { ConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
+import { TestNet } from 'stellar-plus/network'
 import { BeltMetadata } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
 import { CSRError } from './errors'
@@ -16,7 +16,7 @@ const MOCKED_PK_C = 'GCPXAF4S5MBXA3DRNBA7XYP55S6F3UN2ZJRAS72BXEJMD7JVMGIGCKNA'
 
 const MOCKED_ACCOUNT_A = new Account(MOCKED_PK_A, '100')
 
-const TESTNET_PASSPHRASE = Constants.testnet.networkPassphrase
+const TESTNET_PASSPHRASE = TestNet().networkPassphrase
 const MOCKED_FEE = '100'
 const MOCKED_BUMP_FEE = '101'
 

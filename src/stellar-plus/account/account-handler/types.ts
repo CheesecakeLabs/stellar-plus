@@ -2,7 +2,7 @@ import { FeeBumpTransaction, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import { HorizonHandler } from 'stellar-plus'
 import { AccountBase } from 'stellar-plus/account/base/types'
-import { NetworkConfig } from 'stellar-plus/constants'
+import { NetworkConfig } from 'stellar-plus/network'
 import { TransactionXdr } from 'stellar-plus/types'
 
 export type AccountHandler = AccountBase & {

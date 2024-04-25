@@ -1,7 +1,7 @@
 import { Horizon } from '@stellar/stellar-sdk'
 
-import { NetworkConfig } from 'stellar-plus/constants'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
+import { NetworkConfig } from 'stellar-plus/network'
 
 export type AccountBase = {
   getPublicKey(): string

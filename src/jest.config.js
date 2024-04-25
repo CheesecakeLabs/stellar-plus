@@ -12,6 +12,7 @@ module.exports = {
     '!/node_modules/',
     '!/coverage/',
   ],
+  coveragePathIgnorePatterns: ['<rootDir>/index-test.ts'],
   setupFilesAfterEnv: ['./setup-tests.ts'],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   moduleDirectories: ['node_modules', 'src'],

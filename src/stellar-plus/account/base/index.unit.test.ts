@@ -4,9 +4,9 @@ import axios, { AxiosError } from 'axios'
 
 import { AccountBase } from 'stellar-plus/account/base'
 import { ABError } from 'stellar-plus/account/base/errors'
-import { testnet } from 'stellar-plus/constants'
 import { AxiosErrorTypes } from 'stellar-plus/error/helpers/axios'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
+import { TestNet } from 'stellar-plus/network'
 
 jest.mock('axios', () => {
   const originalModule = jest.requireActual('axios')
@@ -19,7 +19,7 @@ jest.mock('axios', () => {
 
 const MOCKED_AXIOS_GET = axios.get as jest.Mock
 
-const TESTNET_CONFIG = testnet
+const TESTNET_CONFIG = TestNet()
 
 const MOCKED_PK = 'GAUFIAL2LV2OV7EA4NTXZDVPQASGI5Y3EXZV2HQS3UUWMZ7UWJDQURYS'
 

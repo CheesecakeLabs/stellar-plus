@@ -9,6 +9,7 @@ import {
 } from '@stellar/freighter-api'
 import { FeeBumpTransaction, Transaction, xdr } from '@stellar/stellar-sdk'
 
+import { FAHError } from 'stellar-plus/account/account-handler/freighter/errors'
 import {
   FreighterAccHandlerPayload,
   FreighterAccountHandler,
@@ -16,8 +17,6 @@ import {
 } from 'stellar-plus/account/account-handler/freighter/types'
 import { AccountBase } from 'stellar-plus/account/base'
 import { NetworkConfig } from 'stellar-plus/types'
-
-import { FAHError } from './errors'
 
 export class FreighterAccountHandlerClient extends AccountBase implements FreighterAccountHandler {
   protected networkConfig: NetworkConfig

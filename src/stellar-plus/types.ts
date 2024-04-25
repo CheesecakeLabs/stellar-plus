@@ -5,12 +5,12 @@ import {
   Transaction as _Transaction,
 } from '@stellar/stellar-sdk'
 
-import { NetworkConfig as _NetworkConfig } from 'stellar-plus/constants'
 import {
   EnvelopeHeader as _EnvelopeHeader,
   FeeBumpHeader as _FeeBumpHeader,
   TransactionInvocation as _TransactionInvocation,
 } from 'stellar-plus/core/types'
+import { NetworkConfig as _NetworkConfig } from 'stellar-plus/network'
 
 export type TransactionXdr = string
 
