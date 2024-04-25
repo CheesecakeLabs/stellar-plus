@@ -17,4 +17,9 @@ module.exports = {
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   moduleDirectories: ['node_modules', 'src'],
   rootDir: './',
+  transform: {
+    '^.+\\.(ts|tsx)?$': 'ts-jest',
+    '^.+\\.(js|jsx)$': 'babel-jest',
+  },
+  transformIgnorePatterns: ['node_modules/(?!(p-retry|is-network-error)/)'],
 }
