@@ -12,6 +12,7 @@ import { SorobanInvokeArgs } from './types'
 import { ContractEngine } from '../contract-engine'
 import { ContractIdOutput, ContractWasmHashOutput } from '../pipelines/soroban-get-transaction/types'
 
+
 jest.mock('stellar-plus/core/pipelines/soroban-transaction', () => ({
   SorobanTransactionPipeline: jest.fn(),
 }))
@@ -32,6 +33,7 @@ const MOCKED_STELLAR_ASSET = Asset.native()
 const MOCKED_CONTRACT_CODE_KEY = new xdr.LedgerKeyContractCode({
   hash: Buffer.from(MOCKED_WASM_HASH, 'hex'),
 })
+
 const NETWORK_CONFIG = TestNet()
 const MOCKED_TX_INVOCATION: TransactionInvocation = {
   header: {
@@ -92,6 +94,7 @@ describe('ContractEngine', () => {
   })
 
   describe('Initialization Errors', () => {
+
     it('should throw error if wasm file is required but is not present', async () => {
       const contractEngine = new ContractEngine({
         networkConfig: NETWORK_CONFIG,
@@ -258,7 +261,9 @@ describe('ContractEngine', () => {
           getLedgerEntries: jest.fn().mockResolvedValue({
             entries: [
               {
+
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 key: Object.assign(xdr.LedgerKey.contractCode(MOCKED_CONTRACT_CODE_KEY)),
                 xdr: 'xdr',
                 liveUntilLedgerSeq: 1,
