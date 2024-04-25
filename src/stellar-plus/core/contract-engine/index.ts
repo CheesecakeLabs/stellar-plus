@@ -105,7 +105,6 @@ export class ContractEngine {
     this.wasm = contractParameters.wasm
     this.wasmHash = contractParameters.wasmHash
 
-
     this.options = { ...options }
 
     this.sorobanTransactionPipeline = new SorobanTransactionPipeline(networkConfig, {

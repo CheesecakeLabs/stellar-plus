@@ -108,7 +108,6 @@ const contractCodeMissingLiveUntilLedgerSeq = (
   })
 }
 
-
 const contractEngineClassFailedToInitialize = (): StellarPlusError => {
   return new StellarPlusError({
     code: ContractEngineErrorCodes.CE009,

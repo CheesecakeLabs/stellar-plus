@@ -12,7 +12,6 @@ import { SorobanInvokeArgs } from './types'
 import { ContractEngine } from '../contract-engine'
 import { ContractIdOutput, ContractWasmHashOutput } from '../pipelines/soroban-get-transaction/types'
 
-
 jest.mock('stellar-plus/core/pipelines/soroban-transaction', () => ({
   SorobanTransactionPipeline: jest.fn(),
 }))
@@ -94,7 +93,6 @@ describe('ContractEngine', () => {
   })
 
   describe('Initialization Errors', () => {
-
     it('should throw error if wasm file is required but is not present', async () => {
       const contractEngine = new ContractEngine({
         networkConfig: NETWORK_CONFIG,
@@ -261,7 +259,6 @@ describe('ContractEngine', () => {
           getLedgerEntries: jest.fn().mockResolvedValue({
             entries: [
               {
-
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 
                 key: Object.assign(xdr.LedgerKey.contractCode(MOCKED_CONTRACT_CODE_KEY)),
