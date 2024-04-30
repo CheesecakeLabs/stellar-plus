@@ -5,6 +5,12 @@ import { DefaultAccountHandler, DefaultAccountHandlerPayload } from 'stellar-plu
 import { AccountBase } from 'stellar-plus/account/base'
 import { TransactionXdr } from 'stellar-plus/types'
 
+/**
+ * @class DefaultAccountHandlerClient
+ * @extends AccountBase
+ * @implements DefaultAccountHandler
+ * @description - The default account handler is used for handling and creating new accounts by directly manipulating the secret key. Avoid using this handler in production environments.
+ */
 export class DefaultAccountHandlerClient extends AccountBase implements DefaultAccountHandler {
   protected secretKey: string
 
@@ -39,6 +45,15 @@ export class DefaultAccountHandlerClient extends AccountBase implements DefaultA
     } catch (e) {
       throw DAHError.failedToLoadSecretKeyError(e as Error)
     }
+  }
+
+  /**
+   * @description - Returns the secret key of the account.
+   *
+   * @returns {string} The secret key of the account.
+   */
+  public getSecretKey(): string {
+    return this.secretKey
   }
 
   /**
