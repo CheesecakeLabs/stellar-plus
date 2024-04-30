@@ -71,6 +71,7 @@ export class SubmitTransactionPipeline extends ConveyorBelt<
       try {
         response = await this.submitTransactionThroughRpc(transaction, networkHandler)
       } catch (error) {
+        console.log('error0000000000000', error)
         throw PSUError.rpcSubmissionFailed(
           error as Error,
           extractConveyorBeltErrorMeta(item, this.getMeta(itemId)),
