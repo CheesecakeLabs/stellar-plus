@@ -48,7 +48,9 @@ describe('DefaultAccountHandler', () => {
 
       expect(dah.getPublicKey()).toBe(Keypair.fromSecret(secretKey).publicKey())
     })
+  })
 
+  describe('Core features', () => {
     it('should sign a transaction with its secret key', () => {
       const keypair = Keypair.random()
       const dah = new DefaultAccountHandlerClient({ networkConfig: TESTNET_CONFIG, secretKey: keypair.secret() })
@@ -99,6 +101,22 @@ describe('DefaultAccountHandler', () => {
         123,
         TESTNET_CONFIG.networkPassphrase
       )
+    })
+  })
+
+  describe('Getters', () => {
+    it('should return the public key of the account', () => {
+      const keypair = Keypair.random()
+      const dah = new DefaultAccountHandlerClient({ networkConfig: TESTNET_CONFIG, secretKey: keypair.secret() })
+
+      expect(dah.getPublicKey()).toBe(keypair.publicKey())
+    })
+
+    it('should return the secret key of the account', () => {
+      const keypair = Keypair.random()
+      const dah = new DefaultAccountHandlerClient({ networkConfig: TESTNET_CONFIG, secretKey: keypair.secret() })
+
+      expect(dah.getSecretKey()).toBe(keypair.secret())
     })
   })
 
