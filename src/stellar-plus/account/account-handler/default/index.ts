@@ -11,6 +11,7 @@ import { TransactionXdr } from 'stellar-plus/types'
  * @implements DefaultAccountHandler
  * @description - The default account handler is used for handling and creating new accounts by directly manipulating the secret key. Avoid using this handler in production environments.
  */
+
 export class DefaultAccountHandlerClient extends AccountBase implements DefaultAccountHandler {
   protected secretKey: string
 
