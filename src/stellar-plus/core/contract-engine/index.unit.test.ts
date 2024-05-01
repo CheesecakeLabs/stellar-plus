@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Asset, Contract, SorobanRpc, xdr } from '@stellar/stellar-sdk'
 
 import { methods as tokenMethods, spec as tokenSpec } from 'stellar-plus/asset/soroban-token/constants'
@@ -619,7 +620,7 @@ describe('ContractEngine', () => {
     it('should read from a contract', async () => {
       MOCKED_SOROBAN_TRANSACTION_PIPELINE.mockImplementation(() => {
         return {
-          execute: jest.fn().mockResolvedValue(true),
+          execute: jest.fn().mockResolvedValue({ output: { value: true } }),
         }
       })
 
