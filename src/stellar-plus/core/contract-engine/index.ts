@@ -199,7 +199,7 @@ export class ContractEngine {
    * ```
    */
   public async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
-    return await this.runTransactionPipeline(args, true)
+    return (await this.runTransactionPipeline(args, true)).output?.value
   }
 
   /**
