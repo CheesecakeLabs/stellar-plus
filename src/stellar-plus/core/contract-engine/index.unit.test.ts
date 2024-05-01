@@ -641,7 +641,7 @@ describe('ContractEngine', () => {
     it('should read from a contract', async () => {
       MOCKED_SOROBAN_TRANSACTION_PIPELINE.mockImplementation(() => {
         return {
-          execute: jest.fn().mockResolvedValue(true),
+          execute: jest.fn().mockResolvedValue({ output: { value: true } }),
         }
       })
 
