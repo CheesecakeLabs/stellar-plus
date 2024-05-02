@@ -39,20 +39,19 @@ Our target with this demo is to exemplify a direct workflow to how the Stellar P
 #### Step 1: Creating the Issuer account
 
 In this first step, we'll start by defining which network we'll be operating in this demo, which for now is the `testnet`. Then we'll start a new account handler to manage the Issuer account and initialize it with friendbot.\
-\
+\\
 
-Once the account is fully created and funded, we'll then create an `TransactionInvocation` object for transactions made by the Issuer account.&#x20;
-
+Once the account is fully created and funded, we'll then create an `TransactionInvocation` object for transactions made by the Issuer account.
 
 {% code lineNumbers="true" %}
 ```typescript
-const networkConfig = StellarPlus.Constants.testnet
+const networkConfig = StellarPlus.Network.TestNet()
 
 const issuer = new StellarPlus.Account.DefaultAccountHandler({
     networkConfig,
   });
   
-await issuer.friendbot?.initialize()
+await issuer.initializeWithFriendbot()
 
   const issuerTxInvocation = {
     header: {
@@ -70,7 +69,7 @@ await issuer.friendbot?.initialize()
 
 Here we also initialize a new asset using the SACHandler(Stellar Asset Contract) which allows us to perform both Classic and Soroban actions for this asset.\
 \
-Then,  we wrap this Stellar classic asset into a default asset contract so it can interact directly with smart contracts.&#x20;
+Then, we wrap this Stellar classic asset into a default asset contract so it can interact directly with smart contracts.
 
 {% code lineNumbers="true" %}
 ```typescript
@@ -92,7 +91,7 @@ After the account initialization, we use the asset handler to add a trustline an
 
 ```typescript
 const codVault = new StellarPlus.Account.DefaultAccountHandler({ networkConfig })
-await codVault.friendbot?.initialize()
+await codVault.initializeWithFriendbot()
 
 const codTxInvocation = {
   header: {
@@ -219,7 +218,7 @@ Just as we did before, we initialize user account and set up the necessary trust
 {% code overflow="wrap" lineNumbers="true" %}
 ```typescript
 const userAccount = new StellarPlus.Account.DefaultAccountHandler({ networkConfig })
-await userAccount.friendbot?.initialize()
+await userAccount.initializeWithFriendbot()
 
 const userTxInvocation = {
   header: {
@@ -336,18 +335,18 @@ async function loadWasmFile(wasmFilePath: string): Promise<Buffer> {
 }
 
 const run = async (): Promise<void> => {
-  const networkConfig = StellarPlus.Constants.testnet;
+  const networkConfig = StellarPlus.Network.TestNet();
 
   const vcRpcHandler = new StellarPlus.RPC.ValidationCloudRpcHandler(
     networkConfig,
-    "fE2wTmrvoAaYkn_V9gRJ8Nw54ax7xF-c-BQYALsA0nI"
+    "<your api key>" // insert your API Key
   );
 
   const issuer = new StellarPlus.Account.DefaultAccountHandler({
     networkConfig,
   });
   console.log("Initializing issuer account... ", issuer.getPublicKey());
-  await issuer.friendbot?.initialize();
+  await issuer.initializeWithFriendbot();
 
   const issuerTxInvocation = {
     header: {
@@ -380,7 +379,7 @@ const run = async (): Promise<void> => {
   const codVault = new StellarPlus.Account.DefaultAccountHandler({
     networkConfig,
   });
-  await codVault.friendbot?.initialize();
+  await codVault.initializeWithFriendbot();
 
   const codTxInvocation = {
     header: {
@@ -443,11 +442,11 @@ const run = async (): Promise<void> => {
   console.log("initializing contract's state...");
   await codClient.initialize({ ...codParams, ...codTxInvocation });
 
-  console.log("Crreating user account...");
+  console.log("Creating user account...");
   const userAccount = new StellarPlus.Account.DefaultAccountHandler({
     networkConfig,
   });
-  await userAccount.friendbot?.initialize();
+  await userAccount.initializeWithFriendbot();
 
   const userTxInvocation = {
     header: {

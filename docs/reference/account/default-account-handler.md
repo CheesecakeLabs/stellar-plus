@@ -36,5 +36,5 @@ const myAccount = new StellarPlus.Account.DefaultAccountHandler({})
 ```
 {% endcode %}
 
-When using this option, be aware that the keys are merely generated locally, the account still won't exist in the Stellar network until a 'create account' operation is performed. For this, when using test networks that have a Friendbot, one can make use of the 'Friendbot' helper for Accounts to initialize the account with some lumens funds. Refer to the article [friendbot.md](helpers/friendbot.md "mention") for more detail.
+When using this option, be aware that the keys are merely generated locally, the account still won't exist in the Stellar network until a 'create account' operation is performed. For this, when using test networks that have a Friendbot, one can make use of the 'Friendbot' helper for Accounts to initialize the account with some lumens funds. Refer to the article [Broken link](broken-reference "mention") for more detail.
 

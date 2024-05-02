@@ -18,20 +18,20 @@ First, import the necessary components from the StellarPlus library and set the 
 ```typescript
 import { StellarPlus } from "stellar-plus";
 
-const networkConfig = StellarPlus.Constants.testnet;
+const networkConfig = StellarPlus.Network.TestNet();
 ```
 {% endcode %}
 
 ### Step 2: Create Issuer and Distribution Accounts
 
-Create two accounts - one for issuing the asset (issuerAccount) and another for distributing it (distributionAccount). Initialize both accounts using the [friendbot.md](../reference/account/helpers/friendbot.md "mention") helper, which is especially useful on the testnet as it funds the accounts with test Lumens.
+Create two accounts - one for issuing the asset (issuerAccount) and another for distributing it (distributionAccount). Initialize both accounts using the [Broken link](broken-reference "mention") helper, which is especially useful on the testnet as it funds the accounts with test Lumens.
 
 ```typescript
 issuerAccount = new StellarPlus.Account.DefaultAccountHandler({networkConfig});
-await issuerAccount.friendbot?.initialize();
+await issuerAccount.initializeWithFriendbot();
 
 const distributionAccount = new StellarPlus.Account.DefaultAccountHandler({networkConfig});
-await distributionAccount.friendbot?.initialize();
+await distributionAccount.initializeWithFriendbot();
 ```
 
 ### Step 3: Define Your Asset
@@ -109,17 +109,17 @@ Below is the complete code snippet, encapsulating all the steps outlined in the 
 import { StellarPlus } from "stellar-plus";
 
 const run = async () => {
-  const networkConfig = StellarPlus.Constants.testnet;
+  const networkConfig = StellarPlus.Network.TestNet();
 
   const issuerAccount = new StellarPlus.Account.DefaultAccountHandler({
     networkConfig,
   });
-  await issuerAccount.friendbot?.initialize();
+  await issuerAccount.initializeWithFriendbot();
 
   const distributionAccount = new StellarPlus.Account.DefaultAccountHandler({
     networkConfig,
   });
-  await distributionAccount.friendbot?.initialize();
+  await distributionAccount.initializeWithFriendbot();
 
   const cakeToken = new StellarPlus.Asset.ClassicAssetHandler({
     code: "CAKE",

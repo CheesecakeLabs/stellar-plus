@@ -43,7 +43,7 @@ export type SorobanTokenHandlerConstructorArgs = {
 * `Options`: Options that the underlying Contract Engine and its internal mechanisms accept to personalize its behavior
   * `sorobanTransactionPipeline`: Parameters that can be provided to the [internal soroban transaction pipeline](../core/pipelines/soroban-transaction.md).
     * `plugins`: Array of middleware plugins supported by the Soroban Transaction pipeline that can personalize soroban transactions processing.
-    * `customRrpcHandler`: Optional [RPC handler ](../network-handler/rpc/)for interacting with the Stellar network.
+    * `customRrpcHandler`: Optional [RPC handler ](../rpc/)for interacting with the Stellar network.
 
 
 

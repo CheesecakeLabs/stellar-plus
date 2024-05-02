@@ -20,7 +20,7 @@ type SimulateTransactionPipelineInput = {
 ```
 
 * **transaction**: Transaction to be simulated with the RPC server.
-* **rpcHandler**: The RPC handler to be used when communicating with the RPC. Refer to the [rpc](../../network-handler/rpc/ "mention")section for further details.
+* **rpcHandler**: The RPC handler to be used when communicating with the RPC. Refer to the [rpc](../../rpc/ "mention")section for further details.
 
 ## Output
 

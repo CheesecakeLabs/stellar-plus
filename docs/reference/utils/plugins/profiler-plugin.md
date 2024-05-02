@@ -4,12 +4,12 @@
 
 The Profiler plugin can be used to collect data about the Soroban transactions execution, providing valuable insights about the contract application performance and resource consumption. At each execution, the profiler plugin will automatically collect and store data in an internal dataset that can later be queried and/or exported to different formats for logging and output to a file.
 
-Refer to the tutorial [e2e-certificate-of-deposit-demo-2.md](../../../tutorials/e2e-certificate-of-deposit-demo-2.md "mention")for further details on how to use it.
+Refer to the tutorial [Broken link](broken-reference "mention")for further details on how to use it.
 
 * Pipeline Type: [soroban-transaction.md](../../core/pipelines/soroban-transaction.md "mention")
 
 {% hint style="info" %}
-For an example implementation of this tool, refer to Cheesecake Lab's profiling example [under Tutorials > Profiling a contract](../../../tutorials/e2e-certificate-of-deposit-demo-2.md)
+For an example implementation of this tool, refer to Cheesecake Lab's profiling example [under Tutorials > Profiling a contract](broken-reference)
 {% endhint %}
 
 ## Core Features
