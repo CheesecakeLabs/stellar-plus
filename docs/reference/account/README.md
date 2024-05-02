@@ -16,7 +16,7 @@ Accounts in Stellar Plus are represented in a few different ways that abstract t
 
 
 {% hint style="info" %}
-Tip: Depending on the arguments provided when initializing an Account, extra helpers will be made available in the instance of that account. See[helpers](helpers/ "mention") for further information.
+Tip: Depending on the arguments provided when initializing an Account, extra helpers will be made available in the instance of that account. See[Broken link](broken-reference "mention") for further information.
 {% endhint %}
 
 &#x20;

@@ -51,7 +51,6 @@ describe('DefaultAccountHandler', () => {
   })
 
   describe('Core features', () => {
-
     it('should sign a transaction with its secret key', () => {
       const keypair = Keypair.random()
       const dah = new DefaultAccountHandlerClient({ networkConfig: TESTNET_CONFIG, secretKey: keypair.secret() })

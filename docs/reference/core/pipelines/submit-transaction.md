@@ -14,7 +14,7 @@
 ```
 
 * **transaction**: A transaction of fee bump transaction ready to be submitted for processing.
-* **networkHandler**: A handler to communicate with the Stellar network. Can be an [RPC handler](../../network-handler/rpc/) for Soroban transactions or preferably a[ HorizonHandler ](../../network-handler/horizon-handler.md)for Stellar Classic transactions.
+* **networkHandler**: A handler to communicate with the Stellar network. Can be an [RPC handler](../../rpc/) for Soroban transactions or preferably a[ HorizonHandler ](../../horizon-handler.md)for Stellar Classic transactions.
 
 ## Output
 
