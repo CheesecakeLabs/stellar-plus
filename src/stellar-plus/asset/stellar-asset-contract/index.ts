@@ -6,6 +6,7 @@ import { SorobanTokenHandler } from 'stellar-plus/asset/soroban-token'
 import { SorobanTokenHandlerConstructorArgs } from 'stellar-plus/asset/soroban-token/types'
 import { SACConstructorArgs, SACHandler as SACHandlerType } from 'stellar-plus/asset/stellar-asset-contract/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
+
 import { TransactionInvocation } from 'stellar-plus/core/types'
 
 export class SACHandler implements SACHandlerType {
@@ -20,15 +21,15 @@ export class SACHandler implements SACHandlerType {
    * @param {NetworkConfig} args.networkConfig - The network to connect to.
    * Parameters related to the classic asset.
    * @param {string} args.code - The asset code.
-   * @param {string} args.issuerPublicKey - The issuer public key.
-   * @param {AccountHandler=} args.issuerAccount - The issuer account.
-   * @param {TransactionSubmitter=} args.transactionSubmitter - The classic transaction submitter.
-   * Parameters related to the Soroban token.
-   * @param {ContractSpec=} args.spec - The contract specification object.
-   * @param {Buffer=} args.wasm - The contract wasm file as a buffer.
-   * @param {string=} args.wasmHash - The contract wasm hash id.
-   * @param {string=} args.contractId - The contract id.
-   * @param {RpcHandler=} args.rpcHandler - A custom Soroban RPC handler.
+   * @param {string | AccountHandler} args.issuerAccount - The issuer account. Can be a public key or an account handler. If it's an account handler, it will enable management functions.
+   * @param contractParameters - The contract parameters.
+   * @param {ContractSpec=} contractParameters.spec - The contract specification object.
+   * @param {Buffer=} contractParameters.wasm - The contract wasm file as a buffer.
+   * @param {string=} contractParameters.wasmHash - The contract wasm hash id.
+   * @param {string=} contractParameters.contractId - The contract id.
+   * @param options - The contract options.
+   * @param {SorobanTransactionPipelineOptions=} options.sorobanTransactionPipeline - The Soroban transaction pipeline.
+   * @param { ClassicTransactionPipelineOptions=} options.classicTransactionPipeline - The classic transaction pipeline.
    *
    *
    * @description - The Stellar Asset Contract handler. It combines the classic asset handler and the Soroban token handler.

@@ -6,7 +6,10 @@ import {
   FeeBumpPipelinePlugin,
   FeeBumpPipelineType,
 } from 'stellar-plus/core/pipelines/fee-bump/types'
+import { extractConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
+
+import { PFBError } from './errors'
 
 export class FeeBumpPipeline extends ConveyorBelt<FeeBumpPipelineInput, FeeBumpPipelineOutput, FeeBumpPipelineType> {
   constructor(plugins?: FeeBumpPipelinePlugin[]) {
@@ -16,7 +19,7 @@ export class FeeBumpPipeline extends ConveyorBelt<FeeBumpPipelineInput, FeeBumpP
     })
   }
 
-  protected async process(item: FeeBumpPipelineInput, _itemId: string): Promise<FeeBumpPipelineOutput> {
+  protected async process(item: FeeBumpPipelineInput, itemId: string): Promise<FeeBumpPipelineOutput> {
     const { innerTransaction, feeBumpHeader }: FeeBumpPipelineInput = item
 
     const networkPassphrase = innerTransaction.networkPassphrase
@@ -35,7 +38,11 @@ export class FeeBumpPipeline extends ConveyorBelt<FeeBumpPipelineInput, FeeBumpP
 
       return feeBumpTransaction
     } catch (error) {
-      throw new Error(`Error building fee bump transaction: ${(error as Error).message}`)
+      throw PFBError.couldntWrapFeeBump(
+        error as Error,
+        extractConveyorBeltErrorMeta(item, this.getMeta(itemId)),
+        innerTransaction
+      )
     }
   }
 }

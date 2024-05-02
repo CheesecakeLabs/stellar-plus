@@ -1,4 +1,4 @@
-import { FeeBumpTransaction, Transaction, TransactionBuilder } from '@stellar/stellar-sdk'
+import { TransactionBuilder } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from 'stellar-plus/account'
 import {
@@ -7,8 +7,11 @@ import {
   SignTransactionPipelinePlugin,
   SignTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/sign-transaction/types'
-import { SignatureRequirement } from 'stellar-plus/core/types'
+import { StellarPlusError } from 'stellar-plus/error'
+import { extractConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
+
+import { PSIGError } from './errors'
 
 export class SignTransactionPipeline extends ConveyorBelt<
   SignTransactionPipelineInput,
@@ -22,40 +25,54 @@ export class SignTransactionPipeline extends ConveyorBelt<
     })
   }
 
-  protected async process(item: SignTransactionPipelineInput, _itemId: string): Promise<SignTransactionPipelineOutput> {
+  protected async process(item: SignTransactionPipelineInput, itemId: string): Promise<SignTransactionPipelineOutput> {
     const { transaction, signatureRequirements, signers }: SignTransactionPipelineInput = item
 
-    const signedTransaction = await this.signTransaction(transaction, signatureRequirements, signers)
+    if (signatureRequirements.length === 0) {
+      throw PSIGError.noRequirementsProvided(extractConveyorBeltErrorMeta(item, this.getMeta(itemId)), transaction)
+    }
 
-    return signedTransaction
-  }
+    if (signers.length === 0) {
+      throw PSIGError.noSignersProvided(extractConveyorBeltErrorMeta(item, this.getMeta(itemId)), transaction)
+    }
 
-  private async signTransaction(
-    transaction: Transaction | FeeBumpTransaction,
-    requirements: SignatureRequirement[],
-    signers: AccountHandler[]
-  ): Promise<Transaction | FeeBumpTransaction> {
     const passphrase = transaction.networkPassphrase
     let signedTransaction = transaction
 
-    if (signers.length === 0) {
-      throw new Error('No signers provided')
-    }
-
-    for (const requirement of requirements) {
+    for (const requirement of signatureRequirements) {
       const signer = signers.find((s) => s.getPublicKey() === requirement.publicKey) as AccountHandler
 
-      if (!signer) throw new Error(`Signer not found: ${requirement.publicKey}`)
+      if (!signer)
+        throw PSIGError.signerNotFound(
+          extractConveyorBeltErrorMeta(item, this.getMeta(itemId)),
+          transaction,
+          requirement.publicKey,
+          signers.map((s) => s.getPublicKey())
+        )
 
       if (!signer.signatureSchema) {
-        signedTransaction = TransactionBuilder.fromXDR(
-          await signer.sign(signedTransaction),
-          passphrase
-        ) as typeof transaction
+        try {
+          signedTransaction = TransactionBuilder.fromXDR(
+            await signer.sign(signedTransaction),
+            passphrase
+          ) as typeof transaction
+        } catch (error) {
+          throw PSIGError.couldntSignTransaction(
+            error as Error,
+            extractConveyorBeltErrorMeta(item, this.getMeta(itemId)),
+            transaction,
+            signer.getPublicKey()
+          )
+        }
       } else {
-        throw new Error('Multisignature support not implemented yet')
+        throw StellarPlusError.unexpectedError({
+          message: 'Multisignature support not implemented yet',
+          source: 'PipelineSignTransaction',
+          details: `The signer has a signature schema. The signature schema is: ${signer.signatureSchema}.`,
+        })
       }
     }
+
     return signedTransaction
   }
 }

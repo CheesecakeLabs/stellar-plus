@@ -1,5 +1,6 @@
 import { FeeBumpTransaction, SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
 
+import { DRHError } from 'stellar-plus/rpc/default-handler/errors'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { NetworkConfig } from 'stellar-plus/types'
 
@@ -18,7 +19,14 @@ export class DefaultRpcHandler implements RpcHandler {
    */
   constructor(networkConfig: NetworkConfig) {
     this.networkConfig = networkConfig
-    this.server = new SorobanRpc.Server(this.networkConfig.rpcUrl)
+
+    if (!this.networkConfig.rpcUrl) {
+      throw DRHError.missingRpcUrl()
+    }
+
+    const serverOpts = networkConfig.allowHttp ? { allowHttp: true } : {}
+
+    this.server = new SorobanRpc.Server(this.networkConfig.rpcUrl, serverOpts)
   }
 
   /**
@@ -97,10 +105,6 @@ export class DefaultRpcHandler implements RpcHandler {
     return await this.server.getNetwork()
   }
 
-  // filters: Api.EventFilter[];
-  //       startLedger?: number;
-  //       cursor?: string;
-  //       limit?: number;
   /**
    *
    * @args {SorobanRpc.GetEventsRequest} request - The events request to get.

@@ -24,7 +24,8 @@ export class ConveyorBelt<Input, Output, BeltType> implements ConveyorBeltType<I
     try {
       processedItem = (await this.process(preProcessedItem, itemId)) as Output
     } catch (e) {
-      const error = StellarPlusError.fromUnkownError(e)
+      const error = e instanceof StellarPlusError ? e : StellarPlusError.fromUnkownError(e)
+
       const processedError = await this.processError(error, itemId)
       throw processedError
     }
@@ -80,16 +81,4 @@ export class ConveyorBelt<Input, Output, BeltType> implements ConveyorBeltType<I
       beltType: this.type as string,
     }
   }
-
-  // private async errorProcess(error: StellarPlusError, itemId: string, beltId: string): Promise<StellarPlusError> {
-  //   let processedError = error
-
-  //   for (const plugin of this.plugins) {
-  //     if (plugin.errorProcess) {
-  //       processedError = (await plugin.errorProcess(processedError, itemId, beltId)) as StellarPlusError
-  //     }
-  //   }
-
-  //   return processedError
-  // }
 }

@@ -5,6 +5,7 @@ import { TransactionXdr } from 'stellar-plus/types'
 
 export type DefaultAccountHandler = AccountHandler & {
   sign(tx: Transaction): TransactionXdr
+  getSecretKey(): string
 }
 
 //

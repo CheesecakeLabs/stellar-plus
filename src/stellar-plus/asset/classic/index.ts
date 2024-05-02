@@ -1,6 +1,5 @@
 import { Horizon as HorizonNamespace, Operation, Asset as StellarAsset } from '@stellar/stellar-sdk'
 
-import { HorizonHandler } from 'stellar-plus'
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import {
   ClassicAssetHandlerConstructorArgs,
@@ -10,51 +9,57 @@ import { AssetTypes } from 'stellar-plus/asset/types'
 import { ClassicTransactionPipeline } from 'stellar-plus/core/pipelines/classic-transaction'
 import { ClassicTransactionPipelineOptions } from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
+import { HorizonHandlerClient as HorizonHandler } from 'stellar-plus/horizon'
 
 import { CAHError } from './errors'
 
 export class ClassicAssetHandler implements IClassicAssetHandler {
   public code: string
-  public issuerPublicKey: string
+  public issuerPublicKey?: string
   public type: AssetTypes.native | AssetTypes.credit_alphanum4 | AssetTypes.credit_alphanum12
   private issuerAccount?: AccountHandler
   private asset: StellarAsset
   private horizonHandler: HorizonHandler
 
-  private classicTrasactionPipeline: ClassicTransactionPipeline
+  private classicTransactionPipeline: ClassicTransactionPipeline
 
   /**
    *
    * @param {string} code - The asset code.
-   * @param {string} issuerPublicKey - The public key of the asset issuer.
-   * @param {NetworkConfig} networkConfig - The network to use.
-   * @param {AccountHandler=} issuerAccount - The issuer account handler. When provided, it'll enable management functions and be used to sign transactions as the issuer.
-   * @param {TransactionSubmitter=} transactionSubmitter - The transaction submitter to use.
+   * @param {string | AccountHandler} issuerAccount - The issuer account. When an account handler is provided, it'll enable management functions and be used to sign transactions as the issuer.
+   * @param {NetworkConfig} networkConfig - The network configuration to use.
+   * @param {ClassicTransactionPipelineOptions} options - The options for the classic transaction pipeline.
+     @param {ClassicTransactionPipelineOptions} options.classicTransactionPipeline - The options for the classic transaction pipeline. These allow for custom configurations for how the transaction pipeline will operate for this asset.
    *
    * @description - The Classic asset handler is used for handling classic assets with user-based and management functionalities.
    *
    *
    */
   constructor(args: ClassicAssetHandlerConstructorArgs) {
-    // super({ ...args })
     this.code = args.code
-    this.issuerPublicKey =
-      typeof args.issuerAccount === 'string' ? args.issuerAccount : args.issuerAccount.getPublicKey()
-
-    this.issuerAccount = typeof args.issuerAccount === 'string' ? undefined : args.issuerAccount
-
     this.type =
-      args.code === 'XLM'
+      args.code === 'XLM' && !args.issuerAccount
         ? AssetTypes.native
         : args.code.length <= 4
           ? AssetTypes.credit_alphanum4
           : AssetTypes.credit_alphanum12
 
+    // provided Public key for issuer
+    if (args.issuerAccount && typeof args.issuerAccount === 'string') {
+      this.issuerPublicKey = args.issuerAccount
+    }
+
+    // provided Account Handler for issuer
+    if (args.issuerAccount && typeof args.issuerAccount !== 'string') {
+      this.issuerAccount = args.issuerAccount
+      this.issuerPublicKey = args.issuerAccount.getPublicKey()
+    }
+
     this.horizonHandler = new HorizonHandler(args.networkConfig)
 
     this.asset = new StellarAsset(args.code, this.issuerPublicKey)
 
-    this.classicTrasactionPipeline = new ClassicTransactionPipeline(
+    this.classicTransactionPipeline = new ClassicTransactionPipeline(
       args.networkConfig,
       args.options?.classicTransactionPipeline as ClassicTransactionPipelineOptions
     )
@@ -93,12 +98,9 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
     return this.code
   }
 
-  // /**
-  //  * @description - Not implemented in pure classic assets. Only available for Soroban assets.
-  //  */
-  // public async allowance(): Promise<bigint> {
-  //   throw new Error('Method not implemented in Classic ssets.')
-  // }
+  /**
+   * @description - Not implemented in the current version for pure classic assets. Only available for Soroban assets.
+   */
 
   public async approve(): Promise<void> {
     throw new Error('Method not implemented.')
@@ -129,10 +131,6 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
     return balanceLine[0] ? Number(balanceLine[0].balance) : 0
   }
 
-  // public async spendable_balance(): Promise<i128> {
-  //   throw new Error('Method not implemented.')
-  // }
-
   /**
    *
    * @param {string} from - The account id to transfer the asset from.
@@ -158,21 +156,13 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: from,
     })
 
-    await this.classicTrasactionPipeline.execute({
+    await this.classicTransactionPipeline.execute({
       txInvocation,
       operations: [transferOp],
     })
 
     return
   }
-
-  // public async transfer_from(): Promise<void> {
-  //   throw new Error('Method not implemented.')
-  // }
-
-  // public async burn_from(): Promise<void> {
-  //   throw new Error('Method not implemented.')
-  // }
 
   /**
    *
@@ -187,6 +177,12 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
    * @description - Burns the given amount of the asset from the 'from' account.
    */
   public async burn(args: { from: string; amount: number } & TransactionInvocation): Promise<void> {
+    if (this.type === AssetTypes.native) {
+      throw "You can't burn XLM"
+    }
+    if (!this.issuerPublicKey) {
+      throw "Missing issuer public key. Can't burn asset."
+    }
     return this.transfer({ ...args, to: this.issuerPublicKey })
   }
 
@@ -201,21 +197,11 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
   //
   //
 
-  // public async set_admin(): Promise<void> {
-  //   throw new Error('Method not implemented.')
-  // }
-  // public async admin(): Promise<string> {
-  //   throw new Error('Method not implemented.')
-  // }
-  // public async set_authorized(): Promise<void> {
-  //   throw new Error('Method not implemented.')
-  // }
-
   /**
-   *
+   * @args
    * @param {string} to - The account id to mint the asset to.
    * @param {i128} amount - The amount of the asset to mint.
-   * @param {TransactionInvocation} txInvocation - The transaction invocation object. The Issuer account will be automatically added as a signer.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object spread. The Issuer account will be automatically added as a signer.
    *
    * @description - Mints the given amount of the asset to the 'to' account.
    * @requires - The issuer account to be set in the asset.
@@ -245,7 +231,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: this.asset.getIssuer(),
     })
 
-    const result = await this.classicTrasactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [mintOp],
     })
@@ -267,7 +253,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
    *
    * @param {string} to - The account id to mint the asset to.
    * @param {number} amount - The amount of the asset to mint.
-   * @param {TransactionInvocation} txInvocation - The transaction invocation object. The  The Issuer account will be automatically added as a signer.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object spread. The Issuer account will be automatically added as a signer.
    *
    * @requires - The issuer account to be set in the asset.
    * @requires - The 'to' account to be set as a signer in the transaction invocation.
@@ -304,7 +290,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: this.asset.getIssuer(),
     })
 
-    const result = await this.classicTrasactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [addTrustlineOp, mintOp],
     })
@@ -315,7 +301,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
   /**
    *
    * @param {string} to - The account id to add the trustline.
-   * @param {TransactionInvocation} txInvocation - The transaction invocation object.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object spread.
    *
    * @requires - The 'to' account to be set as a signer in the transaction invocation.
    *
@@ -337,7 +323,7 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       asset: this.asset,
     })
 
-    const result = await this.classicTrasactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation,
       operations: [addTrustlineOp],
     })

@@ -1,6 +1,6 @@
 import { xdr } from '@stellar/stellar-sdk'
 
-import { HorizonHandler } from 'stellar-plus'
+import { HorizonHandler } from 'stellar-plus/horizon/types'
 import { EnvelopeHeader, Transaction } from 'stellar-plus/types'
 import { BeltPluginType, GenericPlugin } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
@@ -14,7 +14,6 @@ export type BuildTransactionPipelineInput = {
 
 export type BuildTransactionPipelineOutput = Transaction
 
-// export type BuildTransactionPipelineType = 'BuildTransactionPipeline'
 export enum BuildTransactionPipelineType {
   id = 'BuildTransactionPipeline',
 }

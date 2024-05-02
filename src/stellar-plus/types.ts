@@ -1,5 +1,6 @@
 import {
   Address as StellarAddress,
+  ContractSpec as _ContractSpec,
   FeeBumpTransaction as _FeeBumpTransaction,
   Transaction as _Transaction,
 } from '@stellar/stellar-sdk'
@@ -9,6 +10,7 @@ import {
   FeeBumpHeader as _FeeBumpHeader,
   TransactionInvocation as _TransactionInvocation,
 } from 'stellar-plus/core/types'
+import { NetworkConfig as _NetworkConfig } from 'stellar-plus/network'
 
 export type TransactionXdr = string
 
@@ -16,23 +18,7 @@ export type Transaction = _Transaction
 
 export type FeeBumpTransaction = _FeeBumpTransaction
 
-//
-// Networks
-//
-export type NetworkConfig = {
-  name: NetworksList
-  networkPassphrase: string
-  rpcUrl: string
-  horizonUrl: string
-  friendbotUrl?: string
-}
-
-export enum NetworksList {
-  testnet = 'testnet',
-  futurenet = 'futurenet',
-  mainnet = 'mainnet',
-  custom = 'custom',
-}
+export type NetworkConfig = _NetworkConfig
 
 export type u32 = number
 export type i32 = number
@@ -51,5 +37,6 @@ export type Address = StellarAddress | string
 export type TransactionInvocation = _TransactionInvocation
 export type EnvelopeHeader = _EnvelopeHeader
 export type FeeBumpHeader = _FeeBumpHeader
+export type ContractSpec = _ContractSpec
 
 export * as Errors from 'stellar-plus/error/types'

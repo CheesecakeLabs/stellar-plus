@@ -1,7 +1,6 @@
 import { FeeBumpTransaction, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
 
-import { HorizonHandler } from 'stellar-plus'
 import {
   SubmitTransactionPipelineInput,
   SubmitTransactionPipelineOutput,
@@ -9,6 +8,7 @@ import {
   SubmitTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/submit-transaction/types'
 import { extractConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
+import { HorizonHandlerClient } from 'stellar-plus/horizon'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
 
@@ -37,7 +37,7 @@ export class SubmitTransactionPipeline extends ConveyorBelt<
     // Horizon Submission
     // ===================
     //
-    if (networkHandler instanceof HorizonHandler) {
+    if (networkHandler instanceof HorizonHandlerClient) {
       let response: HorizonApi.SubmitTransactionResponse
       try {
         response = await this.submitTransactionThroughHorizon(transaction, networkHandler)
@@ -86,7 +86,7 @@ export class SubmitTransactionPipeline extends ConveyorBelt<
 
   private async submitTransactionThroughHorizon(
     transaction: Transaction | FeeBumpTransaction,
-    horizonHandler: HorizonHandler
+    horizonHandler: HorizonHandlerClient
   ): Promise<HorizonApi.SubmitTransactionResponse> {
     const response = (await horizonHandler.server.submitTransaction(transaction, {
       skipMemoRequiredCheck: true, // Not skipping memo required check causes an error when submitting fee bump transactions

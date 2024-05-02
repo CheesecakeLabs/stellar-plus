@@ -1,7 +1,8 @@
-import { SorobanRpc } from '@stellar/stellar-sdk'
+import { SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import { StellarPlusError } from 'stellar-plus/error'
 import { ConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
+import { extractTransactionData } from 'stellar-plus/error/helpers/transaction'
 import { BeltMetadata } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
 
 import { SimulateTransactionPipelineInput } from './types'
@@ -15,6 +16,9 @@ export enum ErrorCodesPipelineSimulateTransaction {
 
   //PSI1 Restore
   PSI100 = 'PSI100',
+
+  //PSI2 Transaction
+  PSI201 = 'PSI201',
 }
 
 const failedToSimulateTransaction = (
@@ -67,7 +71,7 @@ const simulationMissingResult = (
 }
 
 const simulationResultCouldNotBeVerified = (
-  simulationResponse: SorobanRpc.Api.SimulateTransactionSuccessResponse,
+  simulationResponse: SorobanRpc.Api.SimulateTransactionResponse,
   conveyorBeltErrorMeta: ConveyorBeltErrorMeta<SimulateTransactionPipelineInput, BeltMetadata>
 ): StellarPlusError => {
   return new StellarPlusError({
@@ -99,10 +103,31 @@ const transactionNeedsRestore = (
   })
 }
 
+const failedToAssembleTransaction = (
+  error: Error,
+  simulationResponse: SorobanRpc.Api.SimulateTransactionSuccessResponse,
+  transaction: Transaction,
+  conveyorBeltErrorMeta: ConveyorBeltErrorMeta<SimulateTransactionPipelineInput, BeltMetadata>
+): StellarPlusError => {
+  return new StellarPlusError({
+    code: ErrorCodesPipelineSimulateTransaction.PSI201,
+    message: 'Failed to assemble transaction!',
+    source: 'PipelineSimulateTransaction',
+    details: `An issue occurred while assembling the transaction. Refer to the meta section for more details.`,
+    meta: {
+      error,
+      conveyorBeltErrorMeta,
+      sorobanSimulationData: simulationResponse,
+      transactionData: extractTransactionData(transaction),
+    },
+  })
+}
+
 export const PSIError = {
   failedToSimulateTransaction,
   simulationFailed,
   transactionNeedsRestore,
   simulationMissingResult,
   simulationResultCouldNotBeVerified,
+  failedToAssembleTransaction,
 }

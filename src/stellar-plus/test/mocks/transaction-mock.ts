@@ -1,6 +1,8 @@
-import { FeeBumpHeader, TransactionInvocation, TransactionXdr } from 'stellar-plus/types'
+import { xdr } from '@stellar/stellar-sdk'
 
-import { AccountHandler } from '../../account/account-handler/types'
+import { FeeBumpHeader, TransactionInvocation } from 'stellar-plus/types'
+
+import { AccountHandler, SignatureSchema } from '../../account/account-handler/types'
 import { EnvelopeHeader } from '../../core/types'
 
 export const MockSubmitTransaction = {
@@ -24,27 +26,56 @@ export function mockHeader(sourceKey = mockAccount): EnvelopeHeader {
   }
 }
 
-export function mockAccountHandler(accountKey = mockAccount): AccountHandler {
+export function mockSignatureSchema(
+  threasholds?: SignatureSchema['threasholds'],
+  signers?: SignatureSchema['signers']
+): SignatureSchema {
   return {
-    sign(_tx: any): TransactionXdr {
-      return 'success'
+    threasholds: threasholds || {
+      low: 1,
+      medium: 2,
+      high: 3,
     },
-    getPublicKey(): string {
-      return accountKey
-    },
+    signers: signers || [
+      {
+        weight: 1,
+        publicKey: mockAccount,
+      },
+    ],
+  }
+}
+
+export function mockAccountHandler({
+  accountKey = 'mockAccount',
+  outputSignedTransaction,
+  outputSignedAuthEntry,
+  signatureSchema,
+}: {
+  accountKey?: string
+  outputSignedTransaction?: string
+  outputSignedAuthEntry?: xdr.SorobanAuthorizationEntry
+  signatureSchema?: SignatureSchema
+}): jest.Mocked<AccountHandler> {
+  return {
+    sign: jest.fn().mockReturnValue(outputSignedTransaction ?? 'success'),
+    signSorobanAuthEntry: jest.fn().mockReturnValue(outputSignedAuthEntry ?? xdr.SorobanAuthorizationEntry),
+    getPublicKey: jest.fn().mockReturnValue(accountKey),
+    signatureSchema,
+    getBalances: jest.fn().mockReturnValue([]),
+    initializeWithFriendbot: jest.fn(),
   }
 }
 
 export function mockFeeBumpHeader(signerKey = mockAccount): FeeBumpHeader {
   return {
-    signers: [mockAccountHandler(signerKey)],
+    signers: [mockAccountHandler({ accountKey: signerKey })],
     header: mockHeader(signerKey),
   }
 }
 
 export function mockTransactionInvocation(signerKey = mockAccount): TransactionInvocation {
   return {
-    signers: [mockAccountHandler(signerKey)],
+    signers: [mockAccountHandler({ accountKey: signerKey })],
     header: mockHeader(signerKey),
     feeBump: mockFeeBumpHeader(signerKey),
   }
@@ -65,5 +96,3 @@ export const mockTransactionBuilder = {
   }),
   toXDR: jest.fn().mockReturnValue('success'),
 }
-
-// export const mockUnsignedClassicTransaction = new TransactionBuilder(new Account(mockAccount, '123'), { fee: '500' })

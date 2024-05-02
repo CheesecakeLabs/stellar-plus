@@ -27,13 +27,6 @@ export class ProfilingHandler {
     this.log.push(entry)
   }
 
-  // public getOptionsArgs = (): Options => {
-  //   return {
-
-  //     costHandler: this.costHandler,
-  //   }
-  // }
-
   public getLog = (options?: GetLogOptions): LogEntry[] | string => {
     const filteredLog = options?.filter ? this.filterLog(this.log, options.filter) : this.log
 

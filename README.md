@@ -1,15 +1,30 @@
-
 # Stellar-Plus
 
-stellar-plus is an all-in-one Javascript library for building and interacting with the Stellar network. It bundles the main resources from the community into an easy-to-use set of tools and capabilities.
+<p align="center">
+  <a href="https://badge.fury.io/js/stellar-plus"><img src="https://badge.fury.io/js/stellar-plus.svg" alt="npm version" height="18"></a>
+  <a href="https://www.npmjs.com/package/stellar-sdk">
+    <img alt="Weekly Downloads" src="https://img.shields.io/npm/dw/stellar-plus" />
+  </a>
+</p>
 
-It provides:
+<figure>
+  <picture>
+    <source srcset="docs/.gitbook/assets/logo2.png" media="(prefers-color-scheme: dark)">
+    <img src="docs/.gitbook/assets/logo2.png" alt="" width="375" style="display: block; margin: 0 auto;">
+  </picture>
+  <figcaption></figcaption>
+</figure>
 
-* **Account**: Handlers to create, load, and interact with stellar accounts, managing signatures and automatically integrating with Freighter Wallet for web applications.
-* **Asset**: Classic token handlers follow the standard token interface for triggering different asset capabilities as well as a suite of additional features for asset management and usage.
-* **Core**: Key engines for managing the different pipelines for building, submitting, and processing both Classic and Soroban transactions. These engines can be extended into your own tooling or used out-of-the-box with minimal configuration.
-* **Contracts**: Default contract client implementations for selected dApp use cases.
-* **RPC**: Handlers for connecting and using different RPC solutions, including a ready-to-use integration with Validation Cloud's RPC API.
+Stellar-plus is a robust JavaScript library built by [Cheesecake Labs](./) and designed to streamline the development of applications on the Stellar network. By integrating the Stellar community's primary resources, Stellar-plus offers developers an efficient, easy-to-use toolkit. This library simplifies the complexities of Stellar network interaction, making it accessible for both novice and experienced developers alike.
+
+## Features
+
+- **Account Handling**: Seamless management of signatures throughout the transaction lifecycle.
+- **Asset Management**: Full suite of asset management capabilities, including standard and custom assets.
+- **Core Engines**: Essential for building, submitting, signing, and processing transactions on the Stellar network.
+- **Contract Development**: Simplifies the development of decentralized applications (dApps).
+- **RPC Integration**: Connects to and leverages various RPC services for a broader range of applications.
+- **Plugins and Extensions**: Supports plugins and tools to enhance functionality and tailor the library to specific needs.
 
 ## Quick start
 
@@ -30,15 +45,19 @@ npm install --save stellar-plus
 require/import it in your JavaScript:
 
 ```js
-var StellarPlus = require("stellar-plus");
+var StellarPlus = require('stellar-plus')
 ```
 
 or
 
 ```js
-import { StellarPlus } from "stellar-plus";
+import { StellarPlus } from 'stellar-plus'
 ```
 
 ## Documentation
 
 For the full documentation, refer to our [Gitbook Documentation](https://cheesecake-labs.gitbook.io/stellar-plus/?utm_source=github&utm_medium=codigo-fonte).
+
+- [Code of Conduct](https://github.com/cheesecakelabs/stellar-plus/blob/main/CODE_OF_CONDUCT.md)
+- [Contributing Guidelines](https://github.com/cheesecakelabs/stellar-plus/blob/main/CONTRIBUTING.md)
+- [MIT License](https://github.com/cheesecakelabs/stellar-plus/blob/main/LICENSE)

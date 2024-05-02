@@ -1,4 +1,4 @@
-import { SorobanRpc, Transaction } from '@stellar/stellar-sdk'
+import { SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import { TransactionResources } from 'stellar-plus/core/contract-engine/types'
 import { RpcHandler } from 'stellar-plus/rpc/types'
@@ -11,11 +11,10 @@ export type SimulateTransactionPipelineInput = {
 
 export type SimulateTransactionPipelineOutput = {
   response: SorobanRpc.Api.SimulateTransactionSuccessResponse | SorobanRpc.Api.SimulateTransactionRestoreResponse
-  output?: SimulatedInvocationOutput & ResourcesOutput
+  output?: SimulatedInvocationOutput & ResourcesOutput & AuthEntriesOutput
   assembledTransaction: Transaction
 }
 
-// export type SimulateTransactionPipelineType = 'SimulateTransactionPipeline'
 export enum SimulateTransactionPipelineType {
   id = 'SimulateTransactionPipeline',
 }
@@ -32,4 +31,8 @@ export type SimulatedInvocationOutput = {
 
 export type ResourcesOutput = {
   resources?: TransactionResources
+}
+
+export type AuthEntriesOutput = {
+  auth?: xdr.SorobanAuthorizationEntry[]
 }

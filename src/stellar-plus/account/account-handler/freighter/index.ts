@@ -4,22 +4,22 @@ import {
   isAllowed,
   isConnected,
   setAllowed,
+  signAuthEntry,
   signTransaction,
 } from '@stellar/freighter-api'
-import { Transaction } from '@stellar/stellar-sdk'
+import { FeeBumpTransaction, Transaction, xdr } from '@stellar/stellar-sdk'
 
+import { FAHError } from 'stellar-plus/account/account-handler/freighter/errors'
 import {
   FreighterAccHandlerPayload,
   FreighterAccountHandler,
   FreighterCallback,
 } from 'stellar-plus/account/account-handler/freighter/types'
-import { AccountBaseClient } from 'stellar-plus/account/base'
+import { AccountBase } from 'stellar-plus/account/base'
 import { NetworkConfig } from 'stellar-plus/types'
 
-import { FAHError } from './errors'
-
-export class FreighterAccountHandlerClient extends AccountBaseClient implements FreighterAccountHandler {
-  private networkConfig: NetworkConfig
+export class FreighterAccountHandlerClient extends AccountBase implements FreighterAccountHandler {
+  protected networkConfig: NetworkConfig
 
   /**
    *
@@ -88,7 +88,6 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
           return await onPublicKeyReceived(publicKey)
         }
       } catch (e) {
-        // console.log("Couldn't retrieve public key from Freighter! ", error)
         throw FAHError.failedToLoadPublicKeyError(e as Error)
       }
     }
@@ -103,7 +102,7 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
    * @description - Sign a transaction with Freighter and return the signed transaction. If signerpublicKey is provided, it will be used to specifically request Freighter to sign with that account.
    *
    */
-  public async sign(tx: Transaction): Promise<string> {
+  public async sign(tx: Transaction | FeeBumpTransaction): Promise<string> {
     const isFreighterConnected = await this.isFreighterConnected(true)
 
     if (isFreighterConnected) {
@@ -116,8 +115,42 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
         })
         return signedTx
       } catch (e) {
-        // console.log("Couldn't sign transaction with Freighter! ", error)
         throw FAHError.failedToSignTransactionError(e as Error)
+      }
+    } else {
+      this.connect()
+      throw FAHError.freighterIsNotConnectedError()
+    }
+  }
+
+  /**
+   *
+   * @param {xdr.SorobanAuthorizationEntry} entry - The soroban authorization entry to sign.
+   * @param {number} validUntilLedgerSeq - The ledger sequence number until which the entry signature is valid.
+   * @param {string} networkPassphrase - The network passphrase for the network to sign the entry for.
+   * @description - Signs the given Soroban authorization entry with the account's secret key.
+   *
+   * @returns {xdr.SorobanAuthorizationEntry} The signed entry.
+   */
+  public async signSorobanAuthEntry(
+    entry: xdr.SorobanAuthorizationEntry,
+    validUntilLedgerSeq: number,
+    networkPassphrase: string
+  ): Promise<xdr.SorobanAuthorizationEntry> {
+    const isFreighterConnected = await this.isFreighterConnected(true)
+
+    if (isFreighterConnected) {
+      if (networkPassphrase !== this.networkConfig.networkPassphrase) {
+        throw FAHError.cannotSignForThisNetwork(networkPassphrase, this.networkConfig.networkPassphrase)
+      }
+
+      try {
+        const signedEntryXdr = await signAuthEntry(entry.toXDR('base64'), { accountToSign: this.publicKey })
+        const signedEntry = xdr.SorobanAuthorizationEntry.fromXDR(signedEntryXdr, 'base64')
+
+        return signedEntry
+      } catch (e) {
+        throw FAHError.failedToSignAuthEntryError(e as Error)
       }
     } else {
       this.connect()
@@ -142,10 +175,6 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
       return false
     }
 
-    //
-    // REVIEW: Documentation isn't clear, could be that
-    // we don't need both isAllowed and setAllowed
-    //
     const isApplicationAllowed = await this.isApplicationAuthorized()
     if (!isApplicationAllowed) {
       if (enforceConnection) {
@@ -196,7 +225,6 @@ export class FreighterAccountHandlerClient extends AccountBaseClient implements 
    */
   public async isNetworkCorrect(): Promise<boolean> {
     const networkDetails = await getNetworkDetails()
-
     if (networkDetails.networkPassphrase !== this.networkConfig.networkPassphrase) {
       throw FAHError.connectedToWrongNetworkError(this.networkConfig.name)
     }
