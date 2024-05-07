@@ -4,10 +4,10 @@ In this tutorial, we'll demonstrate an end-to-end approach to deploy and interac
 
 ## Prerequisites
 
-* **Basic Understanding of Stellar Concepts**: Familiarize yourself with Stellar network fundamentals, including assets, accounts, trustlines, and transactions. For more in-depth information, refer to [Stellar's official documentation](https://developers.stellar.org/docs).
-* **Basic understanding of Stellar's Soroban:** Familiarize yourself with Soroban and how smart contracts integrate with the Stellar network. For more in-depth information refer to [Soroban's official documentation](https://soroban.stellar.org/docs).
-* **Node.js Environment**: Set up a Node.js environment to run your JavaScript code.
-* **StellarPlus Library**: Ensure that the StellarPlus library is installed in your project. For the installation steps, refer to [quick-start.md](../quick-start.md "mention").
+- **Basic Understanding of Stellar Concepts**: Familiarize yourself with Stellar network fundamentals, including assets, accounts, trustlines, and transactions. For more in-depth information, refer to [Stellar's official documentation](https://developers.stellar.org/docs).
+- **Basic understanding of Stellar's Soroban:** Familiarize yourself with Soroban and how smart contracts integrate with the Stellar network. For more in-depth information refer to [Soroban's official documentation](https://soroban.stellar.org/docs).
+- **Node.js Environment**: Set up a Node.js environment to run your JavaScript code.
+- **StellarPlus Library**: Ensure that the StellarPlus library is installed in your project. For the installation steps, refer to [quick-start.md](../quick-start.md 'mention').
 
 ## Objectives
 
@@ -39,40 +39,41 @@ Our target with this demo is to exemplify a direct workflow to how the Stellar P
 #### Step 1: Creating the Issuer account
 
 In this first step, we'll start by defining which network we'll be operating in this demo, which for now is the `testnet`. Then we'll start a new account handler to manage the Issuer account and initialize it with friendbot.\
-\
+\\
 
-Once the account is fully created and funded, we'll then create an `TransactionInvocation` object for transactions made by the Issuer account.&#x20;
-
+Once the account is fully created and funded, we'll then create an `TransactionInvocation` object for transactions made by the Issuer account.
 
 {% code lineNumbers="true" %}
+
 ```typescript
-const networkConfig = StellarPlus.Constants.testnet
+const networkConfig = StellarPlus.Network.TestNet()
 
 const issuer = new StellarPlus.Account.DefaultAccountHandler({
-    networkConfig,
-  });
-  
-await issuer.friendbot?.initialize()
+  networkConfig,
+})
 
-  const issuerTxInvocation = {
-    header: {
-      source: issuer.getPublicKey(),
-      fee: "10000000", //1 XLM as maximum fee
-      timeout: 45,
-    },
-    signers: [issuer],
-  };
+await issuer.initializeWithFriendbot()
 
+const issuerTxInvocation = {
+  header: {
+    source: issuer.getPublicKey(),
+    fee: '10000000', //1 XLM as maximum fee
+    timeout: 45,
+  },
+  signers: [issuer],
+}
 ```
+
 {% endcode %}
 
 #### Step 2: Creating and Wrapping an Asset
 
 Here we also initialize a new asset using the SACHandler(Stellar Asset Contract) which allows us to perform both Classic and Soroban actions for this asset.\
 \
-Then,  we wrap this Stellar classic asset into a default asset contract so it can interact directly with smart contracts.&#x20;
+Then, we wrap this Stellar classic asset into a default asset contract so it can interact directly with smart contracts.
 
 {% code lineNumbers="true" %}
+
 ```typescript
 const cakeToken = new StellarPlus.Asset.SACHandler({
   code: 'CAKE',
@@ -82,6 +83,7 @@ const cakeToken = new StellarPlus.Asset.SACHandler({
 
 await cakeToken.wrapAndDeploy(issuerTxInvocation)
 ```
+
 {% endcode %}
 
 #### Step 3: Create a vault to manage the CD contract and the funds
@@ -92,7 +94,7 @@ After the account initialization, we use the asset handler to add a trustline an
 
 ```typescript
 const codVault = new StellarPlus.Account.DefaultAccountHandler({ networkConfig })
-await codVault.friendbot?.initialize()
+await codVault.initializeWithFriendbot()
 
 const codTxInvocation = {
   header: {
@@ -104,9 +106,9 @@ const codTxInvocation = {
 }
 
 await cakeToken.classicHandler.addTrustlineAndMint({
-  to: codVault.getPublicKey(), 
-  amount: 10000000, 
-  ...codTxInvocation
+  to: codVault.getPublicKey(),
+  amount: 10000000,
+  ...codTxInvocation,
 })
 ```
 
@@ -127,6 +129,7 @@ Compiled WASM for the Certificate of Deposit contract
 Once the file is loaded into a buffer, we initialize the CD client with the wasm buffer and upload it to the Stellar network. This will provide us with a unique wasm hash that identifies this code and can be used to deploy instances of this implementation on chain. This attribute is automatically stored in the client object for future usage.
 
 {% code lineNumbers="true" %}
+
 ```typescript
 const wasmFilePath = './src/wasm-files/certificates_of_deposit.optimized.wasm'
 const wasmBuffer = await loadWasmFile(wasmFilePath)
@@ -141,6 +144,7 @@ const codClient = new StellarPlus.Contracts.CertificateOfDeposit({
 await codClient.uploadWasm(codTxInvocation)
 await codClient.deploy(codTxInvocation)
 ```
+
 {% endcode %}
 
 Right after, a deploy is triggered then, instaciating a new contract and getting a unique contract id to interact with this new certificate of deposit dApp.
@@ -149,6 +153,7 @@ Right after, a deploy is triggered then, instaciating a new contract and getting
 In this step, we make use of a complimentary function to load the wasm file and return a buffer. The function is the following one:
 
 {% code lineNumbers="true" fullWidth="false" %}
+
 ```typescript
 async function loadWasmFile(wasmFilePath: string): Promise<Buffer> {
   try {
@@ -159,6 +164,7 @@ async function loadWasmFile(wasmFilePath: string): Promise<Buffer> {
   }
 }
 ```
+
 {% endcode %}
 {% endhint %}
 
@@ -168,46 +174,48 @@ Now that we have a fresh new instance of the contract, we need to initialize its
 
 Then, we set the main parameters expected by the contract initialization. These parameters define the following characteristics for this instance of the CD:\\
 
-* **Admin**: codVault\
+- **Admin**: codVault\
   Defines which account can manage the CD contract and also receives and provides the funds from/to the users.
-* **Asset**: cakeToken's contract id\
+- **Asset**: cakeToken's contract id\
   The contract id of the Stellar Asset Contract for the wrapped Classic Asset this CD interacts with.
-* **Term**: 600 seconds\
+- **Term**: 600 seconds\
   For how long this CD will accrue interest to a open deposit position.
-* **Compound Step:** 4 seconds\
+- **Compound Step:** 4 seconds\
   How often will the interest be paid/compound. If set to '0', a different yield rate calculation is used and the interest rate will be applied linearly until the end of the term.
-* **Yield Rate**: 15 (0.15%)\
+- **Yield Rate**: 15 (0.15%)\
   How much interest will be paid out. For compounding interest, this means at every compound interval, while the linear rate will reach this rate at the end of the term.
-* **Minimum Deposit**: 100 units\
+- **Minimum Deposit**: 100 units\
   Minimum amount accepted for a deposit.
-* **Penalty Rate**: 5000 (50%)\
+- **Penalty Rate**: 5000 (50%)\
   If a user accepts the early withdraw, before the term is finished, this penalty rate will be applied to the earned interest. E.g. _A 200 units position (100 deposit + 100 earned yield) withdrawing early with a penalty rate of 50% will receive 150 units(100 deposit + 50 earned yield)_
 
 $$
 Withdrawn Amount=Deposit+(Yield−Penalty Rate×Yield)
 $$
 
-* **Allowance Period**: Latest ledger + 200.000\
+- **Allowance Period**: Latest ledger + 200.000\
   Defines until which ledger will the allowance, for the contract to access the codVault's funds, be valid.
 
 {% code overflow="wrap" lineNumbers="true" %}
+
 ```typescript
 const sorobanHandler = new StellarPlus.SorobanHandler(network)
 const expirationLedger = (await sorobanHandler.server.getLatestLedger()).sequence + 200000
 
-  const codParams = {
-    admin: codVault.getPublicKey(),
-    asset: cakeToken.sorobanTokenHandler.getContractId(),
-    term: BigInt(600),
-    compoundStep: BigInt(4),
-    yieldRate: BigInt(15),
-    minDeposit: BigInt(100 * 10 ** 7), // Multiple by the decimals
-    penaltyRate: BigInt(5000),
-    allowancePeriod: expirationLedger,
-  };
+const codParams = {
+  admin: codVault.getPublicKey(),
+  asset: cakeToken.sorobanTokenHandler.getContractId(),
+  term: BigInt(600),
+  compoundStep: BigInt(4),
+  yieldRate: BigInt(15),
+  minDeposit: BigInt(100 * 10 ** 7), // Multiple by the decimals
+  penaltyRate: BigInt(5000),
+  allowancePeriod: expirationLedger,
+}
 
 await codClient.initialize({ ...codParams, ...codTxInvocation })
 ```
+
 {% endcode %}
 
 ### User interacts with the contract
@@ -217,9 +225,10 @@ await codClient.initialize({ ...codParams, ...codTxInvocation })
 Just as we did before, we initialize user account and set up the necessary trustline and 'Transaction Invocation' object.\\
 
 {% code overflow="wrap" lineNumbers="true" %}
+
 ```typescript
 const userAccount = new StellarPlus.Account.DefaultAccountHandler({ networkConfig })
-await userAccount.friendbot?.initialize()
+await userAccount.initializeWithFriendbot()
 
 const userTxInvocation = {
   header: {
@@ -232,11 +241,12 @@ const userTxInvocation = {
 
 console.log('Depositing 10000 CAKE tokens to user account...')
 await cakeToken.classicHandler.addTrustlineAndMint({
-  to: userAccount.getPublicKey(), 
-  amount: 10000000, 
-  ...userTxInvocation
+  to: userAccount.getPublicKey(),
+  amount: 10000000,
+  ...userTxInvocation,
 })
 ```
+
 {% endcode %}
 
 #### Step 7: Deposit and check open position
@@ -244,6 +254,7 @@ await cakeToken.classicHandler.addTrustlineAndMint({
 The user then performs a deposit of 1000 CAKEs and right after, checks their open position in the CD.
 
 {% code overflow="wrap" lineNumbers="true" %}
+
 ```typescript
 await codClient.deposit({
   address: userAccount.getPublicKey(),
@@ -257,6 +268,7 @@ console.log(
     10 ** (await cakeToken.classicHandler.decimals())
 )
 ```
+
 {% endcode %}
 
 #### Step 8: Wait a few seconds and withdraw
@@ -264,6 +276,7 @@ console.log(
 After enough time has passed, we check the estimated yield that has accrued in the CD and perform an early withdrawal by accepting the penalty.
 
 {% code overflow="wrap" lineNumbers="true" %}
+
 ```typescript
 setTimeout(async () => {
   console.log(
@@ -279,6 +292,7 @@ setTimeout(async () => {
     ...userTxInvocation,
   })
 ```
+
 {% endcode %}
 
 ### Bonus
@@ -289,17 +303,15 @@ For this step just as a fun bonus, instead of using SDF's testnet RPC, we'll ins
 
 With your own key, we'll just go back to Step 4 and make some slight changes. We'll initialize a custom Validation Cloud RPC handler providing our API key. Then we just need to provide this handler and optional argument when initializing our CD client.\
 \
-Since the CD client extends the [contract-engine.md](../reference/core/contract-engine.md "mention"), it'll automatically ensure this handler is used to perform all direct interactions with the RPC such as simulating and submitting transactions.
+Since the CD client extends the [contract-engine.md](../reference/core/contract-engine.md 'mention'), it'll automatically ensure this handler is used to perform all direct interactions with the RPC such as simulating and submitting transactions.
 
 {% code overflow="wrap" lineNumbers="true" %}
+
 ```typescript
 const wasmFilePath = './src/wasm-files/certificates_of_deposit.optimized.wasm'
 const wasmBuffer = await loadWasmFile(wasmFilePath)
 
-const vcRpcHandler = new StellarPlus.RPC.ValidationCloudRpcHandler(
-  network,
-  '<YOUR API KEY>'
-)
+const vcRpcHandler = new StellarPlus.RPC.ValidationCloudRpcHandler(network, '<YOUR API KEY>')
 
 const codClient = new StellarPlus.Contracts.CertificateOfDeposit({
   networkConfig,
@@ -313,6 +325,7 @@ const codClient = new StellarPlus.Contracts.CertificateOfDeposit({
   },
 })
 ```
+
 {% endcode %}
 
 ### Complete Example
@@ -320,46 +333,47 @@ const codClient = new StellarPlus.Contracts.CertificateOfDeposit({
 Below is the complete code snippet, incorporating all the steps previously outlined and adding a few logging lines to visualize each step as it is executed. This example is structured within a single asynchronous function to accommodate the multiple asynchronous operations involved. By doing so, we can effectively use `await` for each step, ensuring that each operation is executed in a sequential and organized manner.
 
 {% code overflow="wrap" lineNumbers="true" %}
-```typescript
-import { readFile } from "fs/promises";
 
-import { StellarPlus } from "stellar-plus";
-import { FeeBumpWrapperPlugin } from "stellar-plus/lib/stellar-plus/utils/pipeline/plugins/submit-transaction/fee-bump";
+```typescript
+import { readFile } from 'fs/promises'
+
+import { StellarPlus } from 'stellar-plus'
+import { FeeBumpWrapperPlugin } from 'stellar-plus/lib/stellar-plus/utils/pipeline/plugins/submit-transaction/fee-bump'
 
 async function loadWasmFile(wasmFilePath: string): Promise<Buffer> {
   try {
-    const buffer = await readFile(wasmFilePath);
-    return buffer;
+    const buffer = await readFile(wasmFilePath)
+    return buffer
   } catch (error) {
-    throw error;
+    throw error
   }
 }
 
 const run = async (): Promise<void> => {
-  const networkConfig = StellarPlus.Constants.testnet;
+  const networkConfig = StellarPlus.Network.TestNet()
 
   const vcRpcHandler = new StellarPlus.RPC.ValidationCloudRpcHandler(
     networkConfig,
-    "fE2wTmrvoAaYkn_V9gRJ8Nw54ax7xF-c-BQYALsA0nI"
-  );
+    '<your api key>' // insert your API Key
+  )
 
   const issuer = new StellarPlus.Account.DefaultAccountHandler({
     networkConfig,
-  });
-  console.log("Initializing issuer account... ", issuer.getPublicKey());
-  await issuer.friendbot?.initialize();
+  })
+  console.log('Initializing issuer account... ', issuer.getPublicKey())
+  await issuer.initializeWithFriendbot()
 
   const issuerTxInvocation = {
     header: {
       source: issuer.getPublicKey(),
-      fee: "10000000", //1 XLM as maximum fee
+      fee: '10000000', //1 XLM as maximum fee
       timeout: 45,
     },
     signers: [issuer],
-  };
+  }
 
   const cakeToken = new StellarPlus.Asset.SACHandler({
-    code: "CAKE",
+    code: 'CAKE',
     networkConfig,
     issuerAccount: issuer,
     options: {
@@ -367,45 +381,39 @@ const run = async (): Promise<void> => {
         customRpcHandler: vcRpcHandler,
       },
     },
-  });
+  })
 
-  console.log("Wrapping Asset in SAC...");
-  await cakeToken.wrapAndDeploy(issuerTxInvocation);
-  console.log(
-    "Wrapped Asset Contract ID: ",
-    cakeToken.sorobanTokenHandler.getContractId()
-  );
+  console.log('Wrapping Asset in SAC...')
+  await cakeToken.wrapAndDeploy(issuerTxInvocation)
+  console.log('Wrapped Asset Contract ID: ', cakeToken.sorobanTokenHandler.getContractId())
 
-  console.log("Initializing Certificate of Deposit vault account...");
+  console.log('Initializing Certificate of Deposit vault account...')
   const codVault = new StellarPlus.Account.DefaultAccountHandler({
     networkConfig,
-  });
-  await codVault.friendbot?.initialize();
+  })
+  await codVault.initializeWithFriendbot()
 
   const codTxInvocation = {
     header: {
       source: codVault.getPublicKey(),
-      fee: "1000000", //0.1 XLM as maximum fee
+      fee: '1000000', //0.1 XLM as maximum fee
       timeout: 45,
     },
     signers: [codVault],
-  };
+  }
 
-  console.log("Adding trustline and tokens to Certificate of Deposit vault...");
+  console.log('Adding trustline and tokens to Certificate of Deposit vault...')
   await cakeToken.classicHandler.addTrustlineAndMint({
     to: codVault.getPublicKey(),
     amount: 10000000,
     ...codTxInvocation,
-  });
+  })
 
-  console.log(
-    "Vault Balance:",
-    await cakeToken.classicHandler.balance(codVault.getPublicKey())
-  );
+  console.log('Vault Balance:', await cakeToken.classicHandler.balance(codVault.getPublicKey()))
 
-  console.log("Loading Wasm file...");
-  const wasmFilePath = "./src/wasm-files/certificates_of_deposit.wasm";
-  const wasmBuffer = await loadWasmFile(wasmFilePath);
+  console.log('Loading Wasm file...')
+  const wasmFilePath = './src/wasm-files/certificates_of_deposit.wasm'
+  const wasmBuffer = await loadWasmFile(wasmFilePath)
 
   const codClient = new StellarPlus.ContractClients.CertificateOfDeposit({
     networkConfig,
@@ -417,17 +425,16 @@ const run = async (): Promise<void> => {
         customRpcHandler: vcRpcHandler,
       },
     },
-  });
+  })
 
-  console.log("Uploading wasm to network...");
-  await codClient.uploadWasm(codTxInvocation);
+  console.log('Uploading wasm to network...')
+  await codClient.uploadWasm(codTxInvocation)
 
-  console.log("Deploying new instance of contract...");
-  await codClient.deploy(codTxInvocation);
+  console.log('Deploying new instance of contract...')
+  await codClient.deploy(codTxInvocation)
 
-  const sorobanHandler = new StellarPlus.SorobanHandler(networkConfig);
-  const expirationLedger =
-    (await sorobanHandler.server.getLatestLedger()).sequence + 200000;
+  const sorobanHandler = new StellarPlus.SorobanHandler(networkConfig)
+  const expirationLedger = (await sorobanHandler.server.getLatestLedger()).sequence + 200000
 
   const codParams = {
     admin: codVault.getPublicKey(),
@@ -438,81 +445,72 @@ const run = async (): Promise<void> => {
     minDeposit: BigInt(100 * 10 ** 7),
     penaltyRate: BigInt(5000),
     allowancePeriod: expirationLedger,
-  };
+  }
 
-  console.log("initializing contract's state...");
-  await codClient.initialize({ ...codParams, ...codTxInvocation });
+  console.log("initializing contract's state...")
+  await codClient.initialize({ ...codParams, ...codTxInvocation })
 
-  console.log("Crreating user account...");
+  console.log('Creating user account...')
   const userAccount = new StellarPlus.Account.DefaultAccountHandler({
     networkConfig,
-  });
-  await userAccount.friendbot?.initialize();
+  })
+  await userAccount.initializeWithFriendbot()
 
   const userTxInvocation = {
     header: {
       source: userAccount.getPublicKey(),
-      fee: "1000000", //0.1 XLM as maximum fee
+      fee: '1000000', //0.1 XLM as maximum fee
       timeout: 45,
     },
     signers: [userAccount],
-  };
+  }
 
-  console.log("Depositing 10000 CAKE tokens to user account...");
+  console.log('Depositing 10000 CAKE tokens to user account...')
   await cakeToken.classicHandler.addTrustlineAndMint({
     to: userAccount.getPublicKey(),
     amount: 10000000,
     ...userTxInvocation,
-  });
+  })
 
-  console.log(
-    "User Balance(CAKE):",
-    await cakeToken.classicHandler.balance(userAccount.getPublicKey())
-  );
+  console.log('User Balance(CAKE):', await cakeToken.classicHandler.balance(userAccount.getPublicKey()))
 
-  console.log(
-    "User Deposits 1000 CAKE tokens to Certificate of Deposit vault..."
-  );
+  console.log('User Deposits 1000 CAKE tokens to Certificate of Deposit vault...')
   await codClient.deposit({
     address: userAccount.getPublicKey(),
     amount: BigInt(1000 * 10 ** 7),
     ...userTxInvocation,
-  });
+  })
 
   console.log(
-    "User position in the certificate of deposit: ",
+    'User position in the certificate of deposit: ',
     (await codClient.getPosition({
       address: userAccount.getPublicKey(),
       ...userTxInvocation,
     })) /
       10 ** (await cakeToken.classicHandler.decimals())
-  );
+  )
 
-  console.log("Waiting 5 seconds...");
+  console.log('Waiting 5 seconds...')
   setTimeout(async () => {
     console.log(
-      "User has earned and estimated yield of:",
+      'User has earned and estimated yield of:',
       (await codClient.getEstimatedYield({
         address: userAccount.getPublicKey(),
         ...userTxInvocation,
       })) /
         10 ** (await cakeToken.classicHandler.decimals())
-    );
-    console.log(
-      "User withdraws from Certificate of Deposit vault (with early withdrawal penalty)..."
-    );
+    )
+    console.log('User withdraws from Certificate of Deposit vault (with early withdrawal penalty)...')
     await codClient.withdraw({
       address: userAccount.getPublicKey(),
       acceptPrematureWithdraw: true,
       ...userTxInvocation,
-    });
+    })
 
-    console.log(
-      "User Balance(CAKE):",
-      await cakeToken.classicHandler.balance(userAccount.getPublicKey())
-    );
-  }, 10000);
-};
-run();
+    console.log('User Balance(CAKE):', await cakeToken.classicHandler.balance(userAccount.getPublicKey()))
+  }, 10000)
+}
+run()
 ```
+
 {% endcode %}

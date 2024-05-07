@@ -49,7 +49,7 @@ const codClient = new StellarPlus.Contracts.CertificateOfDeposit({
 })
 ```
 
-For a complete example using the Validation Cloud RPC integration, refer to the [E2E Certificate of Deposit demo tutorial](../../../tutorials/e2e-certificate-of-deposit-demo.md).&#x20;
+For a complete example using the Validation Cloud RPC integration, refer to the [E2E Certificate of Deposit demo tutorial](../../tutorials/e2e-certificate-of-deposit-demo.md).&#x20;
 
 ### Reference
 

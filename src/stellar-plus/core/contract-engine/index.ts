@@ -43,7 +43,7 @@ import {
 import { SorobanTransactionPipelineOutput } from '../pipelines/soroban-transaction/types'
 
 export class ContractEngine {
-  private spec: ContractSpec
+  private spec?: ContractSpec
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
@@ -245,19 +245,20 @@ export class ContractEngine {
     simulateOnly: boolean = false
   ): Promise<SorobanTransactionPipelineOutput> {
     this.requireContractId()
+    this.requireSpec()
 
     const { method, methodArgs } = args
     const txInvocation = { ...(args as SorobanInvokeArgs<object>) } as TransactionInvocation
 
-    const encodedArgs = this.spec.funcArgsToScVals(method, methodArgs)
+    const encodedArgs = this.spec!.funcArgsToScVals(method, methodArgs) // Spec verified in requireSpec
 
     const contract = new Contract(this.contractId!) // Contract Id verified in requireContractId
     const contractCallOperation = contract.call(method, ...encodedArgs)
 
     const executionPlugins = [
       ...(simulateOnly
-        ? [new ExtractInvocationOutputFromSimulationPlugin(this.spec, method)]
-        : [new ExtractInvocationOutputPlugin(this.spec, method)]),
+        ? [new ExtractInvocationOutputFromSimulationPlugin(this.spec!, method)]
+        : [new ExtractInvocationOutputPlugin(this.spec!, method)]),
       ...(txInvocation.executionPlugins || []),
     ]
 
@@ -409,6 +410,12 @@ export class ContractEngine {
   private requireWasmHash(): void {
     if (!this.wasmHash) {
       throw CEError.missingWasmHash()
+    }
+  }
+
+  private requireSpec(): void {
+    if (!this.spec) {
+      throw CEError.missingSpec()
     }
   }
 

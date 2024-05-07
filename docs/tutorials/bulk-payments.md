@@ -21,13 +21,13 @@ In this tutorial, we'll demonstrate how to execute bulk payments on the Stellar 
 The first step in our bulk payments example is to initialize an account to cover the operational expenditure, here, we're naming it the opex account. This account plays a crucial role in managing the operations of our bulk payment process.
 
 ```typescript
-const networkConfig = StellarPlus.Constants.testnet;
+const networkConfig = StellarPlus.Network.TestNet();
 
 console.log("Initializing opex account");
 const opexAccount = new StellarPlus.Account.DefaultAccountHandler({
   networkConfig,
 });
-await opex.friendbot?.initialize();
+await opex.initializeWithFriendbot();
 
 ```
 
@@ -84,12 +84,12 @@ Following the setup of the transaction submitter and channel accounts, the next 
 const issuerAccount = new StellarPlus.Account.DefaultAccountHandler({
   networkConfig,
 });
-await issuerAccount.friendbot?.initialize();
+await issuerAccount.initializeWithFriendbot();
 
 const userAccount = new StellarPlus.Account.DefaultAccountHandler({
   networkConfig,
 });
-await userAccount.friendbot?.initialize();
+await userAccount.initializeWithFriendbot();
 ```
 
 #### Explanation:
@@ -240,13 +240,13 @@ import { ChannelAccountsPluginConstructorArgs } from "stellar-plus/lib/stellar-p
 import { FeeBumpWrapperPlugin } from "stellar-plus/lib/stellar-plus/utils/pipeline/plugins/submit-transaction/fee-bump";
 
 const run = async () => {
-  const networkConfig = StellarPlus.Constants.testnet;
+  const networkConfig = StellarPlus.Network.TestNet();
 
   console.log("Initializing opex account");
   const opex = new StellarPlus.Account.DefaultAccountHandler({
     networkConfig,
   });
-  await opex.friendbot?.initialize();
+  await opex.initializeWithFriendbot();
 
   const defaultFeeBump = {
     header: {
@@ -275,14 +275,14 @@ const run = async () => {
   const issuerAccount = new StellarPlus.Account.DefaultAccountHandler({
     networkConfig,
   });
-  await issuerAccount.friendbot?.initialize();
+  await issuerAccount.initializeWithFriendbot();
 
   console.log("Initializing userAccount account");
   const userAccount = new StellarPlus.Account.DefaultAccountHandler({
     networkConfig,
   });
 
-  await userAccount.friendbot?.initialize();
+  await userAccount.initializeWithFriendbot();
 
   const txInvocationConfig = {
     header: {

@@ -17,7 +17,7 @@ type SorobanGetTransactionPipelineInput = {
 ```
 
 * **sorobanSubmission**: The successful response provided after submitting a soroban transaction. Refer to the Submit Transaction pipeline for further details.
-* **rpcHandler**: The RPC handler to be used when communicating with the RPC. Refer to the [rpc](../../network-handler/rpc/ "mention")section for further details.
+* **rpcHandler**: The RPC handler to be used when communicating with the RPC. Refer to the [rpc](../../rpc/ "mention")section for further details.
 * **transactionEnvelope**: Optional transaction object to serve as a reference within the pipeline.
 
 ## Output
