@@ -10,49 +10,22 @@ export enum ContractEngineErrorCodes {
   CE004 = 'CE004',
   CE005 = 'CE005',
   CE006 = 'CE006',
-  CE007 = 'CE007',
-  CE008 = 'CE008',
-  CE009 = 'CE009',
 
   // CE1 Meta
   CE101 = 'CE101',
   CE102 = 'CE102',
   CE103 = 'CE103',
-}
 
-const missingContractId = (): StellarPlusError => {
-  return new StellarPlusError({
-    code: ContractEngineErrorCodes.CE001,
-    message: 'Missing contract ID!',
-    source: 'ContractEngine',
-    details:
-      "Missing contract ID! This function requires a contract Id to be defined in this instance. You can either initialize the contract engine with a contract ID or use the 'deploy' function to deploy a new instance of the contract, which will automatically set the new contract Id for this instance.",
-  })
-}
-
-const missingWasm = (): StellarPlusError => {
-  return new StellarPlusError({
-    code: ContractEngineErrorCodes.CE002,
-    message: 'Missing wasm!',
-    source: 'ContractEngine',
-    details:
-      'Missing wasm! This function requires a buffer of the wasm file to be defined in this instance. You need to initialize the contract engine with a wasm file buffer.',
-  })
-}
-
-const missingWasmHash = (): StellarPlusError => {
-  return new StellarPlusError({
-    code: ContractEngineErrorCodes.CE003,
-    message: 'Missing wasm hash!',
-    source: 'ContractEngine',
-    details:
-      "Missing wasm hash! This function requires a wasm hash to be defined in this instance. You can either initialize the contract engine with a wasm hash or use the 'uploadWasm' function to upload a new wasm file, which will automatically set the new wasm hash for this instance.",
-  })
+  // CE2 Missing parameters
+  CE201 = 'CE201',
+  CE202 = 'CE202',
+  CE203 = 'CE203',
+  CE204 = 'CE204',
 }
 
 const contractIdAlreadySet = (): StellarPlusError => {
   return new StellarPlusError({
-    code: ContractEngineErrorCodes.CE004,
+    code: ContractEngineErrorCodes.CE001,
     message: 'Contract ID already set!',
     source: 'ContractEngine',
     details:
@@ -62,7 +35,7 @@ const contractIdAlreadySet = (): StellarPlusError => {
 
 const contractInstanceNotFound = (ledgerEntries: SorobanRpc.Api.GetLedgerEntriesResponse): StellarPlusError => {
   return new StellarPlusError({
-    code: ContractEngineErrorCodes.CE005,
+    code: ContractEngineErrorCodes.CE002,
     message: 'Contract instance not found!',
     source: 'ContractEngine',
     details:
@@ -75,7 +48,7 @@ const contractInstanceMissingLiveUntilLedgerSeq = (
   ledgerEntries?: SorobanRpc.Api.GetLedgerEntriesResponse
 ): StellarPlusError => {
   return new StellarPlusError({
-    code: ContractEngineErrorCodes.CE006,
+    code: ContractEngineErrorCodes.CE003,
     message: 'Contract instance missing live_until_ledger_seq!',
     source: 'ContractEngine',
     details:
@@ -86,7 +59,7 @@ const contractInstanceMissingLiveUntilLedgerSeq = (
 
 const contractCodeNotFound = (ledgerEntries: SorobanRpc.Api.GetLedgerEntriesResponse): StellarPlusError => {
   return new StellarPlusError({
-    code: ContractEngineErrorCodes.CE007,
+    code: ContractEngineErrorCodes.CE004,
     message: 'Contract code not found!',
     source: 'ContractEngine',
     details:
@@ -99,7 +72,7 @@ const contractCodeMissingLiveUntilLedgerSeq = (
   ledgerEntries?: SorobanRpc.Api.GetLedgerEntriesResponse
 ): StellarPlusError => {
   return new StellarPlusError({
-    code: ContractEngineErrorCodes.CE008,
+    code: ContractEngineErrorCodes.CE005,
     message: 'Contract code missing live_until_ledger_seq!',
     source: 'ContractEngine',
     details:
@@ -110,7 +83,7 @@ const contractCodeMissingLiveUntilLedgerSeq = (
 
 const contractEngineClassFailedToInitialize = (): StellarPlusError => {
   return new StellarPlusError({
-    code: ContractEngineErrorCodes.CE009,
+    code: ContractEngineErrorCodes.CE006,
     message: 'Contract engine class failed to initialize!',
     source: 'ContractEngine',
     details:
@@ -150,10 +123,47 @@ const failedToWrapAsset = (error: StellarPlusError): StellarPlusError => {
   })
 }
 
+const missingContractId = (): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE201,
+    message: 'Missing contract ID!',
+    source: 'ContractEngine',
+    details:
+      "Missing contract ID! This function requires a contract Id to be defined in this instance. You can either initialize the contract engine with a contract ID or use the 'deploy' function to deploy a new instance of the contract, which will automatically set the new contract Id for this instance.",
+  })
+}
+
+const missingWasm = (): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE202,
+    message: 'Missing wasm!',
+    source: 'ContractEngine',
+    details:
+      'Missing wasm! This function requires a buffer of the wasm file to be defined in this instance. You need to initialize the contract engine with a wasm file buffer.',
+  })
+}
+
+const missingWasmHash = (): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE203,
+    message: 'Missing wasm hash!',
+    source: 'ContractEngine',
+    details:
+      "Missing wasm hash! This function requires a wasm hash to be defined in this instance. You can either initialize the contract engine with a wasm hash or use the 'uploadWasm' function to upload a new wasm file, which will automatically set the new wasm hash for this instance.",
+  })
+}
+
+const missingSpec = (): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE204,
+    message: 'Missing spec!',
+    source: 'ContractEngine',
+    details:
+      'Missing spec! This function requires a spec to be defined in this instance. You need to initialize the contract engine with a spec.',
+  })
+}
+
 export const CEError = {
-  missingContractId,
-  missingWasm,
-  missingWasmHash,
   contractIdAlreadySet,
   contractInstanceNotFound,
   contractInstanceMissingLiveUntilLedgerSeq,
@@ -163,4 +173,8 @@ export const CEError = {
   failedToUploadWasm,
   failedToDeployContract,
   failedToWrapAsset,
+  missingContractId,
+  missingWasm,
+  missingWasmHash,
+  missingSpec,
 }
