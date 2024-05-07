@@ -10,7 +10,7 @@ import { EnvelopeHeader, FeeBumpHeader, NetworkConfig, TransactionInvocation } f
 export type ContractEngineConstructorArgs = {
   networkConfig: NetworkConfig
   contractParameters: {
-    spec: ContractSpec
+    spec?: ContractSpec
     contractId?: string
     wasm?: Buffer
     wasmHash?: string

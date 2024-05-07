@@ -150,6 +150,23 @@ describe('ContractEngine', () => {
         CEError.missingContractId()
       )
     })
+
+    it('should throw if spec is required but not present', async () => {
+      const contractEngine = new ContractEngine({
+        networkConfig: NETWORK_CONFIG,
+        contractParameters: {
+          contractId: MOCKED_CONTRACT_ID,
+        },
+      })
+
+      await expect(() =>
+        contractEngine.readFromContract({
+          method: tokenMethods.name,
+          methodArgs: {},
+          ...MOCKED_TX_INVOCATION,
+        })
+      ).rejects.toThrow(CEError.missingSpec())
+    })
   })
 
   describe('Initialization workflow', () => {

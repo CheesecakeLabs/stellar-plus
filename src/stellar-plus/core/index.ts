@@ -1,3 +1,5 @@
+import { ContractSpec } from '@stellar/stellar-sdk'
+
 import { ContractEngine } from './contract-engine'
 import { BuildTransactionPipeline } from './pipelines/build-transaction'
 import { ClassicSignRequirementsPipeline } from './pipelines/classic-sign-requirements'
@@ -22,4 +24,5 @@ export const Core = {
     SubmitTransaction: SubmitTransactionPipeline,
   },
   ContractEngine: ContractEngine,
+  ContractSpec,
 }
