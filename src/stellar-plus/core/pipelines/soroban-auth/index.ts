@@ -83,7 +83,14 @@ export class SorobanAuthPipeline extends ConveyorBelt<
 
     let updatedTransaction
     try {
-      updatedTransaction = this.updateTransaction(transaction, authEntries, simulation.transactionData)
+      updatedTransaction = this.updateTransaction(
+        transaction,
+        [
+          ...this.getSourceCredentialAuth(simulation.result?.auth), // Reinject unsigned source credentials. These are signed in the classic signing pipeline
+          ...authEntries,
+        ],
+        simulation.transactionData
+      )
     } catch (error) {
       throw PSAError.couldntUpdateTransaction(
         error as Error,
@@ -179,6 +186,15 @@ export class SorobanAuthPipeline extends ConveyorBelt<
       ? authEntries.filter((entry) => {
           const credentials = entry.credentials()
           return credentials.switch() !== xdr.SorobanCredentialsType.sorobanCredentialsSourceAccount()
+        })
+      : []
+  }
+
+  protected getSourceCredentialAuth(authEntries?: xdr.SorobanAuthorizationEntry[]): xdr.SorobanAuthorizationEntry[] {
+    return authEntries
+      ? authEntries.filter((entry) => {
+          const credentials = entry.credentials()
+          return credentials.switch() === xdr.SorobanCredentialsType.sorobanCredentialsSourceAccount()
         })
       : []
   }
