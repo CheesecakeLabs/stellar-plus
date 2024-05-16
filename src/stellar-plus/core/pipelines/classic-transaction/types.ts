@@ -1,10 +1,22 @@
 import { xdr } from '@stellar/stellar-sdk'
 import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
 
-import { BuildTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/build-transaction/types'
-import { ClassicSignRequirementsPipelinePlugin } from 'stellar-plus/core/pipelines/classic-sign-requirements/types'
-import { SignTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/sign-transaction/types'
-import { SubmitTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/submit-transaction/types'
+import {
+  BuildTransactionPipelineOutput,
+  BuildTransactionPipelinePlugin,
+} from 'stellar-plus/core/pipelines/build-transaction/types'
+import {
+  ClassicSignRequirementsPipelineOutput,
+  ClassicSignRequirementsPipelinePlugin,
+} from 'stellar-plus/core/pipelines/classic-sign-requirements/types'
+import {
+  SignTransactionPipelineOutput,
+  SignTransactionPipelinePlugin,
+} from 'stellar-plus/core/pipelines/sign-transaction/types'
+import {
+  SubmitTransactionPipelineOutput,
+  SubmitTransactionPipelinePlugin,
+} from 'stellar-plus/core/pipelines/submit-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/types'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'
 import { BeltPluginType, GenericPlugin } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
@@ -18,10 +30,26 @@ export type ClassicTransactionPipelineInput = {
   operations: xdr.Operation[]
   options?: {
     executionPlugins?: SupportedInnerPlugins[]
+    includeHashOutput?: boolean
+    verboseOutput?: boolean
   }
 }
 
-export type ClassicTransactionPipelineOutput = { response: HorizonApi.SubmitTransactionResponse }
+export type ClassicTransactionPipelineOutput =
+  | ClassicTransactionPipelineOutputSimple
+  | ClassicTransactionPipelineOutputVerbose
+export type ClassicTransactionPipelineOutputSimple = { response: HorizonApi.SubmitTransactionResponse }
+export type ClassicTransactionPipelineOutputVerbose = (VerboseOutput | undefined) & {
+  classicTransactionOutput: ClassicTransactionPipelineOutputSimple
+  hash?: string
+}
+
+export type VerboseOutput = {
+  buildTransactionPipelineOutput: BuildTransactionPipelineOutput
+  classicSignRequirementsPipelineOutput: ClassicSignRequirementsPipelineOutput
+  signTransactionPipelineOutput: SignTransactionPipelineOutput
+  submitTransactionPipelineOutput: SubmitTransactionPipelineOutput
+}
 
 export type SupportedInnerPlugins =
   | BuildTransactionPipelinePlugin

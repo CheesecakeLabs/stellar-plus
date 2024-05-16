@@ -7,7 +7,10 @@ import {
 } from 'stellar-plus/asset/classic/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
 import { ClassicTransactionPipeline } from 'stellar-plus/core/pipelines/classic-transaction'
-import { ClassicTransactionPipelineOptions } from 'stellar-plus/core/pipelines/classic-transaction/types'
+import {
+  ClassicTransactionPipelineOptions,
+  ClassicTransactionPipelineOutputSimple,
+} from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { HorizonHandlerClient as HorizonHandler } from 'stellar-plus/horizon'
 
@@ -231,10 +234,10 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: this.asset.getIssuer(),
     })
 
-    const result = await this.classicTransactionPipeline.execute({
+    const result = (await this.classicTransactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [mintOp],
-    })
+    })) as ClassicTransactionPipelineOutputSimple
 
     return result.response
   }
@@ -290,10 +293,10 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: this.asset.getIssuer(),
     })
 
-    const result = await this.classicTransactionPipeline.execute({
+    const result = (await this.classicTransactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [addTrustlineOp, mintOp],
-    })
+    })) as ClassicTransactionPipelineOutputSimple
 
     return result.response
   }
@@ -323,10 +326,10 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       asset: this.asset,
     })
 
-    const result = await this.classicTransactionPipeline.execute({
+    const result = (await this.classicTransactionPipeline.execute({
       txInvocation,
       operations: [addTrustlineOp],
-    })
+    })) as ClassicTransactionPipelineOutputSimple
 
     return result.response
   }
