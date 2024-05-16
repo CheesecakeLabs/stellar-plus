@@ -2,8 +2,8 @@ import { ContractSpec, SorobanDataBuilder, Asset as StellarAsset, xdr } from '@s
 
 import { AccountHandler } from 'stellar-plus/account'
 import {
+  SorobanTransactionPipelineInput,
   SorobanTransactionPipelineOptions,
-  SupportedInnerPlugins,
 } from 'stellar-plus/core/pipelines/soroban-transaction/types'
 import { EnvelopeHeader, FeeBumpHeader, NetworkConfig, TransactionInvocation } from 'stellar-plus/types'
 
@@ -44,7 +44,7 @@ export type SorobanSimulateArgs<T> = {
   method: string
   methodArgs: T
   header: EnvelopeHeader
-  executionPlugins?: SupportedInnerPlugins[]
+  options?: SorobanTransactionPipelineInput['options']
 }
 
 export type SorobanUploadArgs = TransactionInvocation & {

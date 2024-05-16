@@ -174,9 +174,11 @@ describe('ContractEngine', () => {
       MOCKED_SOROBAN_TRANSACTION_PIPELINE.mockImplementation(() => {
         return {
           execute: jest.fn().mockResolvedValue({
-            output: {
-              wasmHash: MOCKED_WASM_HASH,
-            } as ContractWasmHashOutput,
+            sorobanGetTransactionPipelineOutput: {
+              output: {
+                wasmHash: MOCKED_WASM_HASH,
+              } as ContractWasmHashOutput,
+            },
           }),
         }
       })
@@ -197,9 +199,11 @@ describe('ContractEngine', () => {
       MOCKED_SOROBAN_TRANSACTION_PIPELINE.mockImplementation(() => {
         return {
           execute: jest.fn().mockResolvedValue({
-            output: {
-              contractId: MOCKED_CONTRACT_ID,
-            } as ContractIdOutput,
+            sorobanGetTransactionPipelineOutput: {
+              output: {
+                contractId: MOCKED_CONTRACT_ID,
+              } as ContractIdOutput,
+            },
           }),
         }
       })
@@ -491,9 +495,11 @@ describe('ContractEngine', () => {
       MOCKED_SOROBAN_TRANSACTION_PIPELINE.mockImplementation(() => {
         return {
           execute: jest.fn().mockResolvedValue({
-            output: {
-              contractId: MOCKED_CONTRACT_ID,
-            } as ContractIdOutput,
+            sorobanGetTransactionPipelineOutput: {
+              output: {
+                contractId: MOCKED_CONTRACT_ID,
+              } as ContractIdOutput,
+            },
           }),
         }
       })
@@ -617,9 +623,7 @@ describe('ContractEngine', () => {
     it('should invoke a contract', async () => {
       MOCKED_SOROBAN_TRANSACTION_PIPELINE.mockImplementation(() => {
         return {
-          execute: jest.fn().mockResolvedValue({
-            output: { value: true },
-          }),
+          execute: jest.fn().mockResolvedValue(true),
         }
       })
 
@@ -637,7 +641,7 @@ describe('ContractEngine', () => {
     it('should read from a contract', async () => {
       MOCKED_SOROBAN_TRANSACTION_PIPELINE.mockImplementation(() => {
         return {
-          execute: jest.fn().mockResolvedValue({ output: { value: true } }),
+          execute: jest.fn().mockResolvedValue(true),
         }
       })
 

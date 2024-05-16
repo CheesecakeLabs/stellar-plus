@@ -9,7 +9,6 @@ export enum ContractEngineErrorCodes {
   CE003 = 'CE003',
   CE004 = 'CE004',
   CE005 = 'CE005',
-  CE006 = 'CE006',
 
   // CE1 Meta
   CE101 = 'CE101',
@@ -78,16 +77,6 @@ const contractCodeMissingLiveUntilLedgerSeq = (
     details:
       'Contract code missing live_until_ledger_seq! The contract code is missing the live_until_ledger_seq property. Please verify the contract wasm hash and make sure the contract wasm has been uploaded to the Stellar network.',
     meta: { data: { ledgerEntries } },
-  })
-}
-
-const contractEngineClassFailedToInitialize = (): StellarPlusError => {
-  return new StellarPlusError({
-    code: ContractEngineErrorCodes.CE006,
-    message: 'Contract engine class failed to initialize!',
-    source: 'ContractEngine',
-    details:
-      'Contract engine class failed to initialize because of missing parameters! The Contract Engine must be initialized with either the wasm file, the wasm hash, or the contract ID. Please review the initialization parameters and try again.',
   })
 }
 
@@ -169,7 +158,6 @@ export const CEError = {
   contractInstanceMissingLiveUntilLedgerSeq,
   contractCodeNotFound,
   contractCodeMissingLiveUntilLedgerSeq,
-  contractEngineClassFailedToInitialize,
   failedToUploadWasm,
   failedToDeployContract,
   failedToWrapAsset,
