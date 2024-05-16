@@ -1,12 +1,10 @@
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
-import { SupportedInnerPlugins as SorobanTransactionExecutionPlugin } from 'stellar-plus/core/pipelines/soroban-transaction/types'
 
 export type TransactionInvocation = {
   signers: AccountHandler[]
   header: EnvelopeHeader
   feeBump?: FeeBumpHeader
   sponsor?: AccountHandler
-  executionPlugins?: SorobanTransactionExecutionPlugin[]
 }
 
 export type SorobanSimulationInvocation = {

@@ -4,9 +4,12 @@ import {
   ClassicTransactionPipelineInput,
   ClassicTransactionPipelineOptions,
   ClassicTransactionPipelineOutput,
+  ClassicTransactionPipelineOutputSimple,
+  ClassicTransactionPipelineOutputVerbose,
   ClassicTransactionPipelinePlugin,
   ClassicTransactionPipelineType,
   SupportedInnerPlugins,
+  VerboseOutput,
 } from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { SignTransactionPipeline } from 'stellar-plus/core/pipelines/sign-transaction'
 import {
@@ -126,6 +129,28 @@ export class ClassicTransactionPipeline extends MultiBeltPipeline<
       itemId
     )
 
-    return submissionResult as ClassicTransactionPipelineOutput
+    if (this.isSimpleOutput(options)) {
+      return submissionResult as ClassicTransactionPipelineOutputSimple
+    }
+
+    const verboseOutput = options?.verboseOutput
+      ? ({
+          buildTransactionPipelineOutput: builtTx,
+          classicSignRequirementsPipelineOutput: classicSignatureRequirements,
+          signTransactionPipelineOutput: signedTransaction,
+          submitTransactionPipelineOutput: submissionResult,
+        } as VerboseOutput)
+      : {}
+
+    return {
+      ...verboseOutput,
+      classicTransactionOutput: submissionResult as ClassicTransactionPipelineOutputSimple,
+      hash: options?.includeHashOutput ? submissionResult.response.hash : undefined,
+    } as ClassicTransactionPipelineOutputVerbose
+  }
+
+  // expand with other options in the future that might require verbose output
+  protected isSimpleOutput(options: ClassicTransactionPipelineInput['options']): boolean {
+    return !options?.includeHashOutput && !options?.verboseOutput
   }
 }

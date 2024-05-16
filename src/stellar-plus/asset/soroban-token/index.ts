@@ -4,6 +4,7 @@ import { spec as defaultSpec, methods } from 'stellar-plus/asset/soroban-token/c
 import { SorobanTokenHandlerConstructorArgs, SorobanTokenInterface } from 'stellar-plus/asset/soroban-token/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
 import { ContractEngine } from 'stellar-plus/core/contract-engine'
+import { SorobanTransactionPipelineOutputSimple } from 'stellar-plus/core/pipelines/soroban-transaction/types'
 import { SorobanSimulationInvocation, TransactionInvocation } from 'stellar-plus/core/types'
 import { i128, u32 } from 'stellar-plus/types'
 
@@ -51,11 +52,11 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    *
    * @description Initialize the contract instance with the given parameters.
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<SorobanTransactionPipelineOutputSimple>}
    */
   public async initialize(
     args: { admin: string; decimal: u32; name: string; symbol: string } & TransactionInvocation
-  ): Promise<void> {
+  ): Promise<SorobanTransactionPipelineOutputSimple> {
     return (await this.invokeContract({
       method: methods.initialize,
       methodArgs: {
@@ -67,7 +68,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
       signers: args.signers,
       header: args.header,
       feeBump: args.feeBump,
-    })) as void
+    })) as SorobanTransactionPipelineOutputSimple
   }
 
   //==========================================
@@ -86,11 +87,13 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    *
    * @description Set a new admin account for the contract.
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<SorobanTransactionPipelineOutputSimple>}
    *
    * @requires {args.id} to be the current admin account
    */
-  public async setAdmin(args: { id: string; new_admin: string } & TransactionInvocation): Promise<void> {
+  public async setAdmin(
+    args: { id: string; new_admin: string } & TransactionInvocation
+  ): Promise<SorobanTransactionPipelineOutputSimple> {
     return (await this.invokeContract({
       method: methods.set_admin,
       methodArgs: {
@@ -100,7 +103,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
       signers: args.signers,
       header: args.header,
       feeBump: args.feeBump,
-    })) as void
+    })) as SorobanTransactionPipelineOutputSimple
   }
 
   /**
@@ -133,11 +136,13 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    *
    * @description Authorize or deauthorize an account to interact with the contract.
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<SorobanTransactionPipelineOutputSimple>}
    *
    * @requires - Authorization from the admin account
    */
-  public async setAuthorized(args: { id: string; authorize: boolean } & TransactionInvocation): Promise<void> {
+  public async setAuthorized(
+    args: { id: string; authorize: boolean } & TransactionInvocation
+  ): Promise<SorobanTransactionPipelineOutputSimple> {
     return (await this.invokeContract({
       method: methods.set_authorized,
       methodArgs: {
@@ -147,7 +152,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
       signers: args.signers,
       header: args.header,
       feeBump: args.feeBump,
-    })) as void
+    })) as SorobanTransactionPipelineOutputSimple
   }
 
   /**
@@ -162,11 +167,13 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    *
    * @description Mint tokens to an account.
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<SorobanTransactionPipelineOutputSimple>}
    *
    * @requires - Authorization from the admin account
    */
-  public async mint(args: { to: string; amount: i128 } & TransactionInvocation): Promise<void> {
+  public async mint(
+    args: { to: string; amount: i128 } & TransactionInvocation
+  ): Promise<SorobanTransactionPipelineOutputSimple> {
     return (await this.invokeContract({
       method: methods.mint,
       methodArgs: {
@@ -176,7 +183,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
       signers: args.signers,
       header: args.header,
       feeBump: args.feeBump,
-    })) as void
+    })) as SorobanTransactionPipelineOutputSimple
   }
 
   /**
@@ -191,11 +198,13 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    *
    * @description Clawback tokens from an account.
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<SorobanTransactionPipelineOutputSimple>}
    *
    * @requires - Authorization from the admin account
    */
-  public async clawback(args: { from: string; amount: i128 } & TransactionInvocation): Promise<void> {
+  public async clawback(
+    args: { from: string; amount: i128 } & TransactionInvocation
+  ): Promise<SorobanTransactionPipelineOutputSimple> {
     return (await this.invokeContract({
       method: methods.clawback,
       methodArgs: {
@@ -205,7 +214,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
       signers: args.signers,
       header: args.header,
       feeBump: args.feeBump,
-    })) as void
+    })) as SorobanTransactionPipelineOutputSimple
   }
 
   //==========================================
@@ -253,11 +262,11 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    *
    * @description Approve a spender to spend tokens on behalf of the account.
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<SorobanTransactionPipelineOutputSimple>}
    */
   public async approve(
     args: { from: string; spender: string; amount: i128; expiration_ledger: u32 } & TransactionInvocation
-  ): Promise<void> {
+  ): Promise<SorobanTransactionPipelineOutputSimple> {
     return (await this.invokeContract({
       method: methods.approve,
       methodArgs: {
@@ -269,7 +278,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
       signers: args.signers,
       header: args.header,
       feeBump: args.feeBump,
-    })) as void
+    })) as SorobanTransactionPipelineOutputSimple
   }
 
   /**
@@ -327,9 +336,11 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    *
    * @description Transfer tokens from the sender to the recipient.
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<SorobanTransactionPipelineOutputSimple>}
    */
-  public async transfer(args: { from: string; to: string; amount: i128 } & TransactionInvocation): Promise<void> {
+  public async transfer(
+    args: { from: string; to: string; amount: i128 } & TransactionInvocation
+  ): Promise<SorobanTransactionPipelineOutputSimple> {
     return (await this.invokeContract({
       method: methods.transfer,
       methodArgs: {
@@ -340,7 +351,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
       signers: args.signers,
       header: args.header,
       feeBump: args.feeBump,
-    })) as void
+    })) as SorobanTransactionPipelineOutputSimple
   }
 
   /**
@@ -357,11 +368,11 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    *
    * @description Transfer tokens from the sender to the recipient on behalf of the spender.
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<SorobanTransactionPipelineOutputSimple>}
    */
   public async transferFrom(
     args: { spender: string; from: string; to: string; amount: i128 } & TransactionInvocation
-  ): Promise<void> {
+  ): Promise<SorobanTransactionPipelineOutputSimple> {
     return (await this.invokeContract({
       method: methods.transfer_from,
       methodArgs: {
@@ -373,7 +384,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
       signers: args.signers,
       header: args.header,
       feeBump: args.feeBump,
-    })) as void
+    })) as SorobanTransactionPipelineOutputSimple
   }
 
   /**
@@ -388,9 +399,11 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    *
    * @description Burn tokens from an account.
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<SorobanTransactionPipelineOutputSimple>}
    */
-  public async burn(args: { from: string; amount: i128 } & TransactionInvocation): Promise<void> {
+  public async burn(
+    args: { from: string; amount: i128 } & TransactionInvocation
+  ): Promise<SorobanTransactionPipelineOutputSimple> {
     return (await this.invokeContract({
       method: methods.burn,
       methodArgs: {
@@ -400,7 +413,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
       signers: args.signers,
       header: args.header,
       feeBump: args.feeBump,
-    })) as void
+    })) as SorobanTransactionPipelineOutputSimple
   }
 
   /**
@@ -416,9 +429,11 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
    *
    * @description Burn tokens from an account on behalf of the spender.
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<SorobanTransactionPipelineOutputSimple>}
    */
-  public async burnFrom(args: { spender: string; from: string; amount: i128 } & TransactionInvocation): Promise<void> {
+  public async burnFrom(
+    args: { spender: string; from: string; amount: i128 } & TransactionInvocation
+  ): Promise<SorobanTransactionPipelineOutputSimple> {
     return (await this.invokeContract({
       method: methods.burn_from,
       methodArgs: {
@@ -429,7 +444,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
       signers: args.signers,
       header: args.header,
       feeBump: args.feeBump,
-    })) as void
+    })) as SorobanTransactionPipelineOutputSimple
   }
 
   /**

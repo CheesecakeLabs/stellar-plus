@@ -19,9 +19,13 @@ import { SimulateTransactionPipeline } from 'stellar-plus/core/pipelines/simulat
 import {
   SimulateTransactionPipelinePlugin,
   SimulateTransactionPipelineType,
+  SimulatedInvocationOutput,
 } from 'stellar-plus/core/pipelines/simulate-transaction/types'
+import { SorobanAuthPipeline } from 'stellar-plus/core/pipelines/soroban-auth'
+import { SorobanAuthPipelinePlugin, SorobanAuthPipelineType } from 'stellar-plus/core/pipelines/soroban-auth/types'
 import { SorobanGetTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-get-transaction'
 import {
+  ContractInvocationOutput,
   SorobanGetTransactionPipelinePlugin,
   SorobanGetTransactionPipelineType,
 } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
@@ -29,11 +33,12 @@ import {
   SorobanTransactionPipelineInput,
   SorobanTransactionPipelineOptions,
   SorobanTransactionPipelineOutput,
+  SorobanTransactionPipelineOutputVerbose,
   SorobanTransactionPipelinePlugin,
   SorobanTransactionPipelineType,
   SupportedInnerPlugins,
-  TransactionExecutionOutput,
-  TransactionSimulationOutput,
+  VerboseExecutedOutput,
+  VerboseSimulatedOutput,
 } from 'stellar-plus/core/pipelines/soroban-transaction/types'
 import { SubmitTransactionPipeline } from 'stellar-plus/core/pipelines/submit-transaction'
 import {
@@ -44,11 +49,8 @@ import { HorizonHandlerClient } from 'stellar-plus/horizon'
 import { DefaultRpcHandler } from 'stellar-plus/rpc'
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { NetworkConfig } from 'stellar-plus/types'
-
-import { MultiBeltPipeline } from '../../../utils/pipeline/multi-belt-pipeline' //'stellar-plus/utils/pipeline/multi-belt-pipeline'
-import { MultiBeltPipelineOptions } from '../../../utils/pipeline/multi-belt-pipeline/types'
-import { SorobanAuthPipeline } from '../soroban-auth'
-import { SorobanAuthPipelinePlugin, SorobanAuthPipelineType } from '../soroban-auth/types'
+import { MultiBeltPipeline } from 'stellar-plus/utils/pipeline/multi-belt-pipeline'
+import { MultiBeltPipelineOptions } from 'stellar-plus/utils/pipeline/multi-belt-pipeline/types'
 
 export class SorobanTransactionPipeline extends MultiBeltPipeline<
   SorobanTransactionPipelineInput,
@@ -125,7 +127,21 @@ export class SorobanTransactionPipeline extends MultiBeltPipeline<
     )
 
     if (options?.simulateOnly) {
-      return successfulSimulation as TransactionSimulationOutput
+      if (this.isSimpleOutput(options)) {
+        return successfulSimulation?.output?.value as SimulatedInvocationOutput
+      }
+
+      const verboseSimulatedOutput = options?.verboseOutput
+        ? ({
+            buildTransactionPipelineOutput: builtTx,
+            simulateTransactionPipelineOutput: successfulSimulation,
+          } as VerboseSimulatedOutput)
+        : {}
+
+      return {
+        sorobanTransactionOutput: successfulSimulation?.output?.value as SimulatedInvocationOutput,
+        ...verboseSimulatedOutput,
+      } as SorobanTransactionPipelineOutputVerbose
     }
 
     // ======================= Assemble ==========================
@@ -211,6 +227,31 @@ export class SorobanTransactionPipeline extends MultiBeltPipeline<
       itemId
     )
 
-    return sorobanGetTransactionResult as TransactionExecutionOutput
+    if (this.isSimpleOutput(options)) {
+      return sorobanGetTransactionResult?.output?.value as ContractInvocationOutput<unknown>
+    }
+
+    const verboseExecutedOutput = options?.verboseOutput
+      ? ({
+          buildTransactionPipelineOutput: builtTx,
+          simulateTransactionPipelineOutput: successfulSimulation,
+          sorobanAuthPipelineOutput: sorobanAuthorizedTx,
+          classicSignRequirementsPipelineOutput: classicSignatureRequirements,
+          signTransactionPipelineOutput: signedTransaction,
+          submitTransactionPipelineOutput: submissionResult,
+          sorobanGetTransactionPipelineOutput: sorobanGetTransactionResult,
+        } as VerboseExecutedOutput)
+      : {}
+
+    return {
+      ...verboseExecutedOutput,
+      sorobanTransactionOutput: sorobanGetTransactionResult?.output?.value as ContractInvocationOutput<unknown>,
+      hash: options?.includeHashOutput ? submissionResult.response.hash : undefined,
+    } as SorobanTransactionPipelineOutputVerbose
+  }
+
+  // expand with other options in the future that might require verbose output
+  protected isSimpleOutput(options: SorobanTransactionPipelineInput['options']): boolean {
+    return !options?.includeHashOutput && !options?.verboseOutput
   }
 }

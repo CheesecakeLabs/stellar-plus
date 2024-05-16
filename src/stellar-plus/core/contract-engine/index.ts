@@ -21,8 +21,16 @@ import {
   WrapClassicAssetArgs,
   isRestoreFootprintWithLedgerKeys,
 } from 'stellar-plus/core/contract-engine/types'
-import { ContractIdOutput, ContractWasmHashOutput } from 'stellar-plus/core/pipelines/soroban-get-transaction/types'
+import {
+  BuildTransactionPipelineInput,
+  BuildTransactionPipelineOutput,
+  BuildTransactionPipelineType,
+} from 'stellar-plus/core/pipelines/build-transaction/types'
 import { SorobanTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-transaction'
+import {
+  SorobanTransactionPipelineOutput,
+  VerboseExecutedOutput,
+} from 'stellar-plus/core/pipelines/soroban-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { StellarPlusError } from 'stellar-plus/error'
 import { DefaultRpcHandler } from 'stellar-plus/rpc'
@@ -34,13 +42,6 @@ import { ExtractInvocationOutputFromSimulationPlugin } from 'stellar-plus/utils/
 import { ExtractContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-contract-id'
 import { ExtractInvocationOutputPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-invocation-output'
 import { ExtractWasmHashPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-wasm-hash'
-
-import {
-  BuildTransactionPipelineInput,
-  BuildTransactionPipelineOutput,
-  BuildTransactionPipelineType,
-} from '../pipelines/build-transaction/types'
-import { SorobanTransactionPipelineOutput } from '../pipelines/soroban-transaction/types'
 
 export class ContractEngine {
   private spec?: ContractSpec
@@ -198,8 +199,9 @@ export class ContractEngine {
    * console.log(output) // 'myValue'
    * ```
    */
-  public async readFromContract(args: SorobanSimulateArgs<object>): Promise<unknown> {
-    return (await this.runTransactionPipeline(args, true)).output?.value
+  public async readFromContract(args: SorobanSimulateArgs<object>): Promise<SorobanTransactionPipelineOutput> {
+    const options = { ...(args as SorobanInvokeArgs<object>).options, simulateOnly: true }
+    return await this.runTransactionPipeline({ ...args, options })
   }
 
   /**
@@ -233,21 +235,18 @@ export class ContractEngine {
    * ```
    */
   public async invokeContract(
-    args: SorobanInvokeArgs<object> | SorobanSimulateArgs<object>,
-    simulateOnly: boolean = false
-  ): Promise<unknown> {
-    const result = await this.runTransactionPipeline(args, simulateOnly)
-    return result.output?.value
+    args: SorobanInvokeArgs<object> | SorobanSimulateArgs<object>
+  ): Promise<SorobanTransactionPipelineOutput> {
+    const options = { ...(args as SorobanInvokeArgs<object>).options, simulateOnly: false }
+    return await this.runTransactionPipeline({ ...args, options })
   }
-
   public async runTransactionPipeline(
-    args: SorobanInvokeArgs<object> | SorobanSimulateArgs<object>,
-    simulateOnly: boolean = false
+    args: SorobanInvokeArgs<object> | SorobanSimulateArgs<object>
   ): Promise<SorobanTransactionPipelineOutput> {
     this.requireContractId()
     this.requireSpec()
 
-    const { method, methodArgs } = args
+    const { method, methodArgs, options } = args
     const txInvocation = { ...(args as SorobanInvokeArgs<object>) } as TransactionInvocation
 
     const encodedArgs = this.spec!.funcArgsToScVals(method, methodArgs) // Spec verified in requireSpec
@@ -256,19 +255,16 @@ export class ContractEngine {
     const contractCallOperation = contract.call(method, ...encodedArgs)
 
     const executionPlugins = [
-      ...(simulateOnly
+      ...(options?.simulateOnly
         ? [new ExtractInvocationOutputFromSimulationPlugin(this.spec!, method)]
         : [new ExtractInvocationOutputPlugin(this.spec!, method)]),
-      ...(txInvocation.executionPlugins || []),
+      ...(options?.executionPlugins || []),
     ]
 
     const result = await this.sorobanTransactionPipeline.execute({
       txInvocation,
       operations: [contractCallOperation],
-      options: {
-        executionPlugins,
-        simulateOnly,
-      },
+      options: { ...options, executionPlugins },
     })
 
     return result as SorobanTransactionPipelineOutput
@@ -298,10 +294,11 @@ export class ContractEngine {
         operations: [uploadOperation],
         options: {
           executionPlugins: [new ExtractWasmHashPlugin()],
+          verboseOutput: true,
         },
       })
 
-      this.wasmHash = (result.output as ContractWasmHashOutput).wasmHash
+      this.wasmHash = (result as VerboseExecutedOutput).sorobanGetTransactionPipelineOutput.output?.wasmHash
     } catch (error) {
       throw CEError.failedToUploadWasm(error as StellarPlusError)
     }
@@ -330,10 +327,11 @@ export class ContractEngine {
         operations: [deployOperation],
         options: {
           executionPlugins: [new ExtractContractIdPlugin()],
+          verboseOutput: true,
         },
       })
 
-      this.contractId = (result.output as ContractIdOutput).contractId
+      this.contractId = (result as VerboseExecutedOutput).sorobanGetTransactionPipelineOutput.output?.contractId
     } catch (error) {
       throw CEError.failedToDeployContract(error as StellarPlusError)
     }
@@ -354,10 +352,11 @@ export class ContractEngine {
         operations: [wrapOperation],
         options: {
           executionPlugins: [new ExtractContractIdPlugin()],
+          verboseOutput: true,
         },
       })
 
-      this.contractId = (result.output as ContractIdOutput).contractId
+      this.contractId = (result as VerboseExecutedOutput).sorobanGetTransactionPipelineOutput.output?.contractId
     } catch (error) {
       throw CEError.failedToWrapAsset(error as StellarPlusError)
     }
