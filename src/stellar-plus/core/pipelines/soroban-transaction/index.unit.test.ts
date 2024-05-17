@@ -318,7 +318,7 @@ describe('Soroban Transaction Pipeline', () => {
 
     it('should process the Input into an Output', async () => {
       MOCKED_SOROBAN_GET_TRANSACTION_PIPELINE.mockImplementationOnce(() => ({
-        execute: jest.fn().mockResolvedValueOnce('output'),
+        execute: jest.fn().mockResolvedValueOnce({ output: { value: 'output' } }),
       }))
       const pipeline = new SorobanTransactionPipeline(TESTNET_NETWORK_CONFIG)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -334,7 +334,7 @@ describe('Soroban Transaction Pipeline', () => {
 
     it('should process the Input into a simulation Output when simulateOnly flag is set', async () => {
       MOCKED_SIMULATE_TRANSACTION_PIPELINE.mockImplementationOnce(() => ({
-        execute: jest.fn().mockResolvedValueOnce('output'),
+        execute: jest.fn().mockResolvedValueOnce({ output: { value: 'output' } }),
       }))
       const MOCKED_SIMULATION_ITEM = { ...MOCKED_PIPELINE_ITEM, options: { simulateOnly: true } }
       const pipeline = new SorobanTransactionPipeline(TESTNET_NETWORK_CONFIG)
@@ -383,7 +383,6 @@ describe('Soroban Transaction Pipeline', () => {
       const pipeline = new SorobanTransactionPipeline(TESTNET_NETWORK_CONFIG)
       const executionPlugins = [MOCKED_CLASSIC_SIGN_REQUIREMENTS_PLUGIN]
       const MOCKED_ITEM_WITH_PLUGINS = { ...MOCKED_PIPELINE_ITEM, options: { executionPlugins } }
-
       await pipeline.execute(MOCKED_ITEM_WITH_PLUGINS)
 
       expect(MOCKED_CLASSIC_SIGN_REQUIREMENTS_PIPELINE).toHaveBeenCalledWith([MOCKED_CLASSIC_SIGN_REQUIREMENTS_PLUGIN])
