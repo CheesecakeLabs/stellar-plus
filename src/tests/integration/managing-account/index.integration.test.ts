@@ -1,7 +1,7 @@
 import { Keypair, TransactionBuilder } from '@stellar/stellar-sdk'
-
 import { DefaultAccountHandler } from 'stellar-plus/account'
 import { AccountBase } from 'stellar-plus/account/base'
+
 import { CustomNet, NetworkConfig } from 'stellar-plus/network'
 import { StellarTestLedger, TestLedgerNetwork } from 'stellar-plus/test/stellar-test-ledger'
 
@@ -13,7 +13,6 @@ describe('Managing Account Use Case: ', () => {
   const stellarTestLedger = new StellarTestLedger({
     logLevel,
     network: TestLedgerNetwork.LOCAL,
-    useRunningLedger: true,
   })
   let networkConfig: NetworkConfig
 
@@ -31,9 +30,8 @@ describe('Managing Account Use Case: ', () => {
   })
 
   afterAll(async () => {
-    // TODO: Uncomment stop and destroy
-    // await stellarTestLedger.stop()
-    // await stellarTestLedger.destroy()
+    await stellarTestLedger.stop()
+    await stellarTestLedger.destroy()
   })
 
   describe('A DefaultAccountHandler', () => {
