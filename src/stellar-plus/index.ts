@@ -3,6 +3,7 @@ import { CertificateOfDepositClient } from 'stellar-plus/soroban/contracts/certi
 import * as Testing from 'stellar-plus/test/stellar-test-ledger'
 import { pipelineUtils } from 'stellar-plus/utils/pipeline'
 import { plugins } from 'stellar-plus/utils/pipeline/plugins'
+import * as Regex from 'stellar-plus/utils/regex'
 
 export * as Account from 'stellar-plus/account/index'
 export * as Asset from 'stellar-plus/asset/index'
@@ -19,6 +20,7 @@ export const Utils = {
   ChannelAccountsHandler,
   Pipeline: pipelineUtils,
   Plugins: plugins,
+  Regex,
 }
 
 export * as RPC from 'stellar-plus/rpc/index'
