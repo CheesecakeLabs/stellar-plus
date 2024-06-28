@@ -1,20 +1,12 @@
-import { ContractSpec, Keypair, TransactionBuilder } from '@stellar/stellar-sdk'
+import { ContractSpec } from '@stellar/stellar-sdk'
 import { DefaultAccountHandler } from 'stellar-plus/account'
-import { AccountBase } from 'stellar-plus/account/base'
 import { ContractEngine } from 'stellar-plus/core/contract-engine'
 
 import { CustomNet, NetworkConfig } from 'stellar-plus/network'
 import { StellarTestLedger, TestLedgerNetwork } from 'stellar-plus/test/stellar-test-ledger'
 import { TransactionInvocation } from 'stellar-plus/types'
 import { contractIdRegex, wasmHashRegex } from 'stellar-plus/utils/regex'
-import {
-  GetNameArgs,
-  GetNameResponse,
-  SayHelloArgs,
-  SayHelloResponse,
-  methods,
-  spec,
-} from 'tests/contracts/hello-world/spec'
+import { GetNameArgs, GetNameResponse, methods, spec } from 'tests/contracts/hello-world/spec'
 import { loadWasmFile } from 'tests/utils'
 
 describe('Hello World Contract Use Case: ', () => {
@@ -99,6 +91,16 @@ describe('Hello World Contract Use Case: ', () => {
       it('should invoke the contract method GetName that returns an output', async () => {
         await expect(
           helloWorld.invokeContract({
+            method: methods.getName,
+            methodArgs: {} as GetNameArgs,
+            ...adminTxInvocation,
+          })
+        ).resolves.toBe('CaptainCacti' as GetNameResponse)
+      })
+
+      it('should read from the contract state by just simulating the GetName execution and return and output', async () => {
+        await expect(
+          helloWorld.readFromContract({
             method: methods.getName,
             methodArgs: {} as GetNameArgs,
             ...adminTxInvocation,
