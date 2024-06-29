@@ -1,19 +1,7 @@
-import { classicTransactionPlugins } from './classic-transaction'
-import { genericPlugins } from './generic'
-import { filterPluginsByName, filterPluginsByType, filterPluginsByTypes } from './helpers'
-import { simulateTransactionPlugins } from './simulate-transaction'
-import { sorobanGetTransactionPlugins } from './soroban-get-transaction'
-import { sorobanTransactionPlugins } from './soroban-transaction'
-import { submitTransactionPlugins } from './submit-transaction'
-
-export const plugins = {
-  generic: genericPlugins,
-  classicTransaction: classicTransactionPlugins,
-  simulateTransaction: simulateTransactionPlugins,
-  sorobanGetTransaction: sorobanGetTransactionPlugins,
-  sorobanTransaction: sorobanTransactionPlugins,
-  submitTransaction: submitTransactionPlugins,
-  filterPluginsByType: filterPluginsByType,
-  filterPluginsByTypes: filterPluginsByTypes,
-  filterPluginsByName: filterPluginsByName,
-}
+export * as classicTransaction from './classic-transaction'
+export * as generic from './generic'
+export * from './helpers'
+export * as simulateTransaction from './simulate-transaction'
+export * as sorobanGetTransaction from './soroban-get-transaction'
+export * as sorobanTransaction from './soroban-transaction'
+export * as submitTransaction from './submit-transaction'

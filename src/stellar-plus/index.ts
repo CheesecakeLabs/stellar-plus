@@ -2,7 +2,7 @@ import { ChannelAccounts as ChannelAccountsHandler } from 'stellar-plus/channel-
 import { CertificateOfDepositClient } from 'stellar-plus/soroban/contracts/certificate-of-deposit'
 import * as Testing from 'stellar-plus/test/stellar-test-ledger'
 import { pipelineUtils } from 'stellar-plus/utils/pipeline'
-import { plugins } from 'stellar-plus/utils/pipeline/plugins'
+import * as plugins from 'stellar-plus/utils/pipeline/plugins'
 import * as Regex from 'stellar-plus/utils/regex'
 
 export * as Account from 'stellar-plus/account/index'
