@@ -61,3 +61,48 @@ For the full documentation, refer to our [Gitbook Documentation](https://cheesec
 - [Code of Conduct](https://github.com/cheesecakelabs/stellar-plus/blob/main/CODE_OF_CONDUCT.md)
 - [Contributing Guidelines](https://github.com/cheesecakelabs/stellar-plus/blob/main/CONTRIBUTING.md)
 - [MIT License](https://github.com/cheesecakelabs/stellar-plus/blob/main/LICENSE)
+
+## Testing
+
+Quality being a core pillar of Stellar Plus, to ensure a high level of confiability we aim at keep a high level of test coverage throughout the whole library. All tests written currently fall within one of the following categories:
+
+- Unit tests for specific localized behaviour
+- Integration tests to cover whole features and ledger integration
+
+To run all tests locally, one can run the following command:
+
+```bash
+npm run test
+```
+
+This will trigger both the suit of unit and integrations tests, outputting their combined coverage to the directory `./src/coverage/all`. This is the metric used as reference when merging implementation to the main branch and releasing new versions.
+
+### Unit Tests
+
+As the unit tests aim at enforcing locallized behaviour, they are implemented within their reference features directory and can be identified by the file name pattern `*.unit.test.ts`.
+
+To execute only the unit tests locally, one can run the command:
+
+```bash
+npm run test-unit
+```
+
+This will trigger the suit of unit tests only, outputting its coverage to the directory `./src/coverage/unit`.
+
+### Integration Tests
+
+As the integration tests aim at guaranteeing a great level of confidence about whole feature's behaviour, by default all integration tests verify complete workable use cases.
+
+Testing functionalities against a DLT poses a challenge as public testnets can introduce external interference or be out of reach at specific time. Therefore, all integration tests in Stellar Plus, leverage a `Stellar Test Ledger` feature, originally developed by Cheesecakelabs for the open source project [Hyperledger Cacti](https://github.com/hyperledger/cacti).
+
+The Stellar Test Ledger can be found within the `@hyperledger/cactus-test-tooling` package or directly available through Stellar Plus as well. It pulls up and manages the Stellar Quickstart Docker Image to start a pristine version of the Stellar ledger and all its services without any external interference.
+
+Each integration use case is tested against a pristine ledger with no existing history to ensure maximum isolation of the feature while still verifying agains a real production-like environment.
+
+To execute only the integration tests locally, one can run the command:
+
+```bash
+npm run test-integration
+```
+
+This will trigger the suit of integration tests only, outputting its coverage to the directory `./src/coverage/integration`.
