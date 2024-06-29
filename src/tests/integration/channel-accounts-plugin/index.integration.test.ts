@@ -1,3 +1,4 @@
+import { StellarPlus } from 'index'
 import { DefaultAccountHandler } from 'stellar-plus/account'
 import { ClassicAssetHandler, SACHandler } from 'stellar-plus/asset'
 import { ChannelAccounts } from 'stellar-plus/channel-accounts'
@@ -64,7 +65,7 @@ describe('Channel Accounts Plugin Use Case: ', () => {
 
     it('Can prepare a FeebumpWrapper plugin to cover all fees', async () => {
       const feebumpHeader = simpleTxInvocationToFeebump(simpleTxInvocation(issuer))
-      feeBumpPlugin = new FeeBumpWrapperPlugin(feebumpHeader)
+      feeBumpPlugin = new StellarPlus.Utils.Plugins.submitTransaction.FeeBumpWrapperPlugin(feebumpHeader)
 
       expect(feeBumpPlugin).toBeDefined()
     })
@@ -73,7 +74,7 @@ describe('Channel Accounts Plugin Use Case: ', () => {
       let classicAsset: ClassicAssetHandler
 
       beforeAll(async () => {
-        classicCAPlugin = new ClassicChannelAccountsPlugin({ channels })
+        classicCAPlugin = new StellarPlus.Utils.Plugins.classicTransaction.ClassicChannelAccountsPlugin({ channels })
         expect(classicCAPlugin).toBeDefined()
 
         classicAsset = new ClassicAssetHandler({
@@ -125,8 +126,8 @@ describe('Channel Accounts Plugin Use Case: ', () => {
       beforeAll(async () => {
         userExpectedBalance = 0
 
-        classicCAPlugin = new ClassicChannelAccountsPlugin({ channels })
-        sorobanCAPlugin = new SorobanChannelAccountsPlugin({ channels })
+        classicCAPlugin = new StellarPlus.Utils.Plugins.classicTransaction.ClassicChannelAccountsPlugin({ channels })
+        sorobanCAPlugin = new StellarPlus.Utils.Plugins.sorobanTransaction.SorobanChannelAccountsPlugin({ channels })
         expect(classicCAPlugin).toBeDefined()
         expect(sorobanCAPlugin).toBeDefined()
 
