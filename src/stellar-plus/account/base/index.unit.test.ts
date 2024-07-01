@@ -7,6 +7,8 @@ import { ABError } from 'stellar-plus/account/base/errors'
 import { AxiosErrorTypes } from 'stellar-plus/error/helpers/axios'
 import { HorizonHandler } from 'stellar-plus/horizon/types'
 import { TestNet } from 'stellar-plus/network'
+import { DefaultAccountHandlerClient } from '../account-handler/default'
+import { Keypair } from '@stellar/stellar-sdk'
 
 jest.mock('axios', () => {
   const originalModule = jest.requireActual('axios')
@@ -93,6 +95,27 @@ describe('Base Account Handler', () => {
 
       expect(balances).toBe(mockedBalances)
       expect(mockedLoadAccount).toHaveBeenCalledExactlyOnceWith(MOCKED_PK)
+    })
+
+    it('verify if a signature is valid', () => {
+      const keypair = Keypair.random()
+      const dah = new DefaultAccountHandlerClient({ networkConfig: TESTNET_CONFIG, secretKey: keypair.secret() })
+      const data = Buffer.from('Mocked Data')
+
+      const signature = dah.signData(data)
+
+      expect(dah.verifySignature(data, signature)).toBe(true)
+    })
+
+    it('verify if a signature is not valid', () => {
+      const keypair = Keypair.random()
+      const dah = new DefaultAccountHandlerClient({ networkConfig: TESTNET_CONFIG, secretKey: keypair.secret() })
+      const secondDah = new DefaultAccountHandlerClient({ networkConfig: TESTNET_CONFIG })
+      const data = Buffer.from('Mocked Data')
+
+      const signature = dah.signData(data)
+
+      expect(secondDah.verifySignature(data, signature)).toBe(false)
     })
   })
 
