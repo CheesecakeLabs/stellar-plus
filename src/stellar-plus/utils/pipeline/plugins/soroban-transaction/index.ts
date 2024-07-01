@@ -1,7 +1,2 @@
-import { SorobanChannelAccountsPlugin } from './channel-accounts'
-import { ProfilerPlugin } from './profiler'
-
-export const sorobanTransactionPlugins = {
-  channelAccounts: SorobanChannelAccountsPlugin,
-  profiler: ProfilerPlugin,
-}
+export { SorobanChannelAccountsPlugin } from './channel-accounts'
+export { ProfilerPlugin } from './profiler'

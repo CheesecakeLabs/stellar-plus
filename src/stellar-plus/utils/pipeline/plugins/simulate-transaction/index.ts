@@ -1,11 +1,4 @@
-import { AutoRestorePlugin } from './auto-restore'
-import { ExtractAuthEntriesFromSimulationPlugin } from './extract-auth-entries-output'
-import { ExtractTransactionResourcesPlugin } from './extract-transaction-resources'
-import { ExtractInvocationOutputPlugin } from '../soroban-get-transaction/extract-invocation-output'
-
-export const simulateTransactionPlugins = {
-  autoRestore: AutoRestorePlugin,
-  extractInvocationOutput: ExtractInvocationOutputPlugin,
-  extractTransactionResources: ExtractTransactionResourcesPlugin,
-  extractAuthEntries: ExtractAuthEntriesFromSimulationPlugin,
-}
+export { AutoRestorePlugin } from './auto-restore'
+export { ExtractAuthEntriesFromSimulationPlugin } from './extract-auth-entries-output'
+export { ExtractTransactionResourcesPlugin } from './extract-transaction-resources'
+export { ExtractInvocationOutputPlugin } from '../soroban-get-transaction/extract-invocation-output'
