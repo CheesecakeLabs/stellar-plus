@@ -5,6 +5,7 @@ export enum DefaultAccountHandlerErrorCodes {
   DAH001 = 'DAH001',
   DAH002 = 'DAH002',
   DAH003 = 'DAH003',
+  DAH004 = 'DAH004',
 }
 
 const failedToLoadSecretKeyError = (error?: Error): StellarPlusError => {
@@ -55,8 +56,21 @@ const failedToSignAuthorizationEntryError = (
   })
 }
 
+const failedToSignDataError = (error?: Error): StellarPlusError => {
+  return new StellarPlusError({
+    code: DefaultAccountHandlerErrorCodes.DAH004,
+    message: 'Failed to sign data!',
+    source: 'DefaultAccountHandler',
+    details: 'The data could not be signed. Review the secret key.',
+    meta: {
+      error,
+    },
+  })
+}
+
 export const DAHError = {
   failedToLoadSecretKeyError,
   failedToSignTransactionError,
   failedToSignAuthorizationEntryError,
+  failedToSignDataError,
 }
