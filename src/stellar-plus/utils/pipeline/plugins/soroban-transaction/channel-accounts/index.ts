@@ -125,10 +125,12 @@ export class BaseChannelAccountsPlugin<Input extends InputType, Output, Type>
   private injectChannel(item: Input, channel: AccountHandler): Input {
     const { header } = item.txInvocation
 
+    const itemSigners = item.txInvocation.signers ?? [] // pure simulations may not carry signers
+
     const updatedTxInvocation = {
       ...item.txInvocation,
       ...{ header: { ...header, source: channel.getPublicKey() } },
-      signers: [...item.txInvocation.signers, channel],
+      signers: [...itemSigners, channel],
     }
 
     const updatedItem = {
