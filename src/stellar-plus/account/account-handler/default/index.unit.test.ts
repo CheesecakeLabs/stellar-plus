@@ -102,6 +102,16 @@ describe('DefaultAccountHandler', () => {
         TESTNET_CONFIG.networkPassphrase
       )
     })
+
+    it('should sign data with its secret key', () => {
+      const keypair = Keypair.random()
+      const dah = new DefaultAccountHandlerClient({ networkConfig: TESTNET_CONFIG, secretKey: keypair.secret() })
+      const data = Buffer.from('Mocked Data')
+
+      const signature = dah.signData(data)
+
+      expect(dah.verifySignature(data, signature)).toBe(true)
+    })
   })
 
   describe('Getters', () => {
@@ -174,6 +184,15 @@ describe('DefaultAccountHandler', () => {
           123,
           TESTNET_CONFIG.networkPassphrase
         )
+      )
+    })
+
+    it('should throw an error if data cannot be signed', () => {
+      const keypair = Keypair.random()
+      const dah = new DefaultAccountHandlerClient({ networkConfig: TESTNET_CONFIG, secretKey: keypair.secret() })
+
+      expect(() => dah.signData(null as unknown as Buffer)).toThrow(
+        DAHError.failedToSignDataError(new Error('Mocked error'))
       )
     })
   })
