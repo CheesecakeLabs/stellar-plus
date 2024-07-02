@@ -1,4 +1,4 @@
-import { Horizon } from '@stellar/stellar-sdk'
+import { Horizon, Keypair } from '@stellar/stellar-sdk'
 import axios from 'axios'
 
 import { ABError } from 'stellar-plus/account/base/errors'
@@ -80,6 +80,17 @@ export class AccountBase implements AccountBaseType {
     } catch (error) {
       throw ABError.failedToLoadBalances(error as Error)
     }
+  }
+
+  /**
+   *
+   * @param {Buffer} data - The data to sign.
+   * @param {Buffer} signature - The signature to verify.
+   * @returns {boolean} True if the signature is valid, false otherwise.
+   */
+  public verifySignature(data: Buffer, signature: Buffer): boolean {
+    const keypair = Keypair.fromPublicKey(this.publicKey)
+    return keypair.verify(data, signature)
   }
 
   /**

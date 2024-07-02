@@ -104,4 +104,18 @@ export class DefaultAccountHandlerClient extends AccountBase implements DefaultA
       )
     }
   }
+
+  /**
+   *
+   * @param {Buffer} data - The data to sign.
+   * @returns {Buffer} The signature of the data.
+   */
+  public signData(data: Buffer): Buffer {
+    try {
+      const keypair = Keypair.fromSecret(this.secretKey)
+      return keypair.sign(data)
+    } catch (e) {
+      throw DAHError.failedToSignDataError(e as Error)
+    }
+  }
 }
