@@ -358,7 +358,21 @@ export class ContractEngine {
 
       this.contractId = (result as VerboseExecutedOutput).sorobanGetTransactionPipelineOutput.output?.contractId
     } catch (error) {
-      throw CEError.failedToWrapAsset(error as StellarPlusError)
+      let isAssetAlreadyWrapped = false
+      try {
+        const events = (error as StellarPlusError).meta?.sorobanSimulationData?.events
+        const dataVec: xdr.ScVal[] | null = events ? events[0].event().body().v0().data().vec() : []
+
+        if (dataVec && dataVec[0].value()?.toString() === 'contract already exists') {
+          const contractId = Address.contract(dataVec[1].bytes()).toString()
+          this.contractId = contractId
+          isAssetAlreadyWrapped = true
+        }
+      } finally {
+        if (!isAssetAlreadyWrapped) {
+          throw CEError.failedToWrapAsset(error as StellarPlusError)
+        }
+      }
     }
   }
 
