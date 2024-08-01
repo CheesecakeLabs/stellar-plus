@@ -89,9 +89,25 @@ const couldntSimulateAuthorizedTransaction = (
   })
 }
 
+const contractAuthNotSupported = (
+  contractId: string,
+  conveyorBeltErrorMeta: ConveyorBeltErrorMeta<SorobanAuthPipelineInput, BeltMetadata>
+): StellarPlusError => {
+  return new StellarPlusError({
+    code: ErrorCodesPipelineSorobanAuth.PSA004,
+    message: 'Contract authorization not supported!',
+    source: 'PipelineSorobanAuth',
+    details: `Contract authorization is not supported in the current version of Stellar Plus. This contract function is verifying against a specific contract authorization from (${contractId}) which is likely expected to be accessed as a sub-invocation instead of root invocation.`,
+    meta: {
+      conveyorBeltErrorMeta,
+    },
+  })
+}
+
 export const PSAError = {
   signerNotFound,
   noSignersProvided,
   couldntUpdateTransaction,
   couldntSimulateAuthorizedTransaction,
+  contractAuthNotSupported,
 }

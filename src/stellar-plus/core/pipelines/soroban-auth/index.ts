@@ -58,9 +58,7 @@ export class SorobanAuthPipeline extends ConveyorBelt<
       ? [...additionalSignedSorobanAuth]
       : []
     for (const authEntry of authEntriesToSign) {
-      const requiredSigner = Address.account(
-        authEntry.credentials().address().address().accountId().ed25519()
-      ).toString()
+      const requiredSigner = this.getRequiredSigner(authEntry, item, itemId)
 
       const signer = signers.find((s) => s.getPublicKey() === requiredSigner) as AccountHandler
 
@@ -197,5 +195,20 @@ export class SorobanAuthPipeline extends ConveyorBelt<
           return credentials.switch() === xdr.SorobanCredentialsType.sorobanCredentialsSourceAccount()
         })
       : []
+  }
+
+  protected getRequiredSigner(
+    authEntry: xdr.SorobanAuthorizationEntry,
+    item: SorobanAuthPipelineInput,
+    itemId: string
+  ): string {
+    if (authEntry.credentials().address().address().switch().name === 'scAddressTypeContract') {
+      throw PSAError.contractAuthNotSupported(
+        Address.contract(authEntry.credentials().address().address().contractId()).toString(),
+        extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
+      )
+    }
+
+    return Address.account(authEntry.credentials().address().address().accountId().ed25519()).toString()
   }
 }
