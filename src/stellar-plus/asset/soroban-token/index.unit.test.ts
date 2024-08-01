@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Address, ContractSpec } from '@stellar/stellar-sdk'
+import { Address } from '@stellar/stellar-sdk'
+import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { SorobanTokenHandler } from 'stellar-plus/asset/soroban-token'
 import { spec as DEFAULT_SPEC, methods } from 'stellar-plus/asset/soroban-token/constants'
@@ -44,7 +45,7 @@ describe('SorobanToken', () => {
     })
 
     it('should initialize with a custom spec', () => {
-      const mockedSpec = new ContractSpec(['AAAAAAAAAAAAAAAEbmFtZQAAAAAAAAABAAAAEA=='])
+      const mockedSpec = new Spec(['AAAAAAAAAAAAAAAEbmFtZQAAAAAAAAABAAAAEA=='])
       const token = new SorobanTokenHandler({
         networkConfig: NETWORK_CONFIG,
         contractParameters: {

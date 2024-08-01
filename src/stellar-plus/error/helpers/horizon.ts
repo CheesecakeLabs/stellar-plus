@@ -1,5 +1,4 @@
-import { FeeBumpTransaction, Transaction } from '@stellar/stellar-sdk'
-import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
+import { FeeBumpTransaction, Horizon, Transaction } from '@stellar/stellar-sdk'
 import { AxiosError } from 'axios'
 
 import { extractAxiosErrorInfo } from './axios'
@@ -7,7 +6,7 @@ import { operationErrorMessages, operationSpecificErrorMessages, transactionErro
 import { OperationData, extractOperationsData, extractTransactionData } from './transaction'
 import { Meta } from '../types'
 export const extractDataFromSubmitTransactionError = (
-  response: HorizonApi.SubmitTransactionResponse
+  response: Horizon.HorizonApi.SubmitTransactionResponse
 ): SubmitTransactionMetaInfo => {
   return {
     ...response,
@@ -39,10 +38,10 @@ export const diagnoseSubmitError = (
     const axiosError = extractAxiosErrorInfo(error)
 
     if (axiosError.data && isHorizonErrorResponseData(axiosError.data)) {
-      const horizonError = axiosError.data as HorizonApi.ErrorResponseData
+      const horizonError = axiosError.data as Horizon.HorizonApi.ErrorResponseData
       const diagnostic =
         horizonError.status === 400 // Failed transaction, contains error codes
-          ? reviewTransactionError(horizonError as HorizonApi.ErrorResponseData.TransactionFailed, tx)
+          ? reviewTransactionError(horizonError as Horizon.HorizonApi.ErrorResponseData.TransactionFailed, tx)
           : undefined
 
       return {
@@ -50,7 +49,7 @@ export const diagnoseSubmitError = (
         diagnostic,
         meta: {
           transactionData,
-          data: axiosError.data as HorizonApi.ErrorResponseData,
+          data: axiosError.data as Horizon.HorizonApi.ErrorResponseData,
         },
       } as HorizonDiagnostics
     }
@@ -60,7 +59,7 @@ export const diagnoseSubmitError = (
       meta: {
         message: axiosError.message,
         transactionData,
-        data: axiosError.data as HorizonApi.ErrorResponseData,
+        data: axiosError.data as Horizon.HorizonApi.ErrorResponseData,
       },
     }
   }
@@ -72,7 +71,7 @@ export const diagnoseSubmitError = (
 
 const isHorizonErrorResponseData = (data: unknown): boolean => {
   if (typeof data === 'object' && data !== null) {
-    const potentialError = data as HorizonApi.ErrorResponseData.Base // Type assertion
+    const potentialError = data as Horizon.HorizonApi.ErrorResponseData.Base // Type assertion
     return (
       'status' in potentialError && 'title' in potentialError && 'type' in potentialError && 'detail' in potentialError
     )
@@ -93,7 +92,7 @@ export type DiagnosticEntry = {
 }
 
 const reviewTransactionError = (
-  errorData: HorizonApi.ErrorResponseData.TransactionFailed,
+  errorData: Horizon.HorizonApi.ErrorResponseData.TransactionFailed,
   tx?: Transaction | FeeBumpTransaction
 ): TransactionDiagnostic => {
   const diagnostic: TransactionDiagnostic = {}

@@ -1,4 +1,5 @@
-import { ContractSpec } from '@stellar/stellar-sdk'
+import { Spec } from '@stellar/stellar-sdk/contract'
+
 export enum Methods {
   deposit = 'deposit',
   withdraw = 'withdraw',
@@ -10,7 +11,7 @@ export enum Methods {
   initialize = 'initialize',
 }
 
-export const spec = new ContractSpec([
+export const spec = new Spec([
   'AAAAAAAAAAAAAAAKaW5pdGlhbGl6ZQAAAAAACAAAAAAAAAAFYWRtaW4AAAAAAAATAAAAAAAAAAVhc3NldAAAAAAAABMAAAAAAAAABHRlcm0AAAAGAAAAAAAAAA1jb21wb3VuZF9zdGVwAAAAAAAABgAAAAAAAAAKeWllbGRfcmF0ZQAAAAAABgAAAAAAAAALbWluX2RlcG9zaXQAAAAACwAAAAAAAAAMcGVuYWx0eV9yYXRlAAAABgAAAAAAAAAQYWxsb3dhbmNlX3BlcmlvZAAAAAQAAAAA',
   'AAAAAAAAAAAAAAAHZGVwb3NpdAAAAAACAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAAAAAAB2FkZHJlc3MAAAAAEwAAAAA=',
   'AAAAAAAAAAAAAAAId2l0aGRyYXcAAAACAAAAAAAAAAdhZGRyZXNzAAAAABMAAAAAAAAAGWFjY2VwdF9wcmVtYXR1cmVfd2l0aGRyYXcAAAAAAAABAAAAAA==',

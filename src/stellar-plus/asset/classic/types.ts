@@ -1,4 +1,4 @@
-import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
+import { Horizon } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { AssetType, AssetTypes } from 'stellar-plus/asset/types'
@@ -32,7 +32,7 @@ export type ClassicTokenInterfaceManagement = {
       to: string
       amount: number
     } & TransactionInvocation
-  ) => Promise<HorizonApi.SubmitTransactionResponse>
+  ) => Promise<Horizon.HorizonApi.SubmitTransactionResponse>
 }
 
 export type ClassicTokenInterfaceUser = {
@@ -47,5 +47,5 @@ export type ClassicTokenInterfaceUser = {
 export type ClassicUtils = {
   addTrustlineAndMint: (
     args: { to: string; amount: number } & TransactionInvocation
-  ) => Promise<HorizonApi.SubmitTransactionResponse>
+  ) => Promise<Horizon.HorizonApi.SubmitTransactionResponse>
 }
