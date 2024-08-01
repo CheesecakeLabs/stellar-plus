@@ -1,4 +1,4 @@
-import { ContractSpec } from '@stellar/stellar-sdk'
+import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { ContractEngine } from './contract-engine'
 import { BuildTransactionPipeline } from './pipelines/build-transaction'
@@ -24,5 +24,6 @@ export const Core = {
     SubmitTransaction: SubmitTransactionPipeline,
   },
   ContractEngine: ContractEngine,
-  ContractSpec,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  Spec,
 }

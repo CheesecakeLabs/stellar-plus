@@ -1,7 +1,7 @@
-import { ContractSpec } from '@stellar/stellar-sdk'
+import { Spec } from '@stellar/stellar-sdk/contract'
+
 import { DefaultAccountHandler } from 'stellar-plus/account'
 import { ContractEngine } from 'stellar-plus/core/contract-engine'
-
 import { CustomNet, NetworkConfig } from 'stellar-plus/network'
 import { StellarTestLedger, TestLedgerNetwork } from 'stellar-plus/test/stellar-test-ledger'
 import { TransactionInvocation } from 'stellar-plus/types'
@@ -16,7 +16,7 @@ describe('Hello World Contract Use Case: ', () => {
     network: TestLedgerNetwork.LOCAL,
   })
 
-  let helloWorldSpec: ContractSpec
+  let helloWorldSpec: Spec
   let networkConfig: NetworkConfig
   let wasmBuffer: Buffer
   beforeAll(async () => {
@@ -33,7 +33,7 @@ describe('Hello World Contract Use Case: ', () => {
     wasmBuffer = await loadWasmFile('./src/tests/contracts/hello-world/hello_world.wasm')
     expect(wasmBuffer).toBeDefined()
 
-    helloWorldSpec = new ContractSpec(spec)
+    helloWorldSpec = new Spec(spec)
   })
 
   afterAll(async () => {

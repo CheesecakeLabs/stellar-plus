@@ -6,7 +6,6 @@ import { SorobanTokenHandler } from 'stellar-plus/asset/soroban-token'
 import { SorobanTokenHandlerConstructorArgs } from 'stellar-plus/asset/soroban-token/types'
 import { SACConstructorArgs, SACHandler as SACHandlerType } from 'stellar-plus/asset/stellar-asset-contract/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
-
 import { TransactionInvocation } from 'stellar-plus/core/types'
 
 export class SACHandler implements SACHandlerType {
@@ -23,7 +22,7 @@ export class SACHandler implements SACHandlerType {
    * @param {string} args.code - The asset code.
    * @param {string | AccountHandler} args.issuerAccount - The issuer account. Can be a public key or an account handler. If it's an account handler, it will enable management functions.
    * @param contractParameters - The contract parameters.
-   * @param {ContractSpec=} contractParameters.spec - The contract specification object.
+   * @param {Spec=} contractParameters.spec - The contract specification object.
    * @param {Buffer=} contractParameters.wasm - The contract wasm file as a buffer.
    * @param {string=} contractParameters.wasmHash - The contract wasm hash id.
    * @param {string=} contractParameters.contractId - The contract id.

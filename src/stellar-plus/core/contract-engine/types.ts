@@ -1,4 +1,5 @@
-import { ContractSpec, SorobanDataBuilder, Asset as StellarAsset, xdr } from '@stellar/stellar-sdk'
+import { SorobanDataBuilder, Asset as StellarAsset, xdr } from '@stellar/stellar-sdk'
+import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { AccountHandler } from 'stellar-plus/account'
 import {
@@ -10,7 +11,7 @@ import { EnvelopeHeader, FeeBumpHeader, NetworkConfig, TransactionInvocation } f
 export type ContractEngineConstructorArgs = {
   networkConfig: NetworkConfig
   contractParameters: {
-    spec?: ContractSpec
+    spec?: Spec
     contractId?: string
     wasm?: Buffer
     wasmHash?: string

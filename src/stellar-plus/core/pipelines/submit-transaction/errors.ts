@@ -1,4 +1,4 @@
-import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
+import { Horizon } from '@stellar/stellar-sdk'
 
 import { StellarPlusError } from 'stellar-plus/error'
 import { ConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
@@ -54,7 +54,7 @@ const horizonSubmissionFailed = (
   })
 }
 const transactionSubmittedThroughHorizonFailed = (
-  response: HorizonApi.SubmitTransactionResponse,
+  response: Horizon.HorizonApi.SubmitTransactionResponse,
   conveyorBeltErrorMeta: ConveyorBeltErrorMeta<SubmitTransactionPipelineInput, BeltMetadata>,
   transaction: Transaction | FeeBumpTransaction
 ): StellarPlusError => {

@@ -1,4 +1,4 @@
-import { ContractSpec } from '@stellar/stellar-sdk'
+import { Spec } from '@stellar/stellar-sdk/contract'
 
 import {
   ContractInvocationOutput,
@@ -18,10 +18,10 @@ export class ExtractInvocationOutputPlugin<OutputType>
 {
   readonly type = SorobanGetTransactionPipelineType.id
   readonly name: string = 'ExtractInvocationOutputPlugin'
-  private spec: ContractSpec
+  private spec: Spec
   private method: string
 
-  constructor(spec: ContractSpec, method: string) {
+  constructor(spec: Spec, method: string) {
     this.spec = spec
     this.method = method
   }

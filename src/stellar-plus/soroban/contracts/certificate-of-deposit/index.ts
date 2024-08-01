@@ -1,4 +1,5 @@
-import { Address, ContractSpec } from '@stellar/stellar-sdk'
+import { Address } from '@stellar/stellar-sdk'
+import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { ContractEngine } from 'stellar-plus/core/contract-engine'
 import { ContractEngineConstructorArgs } from 'stellar-plus/core/contract-engine/types'
@@ -30,7 +31,7 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
    *
    */
   constructor(args: CertificateOfDepositContractConstructorArgs) {
-    const contractSpec = args.contractParameters.spec || (spec as ContractSpec)
+    const contractSpec = args.contractParameters.spec || (spec as Spec)
     const contractParameters = {
       ...args.contractParameters,
       spec: contractSpec,

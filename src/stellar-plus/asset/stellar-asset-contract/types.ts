@@ -1,4 +1,4 @@
-import { ContractSpec } from '@stellar/stellar-sdk'
+import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { ClassicAssetHandler } from 'stellar-plus/asset/classic'
 import { ClassicAssetHandlerConstructorArgs } from 'stellar-plus/asset/classic/types'
@@ -15,7 +15,7 @@ export type SACHandler = AssetType & {
 export type SACConstructorArgs = ClassicAssetHandlerConstructorArgs & {
   networkConfig: NetworkConfig
   contractParameters?: {
-    spec?: ContractSpec
+    spec?: Spec
     contractId?: string
     wasm?: Buffer
     wasmHash?: string

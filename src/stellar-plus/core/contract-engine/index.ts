@@ -3,13 +3,13 @@ import { Buffer } from 'buffer'
 import {
   Address,
   Contract,
-  ContractSpec,
   Operation,
   OperationOptions,
   SorobanDataBuilder,
   SorobanRpc as SorobanRpcNamespace,
   xdr,
 } from '@stellar/stellar-sdk'
+import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { CEError } from 'stellar-plus/core/contract-engine/errors'
 import {
@@ -44,7 +44,7 @@ import { ExtractInvocationOutputPlugin } from 'stellar-plus/utils/pipeline/plugi
 import { ExtractWasmHashPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-wasm-hash'
 
 export class ContractEngine {
-  private spec?: ContractSpec
+  private spec?: Spec
   private contractId?: string
   private wasm?: Buffer
   private wasmHash?: string
@@ -59,7 +59,7 @@ export class ContractEngine {
    *
    * @param {NetworkConfig} networkConfig - The network to use.
    * @param contractParameters - The contract parameters.
-   * @param {ContractSpec} contractParameters.spec - The contract specification object.
+   * @param {Spec} contractParameters.spec - The contract specification object.
    * @param {string=} contractParameters.contractId - The contract id.
    * @param {Buffer=} contractParameters.wasm - The contract wasm file as a buffer.
    * @param {string=} contractParameters.wasmHash - The contract wasm hash id.
@@ -370,6 +370,7 @@ export class ContractEngine {
         }
       } finally {
         if (!isAssetAlreadyWrapped) {
+          // eslint-disable-next-line no-unsafe-finally
           throw CEError.failedToWrapAsset(error as StellarPlusError)
         }
       }

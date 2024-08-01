@@ -1,5 +1,4 @@
-import { xdr } from '@stellar/stellar-sdk'
-import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
+import { Horizon, xdr } from '@stellar/stellar-sdk'
 
 import {
   BuildTransactionPipelineOutput,
@@ -38,7 +37,7 @@ export type ClassicTransactionPipelineInput = {
 export type ClassicTransactionPipelineOutput =
   | ClassicTransactionPipelineOutputSimple
   | ClassicTransactionPipelineOutputVerbose
-export type ClassicTransactionPipelineOutputSimple = { response: HorizonApi.SubmitTransactionResponse }
+export type ClassicTransactionPipelineOutputSimple = { response: Horizon.HorizonApi.SubmitTransactionResponse }
 export type ClassicTransactionPipelineOutputVerbose = (VerboseOutput | undefined) & {
   classicTransactionOutput: ClassicTransactionPipelineOutputSimple
   hash?: string
