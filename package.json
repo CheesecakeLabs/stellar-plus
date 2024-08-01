@@ -61,12 +61,12 @@
     "tsc-alias": "^1.8.8",
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.6.2",
-    "typescript": "^5.3.2"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
     "@hyperledger/cactus-test-tooling": "^2.0.0-rc.2",
     "@stellar/freighter-api": "^1.7.1",
-    "@stellar/stellar-sdk": "^11.2.2",
+    "@stellar/stellar-sdk": "^12.2.0",
     "axios": "^1.6.2",
     "uuid": "^9.0.1"
   }

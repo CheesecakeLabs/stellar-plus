@@ -2,9 +2,9 @@
   "compilerOptions": {
     "target": "es2016",
     "lib": ["es6"],
-    "module": "commonjs",
+    "module": "Node16",
     "rootDir": "./src",
-    "moduleResolution": "node10",
+    "moduleResolution": "Node16",
     "baseUrl": "./src",
     "resolveJsonModule": true,
     "allowJs": true,
@@ -15,10 +15,14 @@
     "importHelpers": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
     "strict": true,
     "noImplicitAny": true,
     "skipLibCheck": true
   },
   "exclude": ["commitlint.config.js"],
-  "include": ["./src"]
+  "include": ["./src"],
+  "paths": {
+    "@stellar/stellar-sdk/contract": ["node_modules/@stellar/stellar-sdk/lib/contract/index"]
+  }
 }

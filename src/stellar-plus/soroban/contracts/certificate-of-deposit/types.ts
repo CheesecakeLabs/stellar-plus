@@ -1,4 +1,4 @@
-import { ContractSpec } from '@stellar/stellar-sdk'
+import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { Options } from 'stellar-plus/core/contract-engine/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
@@ -21,7 +21,7 @@ export type CertificateOfDepositContract = {
 export type CertificateOfDepositContractConstructorArgs = {
   networkConfig: NetworkConfig
   contractParameters: {
-    spec?: ContractSpec
+    spec?: Spec
     contractId?: string
     wasm?: Buffer
     wasmHash?: string

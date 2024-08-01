@@ -1,5 +1,4 @@
-import { FeeBumpTransaction, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
-import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
+import { FeeBumpTransaction, Horizon, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import { HorizonHandler } from 'stellar-plus'
 import { RpcHandler } from 'stellar-plus/rpc/types'
@@ -11,7 +10,7 @@ export type SubmitTransactionPipelineInput = {
 }
 
 export type SubmitTransactionPipelineOutput = {
-  response: HorizonApi.SubmitTransactionResponse | SorobanRpc.Api.SendTransactionResponse
+  response: Horizon.HorizonApi.SubmitTransactionResponse | SorobanRpc.Api.SendTransactionResponse
 }
 
 export enum SubmitTransactionPipelineType {

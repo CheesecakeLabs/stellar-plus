@@ -1,20 +1,10 @@
-import { ContractSpec } from '@stellar/stellar-sdk'
 import { DefaultAccountHandler } from 'stellar-plus/account'
-import { ClassicAssetHandler, SACHandler } from 'stellar-plus/asset'
-import { SACAssetHandler } from 'stellar-plus/asset/types'
-import { ContractEngine } from 'stellar-plus/core/contract-engine'
-import { SorobanTransactionPipelinePlugin } from 'stellar-plus/core/pipelines/soroban-transaction/types'
-
+import { SACHandler } from 'stellar-plus/asset'
 import { CustomNet, NetworkConfig } from 'stellar-plus/network'
 import { StellarTestLedger, TestLedgerNetwork } from 'stellar-plus/test/stellar-test-ledger'
-import { TransactionInvocation } from 'stellar-plus/types'
-import { GenericPlugin } from 'stellar-plus/utils/pipeline/conveyor-belts/types'
-import { DebugPlugin } from 'stellar-plus/utils/pipeline/plugins/generic'
 import { ProfilerPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-transaction'
 import { LogEntry } from 'stellar-plus/utils/profiler/profiling-handler/types'
-import { contractIdRegex, wasmHashRegex } from 'stellar-plus/utils/regex'
-import { GetNameArgs, GetNameResponse, methods, spec } from 'tests/contracts/hello-world/spec'
-import { loadWasmFile, simpleTxInvocation } from 'tests/utils'
+import { simpleTxInvocation } from 'tests/utils'
 
 describe('Profiler Plugin Use Case: ', () => {
   const logLevel = 'TRACE'

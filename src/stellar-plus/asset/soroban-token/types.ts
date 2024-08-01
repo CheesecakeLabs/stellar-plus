@@ -1,4 +1,4 @@
-import { ContractSpec } from '@stellar/stellar-sdk'
+import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { AssetType } from 'stellar-plus/asset/types'
 import { Options } from 'stellar-plus/core/contract-engine/types'
@@ -9,7 +9,7 @@ import { NetworkConfig, i128, u32 } from 'stellar-plus/types'
 export type SorobanTokenHandlerConstructorArgs = {
   networkConfig: NetworkConfig
   contractParameters?: {
-    spec?: ContractSpec
+    spec?: Spec
     contractId?: string
     wasm?: Buffer
     wasmHash?: string
