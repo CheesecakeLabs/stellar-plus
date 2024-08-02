@@ -33,6 +33,10 @@ export type ClassicTokenInterfaceManagement = {
       amount: number
     } & TransactionInvocation
   ) => Promise<Horizon.HorizonApi.SubmitTransactionResponse>
+
+  setFlags: (
+    args: { controlFlags: ControlFlags } & TransactionInvocation
+  ) => Promise<Horizon.HorizonApi.SubmitTransactionResponse>
 }
 
 export type ClassicTokenInterfaceUser = {
@@ -48,4 +52,11 @@ export type ClassicUtils = {
   addTrustlineAndMint: (
     args: { to: string; amount: number } & TransactionInvocation
   ) => Promise<Horizon.HorizonApi.SubmitTransactionResponse>
+}
+
+export type ControlFlags = {
+  authorizationRequired?: boolean
+  authorizationRevocable?: boolean
+  clawbackEnabled?: boolean
+  authorizationImmutable?: boolean
 }
