@@ -1,8 +1,18 @@
-import { Horizon as HorizonNamespace, Operation, Asset as StellarAsset } from '@stellar/stellar-sdk'
+import {
+  AuthClawbackEnabledFlag,
+  AuthFlag,
+  AuthImmutableFlag,
+  AuthRequiredFlag,
+  AuthRevocableFlag,
+  Horizon as HorizonNamespace,
+  Operation,
+  Asset as StellarAsset,
+} from '@stellar/stellar-sdk'
 
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import {
   ClassicAssetHandlerConstructorArgs,
+  ControlFlags,
   ClassicAssetHandler as IClassicAssetHandler,
 } from 'stellar-plus/asset/classic/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
@@ -237,6 +247,40 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
     const result = (await this.classicTransactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [mintOp],
+    })) as ClassicTransactionPipelineOutputSimple
+
+    return result.response
+  }
+
+  public async setFlags(
+    args: {
+      controlFlags: ControlFlags
+    } & TransactionInvocation
+  ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
+    this.requireIssuerAccount() // Enforces the issuer account to be set.
+
+    const { controlFlags } = args
+
+    const txInvocation = args as TransactionInvocation
+    const updatedTxInvocation = {
+      ...txInvocation,
+      signers: [...txInvocation.signers, this.issuerAccount!], // Adds the issuer account as a signer. Issue account initialization is already verified by requireIssuerAccount().
+    }
+
+    let flags = 0
+    if (controlFlags.authorizationRequired) flags |= AuthRequiredFlag
+    if (controlFlags.authorizationRevocable) flags |= AuthRevocableFlag
+    if (controlFlags.authorizationImmutable) flags |= AuthImmutableFlag
+    if (controlFlags.clawbackEnabled) flags |= AuthClawbackEnabledFlag
+
+    const setFlags = Operation.setOptions({
+      setFlags: flags as AuthFlag,
+      source: this.asset.getIssuer(),
+    })
+
+    const result = (await this.classicTransactionPipeline.execute({
+      txInvocation: updatedTxInvocation,
+      operations: [setFlags],
     })) as ClassicTransactionPipelineOutputSimple
 
     return result.response
