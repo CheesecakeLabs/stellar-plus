@@ -191,7 +191,7 @@ describe('ContractEngine', () => {
         },
       })
 
-      await expect(contractEngine.uploadWasm(MOCKED_TX_INVOCATION)).resolves.toBeUndefined()
+      await expect(contractEngine.uploadWasm(MOCKED_TX_INVOCATION)).resolves.toBeDefined()
       expect(contractEngine.getWasm()).toEqual(MOCKED_WASM_FILE)
     })
 
@@ -216,7 +216,7 @@ describe('ContractEngine', () => {
         },
       })
 
-      await expect(contractEngine.deploy(MOCKED_TX_INVOCATION)).resolves.toBeUndefined()
+      await expect(contractEngine.deploy(MOCKED_TX_INVOCATION)).resolves.toBeDefined()
       expect(contractEngine.getContractId()).toEqual(MOCKED_CONTRACT_ID)
     })
   })
@@ -514,7 +514,7 @@ describe('ContractEngine', () => {
 
       await expect(
         contractEngine.wrapAndDeployClassicAsset({ asset: MOCKED_STELLAR_ASSET, ...MOCKED_TX_INVOCATION })
-      ).resolves.toBeUndefined()
+      ).resolves.toBeDefined()
 
       expect(contractEngine.getContractId()).toEqual(MOCKED_CONTRACT_ID)
     })

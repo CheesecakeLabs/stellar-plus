@@ -1,8 +1,10 @@
-import { Horizon } from '@stellar/stellar-sdk'
-
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import { AssetType, AssetTypes } from 'stellar-plus/asset/types'
-import { ClassicTransactionPipelineOptions } from 'stellar-plus/core/pipelines/classic-transaction/types'
+import {
+  ClassicTransactionPipelineInput,
+  ClassicTransactionPipelineOptions,
+  ClassicTransactionPipelineOutput,
+} from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { NetworkConfig } from 'stellar-plus/types'
 
@@ -31,18 +33,18 @@ export type ClassicTokenInterfaceManagement = {
     args: {
       to: string
       amount: number
-    } & TransactionInvocation
-  ) => Promise<Horizon.HorizonApi.SubmitTransactionResponse>
+    } & BaseInvocation
+  ) => Promise<ClassicTransactionPipelineOutput>
 
-  setFlags: (
-    args: { controlFlags: ControlFlags } & TransactionInvocation
-  ) => Promise<Horizon.HorizonApi.SubmitTransactionResponse>
+  setFlags: (args: { controlFlags: ControlFlags } & BaseInvocation) => Promise<ClassicTransactionPipelineOutput>
 }
 
 export type ClassicTokenInterfaceUser = {
   balance: (id: string) => Promise<number>
-  transfer: (args: { from: string; to: string; amount: number } & TransactionInvocation) => Promise<void>
-  burn: (args: { from: string; amount: number } & TransactionInvocation) => Promise<void>
+  transfer: (
+    args: { from: string; to: string; amount: number } & BaseInvocation
+  ) => Promise<ClassicTransactionPipelineOutput>
+  burn: (args: { from: string; amount: number } & BaseInvocation) => Promise<ClassicTransactionPipelineOutput>
   decimals: () => Promise<number>
   name: () => Promise<string>
   symbol: () => Promise<string>
@@ -50,8 +52,9 @@ export type ClassicTokenInterfaceUser = {
 
 export type ClassicUtils = {
   addTrustlineAndMint: (
-    args: { to: string; amount: number } & TransactionInvocation
-  ) => Promise<Horizon.HorizonApi.SubmitTransactionResponse>
+    args: { to: string; amount: number } & BaseInvocation
+  ) => Promise<ClassicTransactionPipelineOutput>
+  addTrustline: (args: { to: string } & BaseInvocation) => Promise<ClassicTransactionPipelineOutput>
 }
 
 export type ControlFlags = {
@@ -59,4 +62,8 @@ export type ControlFlags = {
   authorizationRevocable?: boolean
   clawbackEnabled?: boolean
   authorizationImmutable?: boolean
+}
+
+export type BaseInvocation = TransactionInvocation & {
+  options?: ClassicTransactionPipelineInput['options']
 }
