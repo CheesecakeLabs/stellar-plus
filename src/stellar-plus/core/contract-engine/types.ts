@@ -23,6 +23,10 @@ export type Options = {
   sorobanTransactionPipeline?: SorobanTransactionPipelineOptions
 }
 
+export type BaseInvocation = TransactionInvocation & {
+  options?: SorobanTransactionPipelineInput['options']
+}
+
 export type TransactionResources = {
   cpuInstructions?: number
   ram?: number
@@ -48,15 +52,7 @@ export type SorobanSimulateArgs<T> = {
   options?: SorobanTransactionPipelineInput['options']
 }
 
-export type SorobanUploadArgs = TransactionInvocation & {
-  wasm: Buffer
-}
-
-export type SorobanDeployArgs = TransactionInvocation & {
-  wasmHash: string
-}
-
-export type WrapClassicAssetArgs = TransactionInvocation & {
+export type WrapClassicAssetArgs = BaseInvocation & {
   asset: StellarAsset
 }
 
@@ -65,7 +61,7 @@ export type ExtendFootprintTTLArgs = TransactionInvocation & {
   footprint: xdr.LedgerFootprint
 }
 
-export type RestoreFootprintArgs = TransactionInvocation &
+export type RestoreFootprintArgs = BaseInvocation &
   (RestoreFootprintWithLedgerKeys | RestoreFootprintWithRestorePreamble)
 
 export type RestoreFootprintWithLedgerKeys = {

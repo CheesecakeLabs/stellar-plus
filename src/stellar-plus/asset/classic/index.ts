@@ -11,6 +11,7 @@ import {
 
 import { AccountHandler } from 'stellar-plus/account/account-handler/types'
 import {
+  BaseInvocation,
   ClassicAssetHandlerConstructorArgs,
   ControlFlags,
   ClassicAssetHandler as IClassicAssetHandler,
@@ -19,7 +20,7 @@ import { AssetTypes } from 'stellar-plus/asset/types'
 import { ClassicTransactionPipeline } from 'stellar-plus/core/pipelines/classic-transaction'
 import {
   ClassicTransactionPipelineOptions,
-  ClassicTransactionPipelineOutputSimple,
+  ClassicTransactionPipelineOutput,
 } from 'stellar-plus/core/pipelines/classic-transaction/types'
 import { TransactionInvocation } from 'stellar-plus/core/types'
 import { HorizonHandlerClient as HorizonHandler } from 'stellar-plus/horizon'
@@ -157,7 +158,9 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
    *
    * @description - Transfers the given amount of the asset from the 'from' account to the 'to' account.
    */
-  public async transfer(args: { from: string; to: string; amount: number } & TransactionInvocation): Promise<void> {
+  public async transfer(
+    args: { from: string; to: string; amount: number } & BaseInvocation
+  ): Promise<ClassicTransactionPipelineOutput> {
     const { from, to, amount } = args
 
     const txInvocation = args as TransactionInvocation
@@ -169,12 +172,15 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: from,
     })
 
-    await this.classicTransactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation,
       operations: [transferOp],
+      options: {
+        ...args.options,
+      },
     })
 
-    return
+    return result
   }
 
   /**
@@ -189,7 +195,9 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
    *
    * @description - Burns the given amount of the asset from the 'from' account.
    */
-  public async burn(args: { from: string; amount: number } & TransactionInvocation): Promise<void> {
+  public async burn(
+    args: { from: string; amount: number } & BaseInvocation
+  ): Promise<ClassicTransactionPipelineOutput> {
     if (this.type === AssetTypes.native) {
       throw "You can't burn XLM"
     }
@@ -225,8 +233,8 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
     args: {
       to: string
       amount: number
-    } & TransactionInvocation
-  ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
+    } & BaseInvocation
+  ): Promise<ClassicTransactionPipelineOutput> {
     this.requireIssuerAccount() // Enforces the issuer account to be set.
 
     const { to, amount } = args
@@ -244,19 +252,31 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: this.asset.getIssuer(),
     })
 
-    const result = (await this.classicTransactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [mintOp],
-    })) as ClassicTransactionPipelineOutputSimple
+      options: {
+        ...args.options,
+      },
+    })
 
-    return result.response
+    return result
   }
 
+  /**
+   *
+   * @param {ControlFlags} controlFlags - The control flags to set for the asset.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object spread. The Issuer account will be automatically added as a signer.
+   *
+   * @requires - The issuer account to be set in the asset.
+   *
+   * @returns {ClassicTransactionPipelineOutput} The response from the Horizon server.
+   */
   public async setFlags(
     args: {
       controlFlags: ControlFlags
-    } & TransactionInvocation
-  ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
+    } & BaseInvocation
+  ): Promise<ClassicTransactionPipelineOutput> {
     this.requireIssuerAccount() // Enforces the issuer account to be set.
 
     const { controlFlags } = args
@@ -278,12 +298,15 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: this.asset.getIssuer(),
     })
 
-    const result = (await this.classicTransactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [setFlags],
-    })) as ClassicTransactionPipelineOutputSimple
+      options: {
+        ...args.options,
+      },
+    })
 
-    return result.response
+    return result
   }
 
   public async clawback(): Promise<void> {
@@ -313,8 +336,8 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
     args: {
       to: string
       amount: number
-    } & TransactionInvocation
-  ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
+    } & BaseInvocation
+  ): Promise<ClassicTransactionPipelineOutput> {
     this.requireIssuerAccount() // Enforces the issuer account to be set.
 
     const { to, amount } = args
@@ -337,12 +360,15 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       source: this.asset.getIssuer(),
     })
 
-    const result = (await this.classicTransactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation: updatedTxInvocation,
       operations: [addTrustlineOp, mintOp],
-    })) as ClassicTransactionPipelineOutputSimple
+      options: {
+        ...args.options,
+      },
+    })
 
-    return result.response
+    return result
   }
 
   /**
@@ -359,8 +385,8 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
   public async addTrustline(
     args: {
       to: string
-    } & TransactionInvocation
-  ): Promise<HorizonNamespace.HorizonApi.SubmitTransactionResponse> {
+    } & BaseInvocation
+  ): Promise<ClassicTransactionPipelineOutput> {
     const { to } = args
 
     const txInvocation = args as TransactionInvocation
@@ -370,12 +396,15 @@ export class ClassicAssetHandler implements IClassicAssetHandler {
       asset: this.asset,
     })
 
-    const result = (await this.classicTransactionPipeline.execute({
+    const result = await this.classicTransactionPipeline.execute({
       txInvocation,
       operations: [addTrustlineOp],
-    })) as ClassicTransactionPipelineOutputSimple
+      options: {
+        ...args.options,
+      },
+    })
 
-    return result.response
+    return result
   }
 
   //==========================================
