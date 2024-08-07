@@ -283,6 +283,7 @@ describe('Classic Asset Handler', () => {
       expect(spyExecute).toHaveBeenCalledExactlyOnceWith({
         txInvocation: args as TransactionInvocation,
         operations: ['paymentOp'],
+        options: {},
       })
     })
 
@@ -341,6 +342,7 @@ describe('Classic Asset Handler', () => {
           signers: [mockedUserAccountHandler, mockedIssuerAccountHandler],
         } as TransactionInvocation,
         operations: ['paymentOp'],
+        options: {},
       })
     })
 
@@ -366,6 +368,7 @@ describe('Classic Asset Handler', () => {
       expect(spyExecute).toHaveBeenCalledExactlyOnceWith({
         txInvocation: args as TransactionInvocation,
         operations: ['changeTrustOp'],
+        options: {},
       })
     })
 
@@ -396,6 +399,7 @@ describe('Classic Asset Handler', () => {
           signers: [mockedUserAccountHandler, mockedIssuerAccountHandler],
         } as TransactionInvocation,
         operations: ['changeTrustOp', 'paymentOp'],
+        options: {},
       })
     })
   })

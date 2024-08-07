@@ -13,6 +13,7 @@ import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { CEError } from 'stellar-plus/core/contract-engine/errors'
 import {
+  BaseInvocation,
   ContractEngineConstructorArgs,
   Options,
   RestoreFootprintArgs,
@@ -283,22 +284,24 @@ export class ContractEngine {
    * @requires - The wasm file buffer to be set in the contract engine.
    *
    * */
-  public async uploadWasm(txInvocation: TransactionInvocation): Promise<void> {
+  public async uploadWasm(args: BaseInvocation): Promise<SorobanTransactionPipelineOutput> {
     this.requireWasm()
 
     try {
       const uploadOperation = Operation.uploadContractWasm({ wasm: this.wasm! }) // Wasm verified in requireWasm
 
       const result = await this.sorobanTransactionPipeline.execute({
-        txInvocation,
+        txInvocation: args as TransactionInvocation,
         operations: [uploadOperation],
         options: {
+          ...args.options,
           executionPlugins: [new ExtractWasmHashPlugin()],
           verboseOutput: true,
         },
       })
 
       this.wasmHash = (result as VerboseExecutedOutput).sorobanGetTransactionPipelineOutput.output?.wasmHash
+      return result
     } catch (error) {
       throw CEError.failedToUploadWasm(error as StellarPlusError)
     }
@@ -312,32 +315,35 @@ export class ContractEngine {
    * @requires - The wasm hash to be set in the contract engine.
    *
    * */
-  public async deploy(txInvocation: TransactionInvocation): Promise<void> {
+  public async deploy(args: BaseInvocation): Promise<SorobanTransactionPipelineOutput> {
     this.requireWasmHash()
 
     try {
       const deployOperation = Operation.createCustomContract({
-        address: new Address(txInvocation.header.source),
+        address: new Address(args.header.source),
         wasmHash: Buffer.from(this.wasmHash!, 'hex'), // Wasm hash verified in requireWasmHash
         salt: generateRandomSalt(),
       } as OperationOptions.CreateCustomContract)
 
       const result = await this.sorobanTransactionPipeline.execute({
-        txInvocation,
+        txInvocation: args as TransactionInvocation,
         operations: [deployOperation],
         options: {
+          ...args.options,
           executionPlugins: [new ExtractContractIdPlugin()],
           verboseOutput: true,
         },
       })
 
       this.contractId = (result as VerboseExecutedOutput).sorobanGetTransactionPipelineOutput.output?.contractId
+
+      return result
     } catch (error) {
       throw CEError.failedToDeployContract(error as StellarPlusError)
     }
   }
 
-  public async wrapAndDeployClassicAsset(args: WrapClassicAssetArgs): Promise<void> {
+  public async wrapAndDeployClassicAsset(args: WrapClassicAssetArgs): Promise<SorobanTransactionPipelineOutput | void> {
     this.requireNoContractId()
 
     try {
@@ -351,12 +357,15 @@ export class ContractEngine {
         txInvocation,
         operations: [wrapOperation],
         options: {
+          ...args.options,
           executionPlugins: [new ExtractContractIdPlugin()],
           verboseOutput: true,
         },
       })
 
       this.contractId = (result as VerboseExecutedOutput).sorobanGetTransactionPipelineOutput.output?.contractId
+
+      return result
     } catch (error) {
       let isAssetAlreadyWrapped = false
       try {
@@ -377,7 +386,7 @@ export class ContractEngine {
     }
   }
 
-  public async restoreContractInstance(args: TransactionInvocation): Promise<void> {
+  public async restoreContractInstance(args: BaseInvocation): Promise<void> {
     return await this.restore({
       keys: [(await this.getContractInstanceLedgerEntry()).key],
       ...(args as TransactionInvocation),
@@ -392,7 +401,7 @@ export class ContractEngine {
    *
    * @description - Restores the contract code.
    */
-  public async restoreContractCode(args: TransactionInvocation): Promise<void> {
+  public async restoreContractCode(args: BaseInvocation): Promise<void> {
     return await this.restore({
       keys: [(await this.getContractCodeLedgerEntry()).key],
       ...(args as TransactionInvocation),
@@ -498,6 +507,7 @@ export class ContractEngine {
       txInvocation,
       operations: [restoreFootprintOperation],
       options: {
+        ...args.options,
         executionPlugins: [
           new InjectPreprocessParameterPlugin<
             BuildTransactionPipelineInput,
