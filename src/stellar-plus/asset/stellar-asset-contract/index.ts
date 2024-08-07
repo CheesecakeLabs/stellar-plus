@@ -7,6 +7,7 @@ import { SorobanTokenHandlerConstructorArgs } from 'stellar-plus/asset/soroban-t
 import { SACConstructorArgs, SACHandler as SACHandlerType } from 'stellar-plus/asset/stellar-asset-contract/types'
 import { AssetTypes } from 'stellar-plus/asset/types'
 import { BaseInvocation } from 'stellar-plus/core/contract-engine/types'
+import { SorobanTransactionPipelineOutput } from 'stellar-plus/core/pipelines/soroban-transaction/types'
 
 export class SACHandler implements SACHandlerType {
   public type: AssetTypes = AssetTypes.SAC
@@ -78,11 +79,11 @@ export class SACHandler implements SACHandlerType {
    *
    * @description - Wraps and deploys the classic asset with the Stellar Asset Contract.
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<SorobanTransactionPipelineOutput | void>}
    *
    */
-  public async wrapAndDeploy(args: BaseInvocation): Promise<void> {
+  public async wrapAndDeploy(args: BaseInvocation): Promise<SorobanTransactionPipelineOutput | void> {
     const asset = new Asset(this.classicHandler.code, this.classicHandler.issuerPublicKey)
-    await this.sorobanTokenHandler.wrapAndDeployClassicAsset({ asset, ...args })
+    return await this.sorobanTokenHandler.wrapAndDeployClassicAsset({ asset, ...args })
   }
 }
