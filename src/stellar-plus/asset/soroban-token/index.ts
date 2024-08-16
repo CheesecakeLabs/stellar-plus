@@ -1,4 +1,3 @@
-import { Address } from '@stellar/stellar-sdk'
 import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { spec as defaultSpec, methods } from 'stellar-plus/asset/soroban-token/constants'
@@ -61,7 +60,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.invokeContract({
       method: methods.initialize,
       methodArgs: {
-        admin: new Address(args.admin),
+        admin: args.admin,
         decimal: args.decimal,
         name: args.name,
         symbol: args.symbol,
@@ -98,8 +97,8 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.invokeContract({
       method: methods.set_admin,
       methodArgs: {
-        id: new Address(args.id),
-        new_admin: new Address(args.new_admin),
+        id: args.id,
+        new_admin: args.new_admin,
       },
       signers: args.signers,
       header: args.header,
@@ -147,7 +146,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.invokeContract({
       method: methods.set_authorized,
       methodArgs: {
-        id: new Address(args.id),
+        id: args.id,
         authorize: args.authorize,
       },
       signers: args.signers,
@@ -178,7 +177,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.invokeContract({
       method: methods.mint,
       methodArgs: {
-        to: new Address(args.to),
+        to: args.to,
         amount: args.amount,
       },
       signers: args.signers,
@@ -209,7 +208,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.invokeContract({
       method: methods.clawback,
       methodArgs: {
-        from: new Address(args.from),
+        from: args.from,
         amount: args.amount,
       },
       signers: args.signers,
@@ -242,8 +241,8 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.readFromContract({
       method: methods.allowance,
       methodArgs: {
-        from: new Address(args.from),
-        spender: new Address(args.spender),
+        from: args.from,
+        spender: args.spender,
       },
       header: args.header,
     })) as i128
@@ -271,8 +270,8 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.invokeContract({
       method: methods.approve,
       methodArgs: {
-        from: new Address(args.from),
-        spender: new Address(args.spender),
+        from: args.from,
+        spender: args.spender,
         amount: args.amount,
         expiration_ledger: args.expiration_ledger,
       },
@@ -297,7 +296,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.readFromContract({
       method: methods.balance,
       methodArgs: {
-        id: new Address(args.id),
+        id: args.id,
       },
       header: args.header,
     })) as i128
@@ -318,7 +317,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.readFromContract({
       method: methods.spendable_balance,
       methodArgs: {
-        id: new Address(args.id),
+        id: args.id,
       },
       header: args.header,
     })) as i128
@@ -345,8 +344,8 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.invokeContract({
       method: methods.transfer,
       methodArgs: {
-        from: new Address(args.from),
-        to: new Address(args.to),
+        from: args.from,
+        to: args.to,
         amount: args.amount,
       },
       signers: args.signers,
@@ -377,9 +376,9 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.invokeContract({
       method: methods.transfer_from,
       methodArgs: {
-        spender: new Address(args.spender),
-        from: new Address(args.from),
-        to: new Address(args.to),
+        spender: args.spender,
+        from: args.from,
+        to: args.to,
         amount: args.amount,
       },
       signers: args.signers,
@@ -408,7 +407,7 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.invokeContract({
       method: methods.burn,
       methodArgs: {
-        from: new Address(args.from),
+        from: args.from,
         amount: args.amount,
       },
       signers: args.signers,
@@ -438,8 +437,8 @@ export class SorobanTokenHandler extends ContractEngine implements SorobanTokenI
     return (await this.invokeContract({
       method: methods.burn_from,
       methodArgs: {
-        spender: new Address(args.spender),
-        from: new Address(args.from),
+        spender: args.spender,
+        from: args.from,
         amount: args.amount,
       },
       signers: args.signers,
