@@ -1,4 +1,3 @@
-import { Address } from '@stellar/stellar-sdk'
 import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { ContractEngine } from 'stellar-plus/core/contract-engine'

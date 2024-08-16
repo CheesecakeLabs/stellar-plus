@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Address } from '@stellar/stellar-sdk'
 import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { SorobanTokenHandler } from 'stellar-plus/asset/soroban-token'
@@ -129,7 +128,7 @@ describe('SorobanToken', () => {
 
       expect(invokeSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.initialize,
-        methodArgs: { ...initializeArgs, admin: new Address(initializeArgs.admin) },
+        methodArgs: { ...initializeArgs, admin: initializeArgs.admin },
         ...MOCKED_TX_INVOCATION,
       })
     })
@@ -146,7 +145,7 @@ describe('SorobanToken', () => {
 
       expect(invokeSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.set_admin,
-        methodArgs: { id: new Address(currentAdmin), new_admin: new Address(newAdmin) },
+        methodArgs: { id: currentAdmin, new_admin: newAdmin },
         ...MOCKED_TX_INVOCATION,
       })
     })
@@ -164,7 +163,7 @@ describe('SorobanToken', () => {
 
       expect(invokeSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.set_authorized,
-        methodArgs: { ...setAuthorizedArgs, id: new Address(accountToAuthorize) },
+        methodArgs: { ...setAuthorizedArgs, id: accountToAuthorize },
         ...MOCKED_TX_INVOCATION,
       })
     })
@@ -180,7 +179,7 @@ describe('SorobanToken', () => {
 
       expect(invokeSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.mint,
-        methodArgs: { ...mintArgs, to: new Address(recipient) },
+        methodArgs: { ...mintArgs, to: recipient },
         ...MOCKED_TX_INVOCATION,
       })
     })
@@ -196,7 +195,7 @@ describe('SorobanToken', () => {
 
       expect(invokeSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.burn,
-        methodArgs: { ...burnArgs, from: new Address(from) },
+        methodArgs: { ...burnArgs, from: from },
         ...MOCKED_TX_INVOCATION,
       })
     })
@@ -214,7 +213,7 @@ describe('SorobanToken', () => {
 
       expect(invokeSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.clawback,
-        methodArgs: { ...clawbackArgs, from: new Address(targetAccount) },
+        methodArgs: { ...clawbackArgs, from: targetAccount },
         ...MOCKED_TX_INVOCATION,
       })
     })
@@ -233,7 +232,7 @@ describe('SorobanToken', () => {
 
       expect(invokeSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.approve,
-        methodArgs: { ...approveArgs, from: new Address(from), spender: new Address(spender) },
+        methodArgs: { ...approveArgs, from: from, spender: spender },
         ...MOCKED_TX_INVOCATION,
       })
     })
@@ -251,7 +250,7 @@ describe('SorobanToken', () => {
 
       expect(invokeSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.transfer,
-        methodArgs: { ...transferArgs, from: new Address(from), to: new Address(to) },
+        methodArgs: { ...transferArgs, from: from, to: to },
         ...MOCKED_TX_INVOCATION,
       })
     })
@@ -271,7 +270,7 @@ describe('SorobanToken', () => {
 
       expect(invokeSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.transfer_from,
-        methodArgs: { ...transferArgs, from: new Address(from), to: new Address(to), spender: new Address(spender) },
+        methodArgs: { ...transferArgs, from: from, to: to, spender: spender },
         ...MOCKED_TX_INVOCATION,
       })
     })
@@ -291,7 +290,7 @@ describe('SorobanToken', () => {
 
       expect(invokeSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.burn_from,
-        methodArgs: { ...burnFromArgs, from: new Address(from), spender: new Address(spender) },
+        methodArgs: { ...burnFromArgs, from: from, spender: spender },
         ...MOCKED_TX_INVOCATION,
       })
     })
@@ -375,7 +374,7 @@ describe('SorobanToken', () => {
 
       expect(readSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.balance,
-        methodArgs: { id: new Address(balanceArgs.id) },
+        methodArgs: { id: balanceArgs.id },
         header: MOCKED_TX_INVOCATION.header,
       })
     })
@@ -391,7 +390,7 @@ describe('SorobanToken', () => {
 
       expect(readSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.spendable_balance,
-        methodArgs: { id: new Address(spendableBalanceArgs.id) },
+        methodArgs: { id: spendableBalanceArgs.id },
         header: MOCKED_TX_INVOCATION.header,
       })
     })
@@ -406,7 +405,7 @@ describe('SorobanToken', () => {
 
       expect(readSpy).toHaveBeenCalledExactlyOnceWith({
         method: methods.allowance,
-        methodArgs: { from: new Address(allowanceArgs.from), spender: new Address(allowanceArgs.spender) },
+        methodArgs: { from: allowanceArgs.from, spender: allowanceArgs.spender },
         header: MOCKED_TX_INVOCATION.header,
       })
     })

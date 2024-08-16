@@ -1,4 +1,3 @@
-import { Address } from '@stellar/stellar-sdk'
 import { Spec } from '@stellar/stellar-sdk/contract'
 
 import { spec as defaultSpec, methods } from 'stellar-plus/asset/soroban-token/constants'
