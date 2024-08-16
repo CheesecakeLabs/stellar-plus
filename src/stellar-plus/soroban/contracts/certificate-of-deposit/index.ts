@@ -60,7 +60,7 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
    */
   public async deposit(args: DepositArgs): Promise<void> {
     const amount = args.amount as i128
-    const address = new Address(args.address)
+    const address = args.address
 
     await this.invokeContract({
       method: this.methods.deposit,
@@ -83,7 +83,7 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
    *
    */
   public async withdraw(args: WithdrawArgs): Promise<void> {
-    const address = new Address(args.address)
+    const address = args.address
     const accept_premature_withdraw = args.acceptPrematureWithdraw as boolean
 
     await this.invokeContract({
@@ -103,7 +103,7 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
    * @description - Gets the current estimated yield accrued for the account's position so far.
    */
   public async getEstimatedYield(args: GetEstimatedYieldArgs): Promise<number> {
-    const address = new Address(args.address)
+    const address = args.address
 
     const result: i128 = (await this.readFromContract({
       method: this.methods.getEstimatedYield,
@@ -123,7 +123,7 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
    * @description - Gets the current open position for the account.
    */
   public async getPosition(args: GetPositionArgs): Promise<number> {
-    const address = new Address(args.address)
+    const address = args.address
 
     const result: i128 = (await this.readFromContract({
       method: this.methods.getPosition,
@@ -142,7 +142,7 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
    * @description - Gets the current estimated premature withdraw for the account. This is the amount that will be received if the account withdraws prematurely, with the penalty applied.
    */
   public async getEstimatedPrematureWithdraw(args: GetEstimatedPrematureWithdrawArgs): Promise<number> {
-    const address = new Address(args.address)
+    const address = args.address
 
     const result: i128 = (await this.readFromContract({
       method: this.methods.getEstimatedPrematureWithdraw,
@@ -162,7 +162,7 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
    * @description - Gets the current time left for the account. This is the time left until the account can withdraw without penalty.
    */
   public async getTimeLeft(args: GetTimeLeftArgs): Promise<number> {
-    const address = new Address(args.address)
+    const address = args.address
 
     const result: u64 = (await this.readFromContract({
       method: this.methods.getTimeLeft,
@@ -196,8 +196,8 @@ export class CertificateOfDepositClient extends ContractEngine implements Certif
    */
   public async initialize(args: Initialize): Promise<void> {
     const { term, compoundStep, yieldRate, minDeposit, penaltyRate } = args
-    const admin = new Address(args.admin)
-    const asset = new Address(args.asset)
+    const admin = args.admin
+    const asset = args.asset
 
     await this.invokeContract({
       method: this.methods.initialize,
