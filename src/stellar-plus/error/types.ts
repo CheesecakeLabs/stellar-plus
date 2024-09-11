@@ -21,6 +21,7 @@ import {
 } from 'stellar-plus/error/helpers/soroban-rpc'
 import { TransactionData, TransactionInvocationMeta } from 'stellar-plus/error/helpers/transaction'
 import { DefaultHorizonHandlerErrorCodes } from 'stellar-plus/horizon/errors'
+import { ClassicLiquidityPoolHandlerErrorCodes } from 'stellar-plus/markets/classic-liquidity-pool/errors'
 import { DefaultRpcHandlerErrorCodes } from 'stellar-plus/rpc/default-handler/errors'
 import { ValidationCloudRpcHandlerErrorCodes } from 'stellar-plus/rpc/validation-cloud-handler/errors'
 
@@ -52,6 +53,7 @@ export type ErrorCodes =
   | ErrorCodesPipelineSimulateTransaction
   | ErrorCodesPipelineSorobanGetTransaction
   | ErrorCodesPipelineClassicSignRequirements
+  | ClassicLiquidityPoolHandlerErrorCodes
 
 export enum GeneralErrorCodes {
   ER000 = 'ER000',
