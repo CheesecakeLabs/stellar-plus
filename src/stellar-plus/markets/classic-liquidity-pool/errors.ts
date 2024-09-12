@@ -3,6 +3,9 @@ import { StellarPlusError } from 'stellar-plus/error'
 export enum ClassicLiquidityPoolHandlerErrorCodes {
   CLPH001 = 'CLPH001',
   CLPH002 = 'CLPH002',
+  CLPH003 = 'CLPH003',
+  CLPH004 = 'CLPH004',
+  CLPH005 = 'CLPH005',
 }
 
 const liquidityPoolIdNotDefined = (): StellarPlusError => {
@@ -25,7 +28,39 @@ const trustlineAlreadyExists = (): StellarPlusError => {
   })
 }
 
+const liquidityPoolNotFound = (): StellarPlusError => {
+  return new StellarPlusError({
+    code: ClassicLiquidityPoolHandlerErrorCodes.CLPH003,
+    message: 'Liquidity pool not found!',
+    source: 'ClassicLiquidityPoolHandler',
+    details: 'The specified liquidity pool could not be found. Please check the liquidity pool ID and try again.',
+  })
+}
+
+const liquidityPoolRequiredAssets = (): StellarPlusError => {
+  return new StellarPlusError({
+    code: ClassicLiquidityPoolHandlerErrorCodes.CLPH004,
+    message: 'Liquidity pool missing required assets!',
+    source: 'ClassicLiquidityPoolHandler',
+    details:
+      'The liquidity pool does not have the two required assets. Ensure the liquidity pool includes both assets.',
+  })
+}
+
+const failedToCreateHandlerFromLiquidityPoolId = (): StellarPlusError => {
+  return new StellarPlusError({
+    code: ClassicLiquidityPoolHandlerErrorCodes.CLPH005,
+    message: 'Failed to create handler from liquidity pool ID!',
+    source: 'ClassicLiquidityPoolHandler',
+    details:
+      'The handler could not be created from the provided liquidity pool ID. Verify the liquidity pool ID and the assets involved.',
+  })
+}
+
 export const CLPHError = {
   liquidityPoolIdNotDefined,
   trustlineAlreadyExists,
+  liquidityPoolNotFound,
+  liquidityPoolRequiredAssets,
+  failedToCreateHandlerFromLiquidityPoolId,
 }

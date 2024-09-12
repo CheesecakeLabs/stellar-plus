@@ -24,6 +24,15 @@ export type ClassicLiquidityPoolHandlerConstructorArgs = {
   }
 }
 
+export type ClassicLiquidityPoolHandlerInstanceArgs = {
+  liquidityPoolId: string
+  networkConfig: NetworkConfig
+
+  options?: {
+    classicTransactionPipeline?: ClassicTransactionPipelineOptions
+  }
+}
+
 export type ClassicUtils = {
   createTrustline: (args: { to: string } & BaseInvocation) => Promise<ClassicTransactionPipelineOutput>
 }
