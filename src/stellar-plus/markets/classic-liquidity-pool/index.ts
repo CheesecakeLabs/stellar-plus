@@ -19,9 +19,6 @@ import { HorizonHandlerClient } from 'stellar-plus/horizon'
 const LIQUIDITY_POOL_SHARE_TYPE = 'liquidity_pool_shares'
 const LIQUIDITY_POOL_MODEL = 'constant_product'
 
-/**
- * Handler for managing a classic liquidity pool on the Stellar network.
- */
 export class ClassicLiquidityPoolHandler implements IClassicLiquidityPoolHandler {
   public assetA: ClassicAssetHandler
   public assetB: ClassicAssetHandler
@@ -30,6 +27,18 @@ export class ClassicLiquidityPoolHandler implements IClassicLiquidityPoolHandler
   private classicTransactionPipeline: ClassicTransactionPipeline
   private horizonHandler: HorizonHandlerClient
 
+  /**
+   * @class ClassicLiquidityPoolHandler
+   * @implements {IClassicLiquidityPoolHandler}
+   *
+   * @param {ClassicAssetHandler} assetA - The first asset in the liquidity pool.
+   * @param {ClassicAssetHandler} assetB - The second asset in the liquidity pool.
+   * @param {NetworkConfig} networkConfig - The network configuration to use for Stellar.
+   * @param {ClassicTransactionPipelineOptions} [options] - Optional configurations.
+   * @param {ClassicTransactionPipelineOptions} [options.classicTransactionPipeline] - Custom configurations for the transaction pipeline.
+   *
+   * @description A handler class for managing a classic liquidity pool on the Stellar network.
+   */
   constructor(args: ClassicLiquidityPoolHandlerConstructorArgs) {
     this.assetA = args.assetA
     this.assetB = args.assetB
@@ -42,7 +51,14 @@ export class ClassicLiquidityPoolHandler implements IClassicLiquidityPoolHandler
   }
 
   /**
-   * Create an instance from a liquidity pool ID.
+   * @static
+   * @param {string} liquidityPoolId - The ID of the liquidity pool on the Stellar network.
+   * @param {NetworkConfig} networkConfig - The network configuration to use.
+   * @param {Object} [options] - Optional configurations.
+   *
+   * @returns {Promise<ClassicLiquidityPoolHandler>} - A promise that resolves to a new instance of the ClassicLiquidityPoolHandler.
+   *
+   * @description - Creates an instance from a liquidity pool ID.
    */
   public static async fromLiquidityPoolId(
     args: ClassicLiquidityPoolHandlerInstanceArgs
@@ -97,7 +113,13 @@ export class ClassicLiquidityPoolHandler implements IClassicLiquidityPoolHandler
   }
 
   /**
-   * Adds a trustline for the liquidity pool asset to the specified account.
+   * @param {string} to - The account to which the trustline should be added.
+   * @param {number} [fee=30] - The fee for the trustline transaction.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object
+   *
+   * @returns {Promise<ClassicTransactionPipelineOutput>} - The result of the add trustline transaction.
+   *
+   * @description - Adds a trustline for the liquidity pool asset to the specified account.
    */
   public async addTrustline(
     args: { to: string; fee?: number } & BaseInvocation
@@ -110,7 +132,6 @@ export class ClassicLiquidityPoolHandler implements IClassicLiquidityPoolHandler
     const liquidityPoolAsset = new LiquidityPoolAsset(assetA, assetB, fee)
 
     this.liquidityPoolId = getLiquidityPoolId(LIQUIDITY_POOL_MODEL, liquidityPoolAsset).toString('hex')
-    const operations = []
 
     // Check if the trustline already exists.
     const trustlineExists = await this.checkLiquidityPoolTrustlineExists(to)
@@ -118,17 +139,11 @@ export class ClassicLiquidityPoolHandler implements IClassicLiquidityPoolHandler
       throw CLPHError.trustlineAlreadyExists()
     }
 
-    // Check if the liquidity pool already exists.
-    const liquidityPoolExists = await this.checkLiquidityPoolExists()
-    if (!liquidityPoolExists) {
-      operations.push(Operation.changeTrust({ asset: liquidityPoolAsset }))
-    }
-
     const addTrustlineOperation = Operation.changeTrust({ source: to, asset: liquidityPoolAsset })
 
     const result = await this.classicTransactionPipeline.execute({
       txInvocation,
-      operations: [...operations, addTrustlineOperation],
+      operations: [addTrustlineOperation],
       options: { ...args.options },
     })
 
@@ -136,7 +151,11 @@ export class ClassicLiquidityPoolHandler implements IClassicLiquidityPoolHandler
   }
 
   /**
-   * Checks if the trustline for the liquidity pool exists.
+   * @private
+   * @param {string} accountId - The ID of the account to check for an existing trustline.
+   * @returns {Promise<boolean>} - Whether the trustline for the liquidity pool exists.
+   *
+   * @description - Checks if the trustline for the liquidity pool exists.
    */
   private async checkLiquidityPoolTrustlineExists(accountId: string): Promise<boolean> {
     try {
@@ -151,32 +170,26 @@ export class ClassicLiquidityPoolHandler implements IClassicLiquidityPoolHandler
   }
 
   /**
-   * Helper to create Stellar Asset from ClassicAssetHandler.
+   * @private
+   * @param {ClassicAssetHandler} assetHandler - The asset handler for creating a Stellar asset.
+   * @returns {StellarAsset} - The created Stellar asset.
+   *
+   * @description - Helper to create Stellar Asset from ClassicAssetHandler.
    */
   private createStellarAsset(assetHandler: ClassicAssetHandler): StellarAsset {
     return new StellarAsset(assetHandler.code, assetHandler.issuerPublicKey)
   }
 
   /**
-   * Check if the Liquidity Pool already exists.
-   */
-  private async checkLiquidityPoolExists(): Promise<boolean> {
-    try {
-      const liquidtyPool = await this.horizonHandler.server
-        .liquidityPools()
-        .liquidityPoolId(this.liquidityPoolId!)
-        .call()
-
-      console.log(liquidtyPool)
-
-      return !!liquidtyPool
-    } catch {
-      return false
-    }
-  }
-
-  /**
-   * Deposits assets into the liquidity pool.
+   * @param {string} amountA - The amount of asset A to deposit.
+   * @param {string} amountB - The amount of asset B to deposit.
+   * @param {number|string|object} [minPrice={n:1,d:1}] - Minimum price for the deposit transaction.
+   * @param {number|string|object} [maxPrice={n:1,d:1}] - Maximum price for the deposit transaction.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object
+   *
+   * @returns {Promise<ClassicTransactionPipelineOutput>} - The result of the deposit transaction.
+   *
+   * @description - Deposits assets into the liquidity pool.
    */
   public async deposit(
     args: {
@@ -211,7 +224,14 @@ export class ClassicLiquidityPoolHandler implements IClassicLiquidityPoolHandler
   }
 
   /**
-   * Withdraws assets from the liquidity pool.
+   * @param {string} amount - The amount of liquidity pool shares to withdraw.
+   * @param {string} [minAmountA='0'] - Minimum amount of asset A to receive.
+   * @param {string} [minAmountB='0'] - Minimum amount of asset B to receive.
+   * @param {TransactionInvocation} txInvocation - The transaction invocation object
+   *
+   * @returns {Promise<ClassicTransactionPipelineOutput>} - The result of the withdrawal transaction.
+   *
+   * @description - Withdraws assets from the liquidity pool.
    */
   public async withdraw(
     args: { amount: string; minAmountA?: string; minAmountB?: string } & BaseInvocation
