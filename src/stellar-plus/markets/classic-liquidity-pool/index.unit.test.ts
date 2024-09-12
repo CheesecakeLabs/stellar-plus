@@ -1,10 +1,12 @@
-import { HorizonHandlerClient } from 'stellar-plus/horizon'
-import { ClassicLiquidityPoolHandler } from '.'
-import { TestNet } from 'stellar-plus/network'
-import { CLPHError } from './errors'
+import { ClassicAssetHandler } from 'stellar-plus/asset'
 import { ClassicTransactionPipeline } from 'stellar-plus/core/pipelines/classic-transaction'
 import { ClassicTransactionPipelineOutput } from 'stellar-plus/core/pipelines/classic-transaction/types'
+import { TestNet } from 'stellar-plus/network'
 import { mockAccountHandler } from 'stellar-plus/test/mocks/transaction-mock'
+
+import { CLPHError } from './errors'
+
+import { ClassicLiquidityPoolHandler } from '.'
 
 jest.mock('stellar-plus/horizon', () => {
   const liquidityPoolsMock = {
@@ -24,19 +26,11 @@ jest.mock('stellar-plus/horizon', () => {
   }
 })
 
-const HORIZON_HANDLER = new HorizonHandlerClient(TestNet())
 const TESTNET_CONFIG = TestNet()
 const MOCKED_PK = 'GACF23GKVFTU77K6W6PWSVN7YBM63UHDULILIEXJO6FR4YKMJ7FW3DTI'
 const MOCKED_PK_2 = 'GBGQYSYAYIORCUHVCXA3USJWTTCC3ODFAZBEVWJAREYQEBVEBVHHZMCT'
 
 describe('ClassicLiquidityPoolHandler', () => {
-  const mockLiquidityPoolData = {
-    reserves: [
-      'EURC:GCTILM4CDIFMQTEV4WDXNL5IWIYL7K3NYDM4WVF3CT6APJVM27OOLY63',
-      'USDC:GCTILM4CDIFMQTEV4WDXNL5IWIYL7K3NYDM4WVF3CT6APJVM27OOLY63',
-    ],
-  }
-
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -45,8 +39,8 @@ describe('ClassicLiquidityPoolHandler', () => {
     it('should add a trustline and return a transaction result', async () => {
       const mockedAccountHandler = mockAccountHandler({ accountKey: MOCKED_PK })
       const mockHandler = new ClassicLiquidityPoolHandler({
-        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as any,
-        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as any,
+        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
+        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -77,8 +71,8 @@ describe('ClassicLiquidityPoolHandler', () => {
       const mockedAccountHandler = mockAccountHandler({ accountKey: MOCKED_PK })
 
       const mockHandler = new ClassicLiquidityPoolHandler({
-        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as any,
-        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as any,
+        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
+        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -104,8 +98,8 @@ describe('ClassicLiquidityPoolHandler', () => {
       const mockedAccountHandler = mockAccountHandler({ accountKey: MOCKED_PK })
 
       const mockHandler = new ClassicLiquidityPoolHandler({
-        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as any,
-        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as any,
+        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
+        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -134,8 +128,8 @@ describe('ClassicLiquidityPoolHandler', () => {
       const mockedAccountHandler = mockAccountHandler({ accountKey: MOCKED_PK })
 
       const mockHandler = new ClassicLiquidityPoolHandler({
-        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as any,
-        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as any,
+        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
+        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -166,8 +160,8 @@ describe('ClassicLiquidityPoolHandler', () => {
       const mockedAccountHandler = mockAccountHandler({ accountKey: MOCKED_PK })
 
       const mockHandler = new ClassicLiquidityPoolHandler({
-        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as any,
-        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as any,
+        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
+        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -198,8 +192,8 @@ describe('ClassicLiquidityPoolHandler', () => {
       const mockedAccountHandler = mockAccountHandler({ accountKey: MOCKED_PK })
 
       const mockHandler = new ClassicLiquidityPoolHandler({
-        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as any,
-        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as any,
+        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
+        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -230,8 +224,8 @@ describe('ClassicLiquidityPoolHandler', () => {
       const mockedAccountHandler = mockAccountHandler({ accountKey: MOCKED_PK })
 
       const mockHandler = new ClassicLiquidityPoolHandler({
-        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as any,
-        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as any,
+        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
+        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -261,8 +255,8 @@ describe('ClassicLiquidityPoolHandler', () => {
       const mockedAccountHandler = mockAccountHandler({ accountKey: MOCKED_PK })
 
       const mockHandler = new ClassicLiquidityPoolHandler({
-        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as any,
-        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as any,
+        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
+        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -292,8 +286,8 @@ describe('ClassicLiquidityPoolHandler', () => {
       const mockedAccountHandler = mockAccountHandler({ accountKey: MOCKED_PK })
 
       const mockHandler = new ClassicLiquidityPoolHandler({
-        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as any,
-        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as any,
+        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
+        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -317,8 +311,8 @@ describe('ClassicLiquidityPoolHandler', () => {
       const mockedAccountHandler = mockAccountHandler({ accountKey: MOCKED_PK })
 
       const mockHandler = new ClassicLiquidityPoolHandler({
-        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as any,
-        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as any,
+        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
+        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -333,28 +327,23 @@ describe('ClassicLiquidityPoolHandler', () => {
         txResult: 'mockTxResult',
       } as unknown as ClassicTransactionPipelineOutput)
 
-      try {
-        const result = await mockHandler.withdraw({
-          amount: '100',
-          minAmountA: '50',
-          minAmountB: '50',
-          ...mockedTxInvocation,
-        })
+      const result = await mockHandler.withdraw({
+        amount: '100',
+        minAmountA: '50',
+        minAmountB: '50',
+        ...mockedTxInvocation,
+      })
 
-        expect(result).toEqual({ txResult: 'mockTxResult' })
-        expect(ClassicTransactionPipeline.prototype.execute).toHaveBeenCalled()
-      } catch (error) {
-        console.error('Error during withdraw operation:', error)
-        throw error
-      }
+      expect(result).toEqual({ txResult: 'mockTxResult' })
+      expect(ClassicTransactionPipeline.prototype.execute).toHaveBeenCalled()
     })
 
     it('should withdraw assets without minAmount and return a transaction result', async () => {
       const mockedAccountHandler = mockAccountHandler({ accountKey: MOCKED_PK })
 
       const mockHandler = new ClassicLiquidityPoolHandler({
-        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as any,
-        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as any,
+        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
+        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -369,26 +358,21 @@ describe('ClassicLiquidityPoolHandler', () => {
         txResult: 'mockTxResult',
       } as unknown as ClassicTransactionPipelineOutput)
 
-      try {
-        const result = await mockHandler.withdraw({
-          amount: '100',
-          ...mockedTxInvocation,
-        })
+      const result = await mockHandler.withdraw({
+        amount: '100',
+        ...mockedTxInvocation,
+      })
 
-        expect(result).toEqual({ txResult: 'mockTxResult' })
-        expect(ClassicTransactionPipeline.prototype.execute).toHaveBeenCalled()
-      } catch (error) {
-        console.error('Error during withdraw operation:', error)
-        throw error
-      }
+      expect(result).toEqual({ txResult: 'mockTxResult' })
+      expect(ClassicTransactionPipeline.prototype.execute).toHaveBeenCalled()
     })
 
     it('should withdraw assets with a large amount and return a transaction result', async () => {
       const mockedAccountHandler = mockAccountHandler({ accountKey: MOCKED_PK })
 
       const mockHandler = new ClassicLiquidityPoolHandler({
-        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as any,
-        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as any,
+        assetA: { code: 'CAKE', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
+        assetB: { code: 'CAKF', issuerPublicKey: MOCKED_PK } as ClassicAssetHandler,
         networkConfig: TESTNET_CONFIG,
       })
 
@@ -403,18 +387,13 @@ describe('ClassicLiquidityPoolHandler', () => {
         txResult: 'mockTxResult',
       } as unknown as ClassicTransactionPipelineOutput)
 
-      try {
-        const result = await mockHandler.withdraw({
-          amount: '989855478',
-          ...mockedTxInvocation,
-        })
+      const result = await mockHandler.withdraw({
+        amount: '989855478',
+        ...mockedTxInvocation,
+      })
 
-        expect(result).toEqual({ txResult: 'mockTxResult' })
-        expect(ClassicTransactionPipeline.prototype.execute).toHaveBeenCalled()
-      } catch (error) {
-        console.error('Error during withdraw operation:', error)
-        throw error
-      }
+      expect(result).toEqual({ txResult: 'mockTxResult' })
+      expect(ClassicTransactionPipeline.prototype.execute).toHaveBeenCalled()
     })
   })
 })
