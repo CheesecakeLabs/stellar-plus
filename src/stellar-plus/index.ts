@@ -7,6 +7,7 @@ import * as Regex from 'stellar-plus/utils/regex'
 
 export * as Account from 'stellar-plus/account/index'
 export * as Asset from 'stellar-plus/asset/index'
+export * as Markets from 'stellar-plus/markets/index'
 export * as Network from 'stellar-plus/network'
 export { HorizonHandlerClient as HorizonHandler } from 'stellar-plus/horizon/index'
 export * from 'stellar-plus/utils/unit-conversion'
