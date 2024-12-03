@@ -66,7 +66,7 @@
   "dependencies": {
     "@hyperledger/cactus-test-tooling": "^2.0.0-rc.2",
     "@stellar/freighter-api": "^1.7.1",
-    "@stellar/stellar-sdk": "^12.2.0",
+    "@stellar/stellar-sdk": "^13.0.0",
     "axios": "^1.6.2",
     "uuid": "^9.0.1"
   }
