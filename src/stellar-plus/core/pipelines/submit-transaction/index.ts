@@ -1,4 +1,4 @@
-import { FeeBumpTransaction, Horizon, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
+import { FeeBumpTransaction, Horizon, rpc as SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import {
   SubmitTransactionPipelineInput,
