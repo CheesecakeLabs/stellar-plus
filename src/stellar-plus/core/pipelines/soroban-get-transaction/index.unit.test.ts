@@ -1,4 +1,4 @@
-import { Account, SorobanRpc, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
+import { Account, rpc as SorobanRpc, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
 
 import { SorobanGetTransactionPipeline } from 'stellar-plus/core/pipelines/soroban-get-transaction'
 import { SGTError } from 'stellar-plus/core/pipelines/soroban-get-transaction/errors'

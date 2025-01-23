@@ -9,6 +9,7 @@
   ],
   "private": false,
   "scripts": {
+    "build-contracts-and-copy-artifacts": "",
     "build": "tsc && tsc-alias -p tsconfig.json",
     "dev": "nodemon -e ts,js --exec ts-node -r tsconfig-paths/register ./src/index-test.ts",
     "test-unit": "npx jest --config src/jest.config.unit.js --testPathPattern=unit\\.test\\.ts",
@@ -23,6 +24,10 @@
     "**/*.{js,jsx,ts,tsx,html,css,json}": [
       "npx prettier --write"
     ]
+  },
+  "packageManager": "npm@9.0.0",
+  "engines": {
+    "node": ">=22.6.0"
   },
   "keywords": [
     "stellar",
@@ -66,7 +71,7 @@
   "dependencies": {
     "@hyperledger/cactus-test-tooling": "^2.0.0-rc.2",
     "@stellar/freighter-api": "^1.7.1",
-    "@stellar/stellar-sdk": "^12.2.0",
+    "@stellar/stellar-sdk": "^13.0.0",
     "axios": "^1.6.2",
     "uuid": "^9.0.1"
   }

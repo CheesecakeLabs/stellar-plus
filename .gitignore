@@ -41,3 +41,11 @@ Thumbs.db
 
 # Optional: Coverage directory used by tools like Istanbul
 coverage/
+
+# VSCode Trello Kanban Library
+.tkb
+
+# Target Folder
+test-contracts/target/
+test-contracts/contracts/hello-world/test_snapshots
+test-contracts/contracts/token/test_snapshots

@@ -1,4 +1,4 @@
-import { SorobanRpc } from '@stellar/stellar-sdk'
+import { rpc as SorobanRpc } from '@stellar/stellar-sdk'
 
 import { BuildTransactionPipeline } from 'stellar-plus/core/pipelines/build-transaction'
 import {

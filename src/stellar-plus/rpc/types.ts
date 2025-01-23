@@ -1,4 +1,4 @@
-import { FeeBumpTransaction, SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
+import { FeeBumpTransaction, rpc as SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
 
 export type RpcHandler = {
   readonly type: 'RpcHandler'

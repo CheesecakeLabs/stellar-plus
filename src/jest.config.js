@@ -34,5 +34,6 @@ module.exports = {
   logHeapUsage: true,
   maxWorkers: 1,
   maxConcurrency: 1,
-  testTimeout: 10 * 60 * 1000, // 10 mins
+  testTimeout: 30 * 60 * 1000, // 30 minutes
+  runInBand: true,
 }

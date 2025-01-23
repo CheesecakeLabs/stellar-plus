@@ -17,24 +17,31 @@ export const spec = [
 // spell-checker:enable
 
 export enum methods {
-  sayHello = 'say_hello',
-  sayHelloTo = 'say_hello_to',
-  getName = 'get_name',
-  setName = 'set_name',
-  getNameByIndex = 'get_name_by_index',
+  initialize = 'initialize',
+  getContractGlobals = 'get_contract_globals',
+  setOwner = 'set_owner',
   deposit = 'deposit',
+  getUserInfo = 'get_user_info',
 }
 
-export type SayHelloArgs = {}
-export type SayHelloToArgs = { to: string }
-export type GetNameArgs = {}
-export type SetNameArgs = { name: string }
-export type GetNameByIndexArgs = { index: number }
-export type DepositArgs = { from: string; asset_id: string; amount: number }
+export type InitializeArgs = { admin: string; token: string }
+export type GetContractGlobalsArgs = {}
+export type SetOwnerArgs = { to: string; new_owner: string }
+export type DepositArgs = { from: string; amount: number; asset: string }
+export type GetUserInfoArgs = { from: string }
 
-export type SayHelloResponse = string
-export type SayHelloToResponse = string[]
-export type GetNameResponse = string
-export type SetNameResponse = null
-export type GetNameByIndexResponse = string
+export type InitializeResponse = null
+export type GetContractGlobalsResponse = { admin: string; token: string }
+export type SetOwnerResponse = null
 export type DepositResponse = null
+export type GetUserInfoResponse = {
+  balance: number
+  name: string
+}
+
+export enum ContractErrors {
+  AlreadyInitialized = 1,
+  NotInitialized = 2,
+  NotOwner = 3,
+  MismatchingAsset = 4,
+}
