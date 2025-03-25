@@ -320,11 +320,17 @@ export class ContractEngine {
     this.requireWasmHash()
 
     try {
+      if (args.constractArgs) this.requireSpec()
+
+      const encodedArgs = args.constractArgs
+        ? this.spec!.funcArgsToScVals('__constructor', args.constractArgs)
+        : undefined
+
       const deployOperation = Operation.createCustomContract({
         address: new Address(args.header.source),
         wasmHash: Buffer.from(this.wasmHash!, 'hex'), // Wasm hash verified in requireWasmHash
         salt: generateRandomSalt(),
-        constructorArgs: args.constractArgs,
+        constructorArgs: encodedArgs,
       } as OperationOptions.CreateCustomContract)
 
       const result = await this.sorobanTransactionPipeline.execute({
