@@ -1,4 +1,4 @@
-import { FeeBumpTransaction, SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
+import { FeeBumpTransaction, rpc as SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import { DRHError } from 'stellar-plus/rpc/default-handler/errors'
 import { RpcHandler } from 'stellar-plus/rpc/types'

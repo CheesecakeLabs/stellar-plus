@@ -1,4 +1,11 @@
-import { Account, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, xdr } from '@stellar/stellar-sdk'
+import {
+  Account,
+  SorobanDataBuilder,
+  rpc as SorobanRpc,
+  Transaction,
+  TransactionBuilder,
+  xdr,
+} from '@stellar/stellar-sdk'
 
 import { SimulateTransactionPipeline } from 'stellar-plus/core/pipelines/simulate-transaction'
 import { SorobanAuthPipeline } from 'stellar-plus/core/pipelines/soroban-auth'

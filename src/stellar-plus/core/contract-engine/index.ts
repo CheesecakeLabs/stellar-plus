@@ -6,7 +6,7 @@ import {
   Operation,
   OperationOptions,
   SorobanDataBuilder,
-  SorobanRpc as SorobanRpcNamespace,
+  rpc as SorobanRpcNamespace,
   xdr,
 } from '@stellar/stellar-sdk'
 import { Spec } from '@stellar/stellar-sdk/contract'

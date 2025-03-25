@@ -1,4 +1,4 @@
-import { FeeBumpTransaction, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
+import { FeeBumpTransaction, rpc as SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import { extractConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'
 import { ConveyorBelt } from 'stellar-plus/utils/pipeline/conveyor-belts'

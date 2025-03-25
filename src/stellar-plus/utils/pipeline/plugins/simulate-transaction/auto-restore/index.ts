@@ -2,7 +2,7 @@ import {
   Account,
   Operation,
   SorobanDataBuilder,
-  SorobanRpc,
+  rpc as SorobanRpc,
   Transaction,
   TransactionBuilder,
 } from '@stellar/stellar-sdk'

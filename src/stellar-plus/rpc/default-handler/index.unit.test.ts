@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SorobanRpc, Transaction } from '@stellar/stellar-sdk'
+import { rpc as SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import { CustomNet, TestNet } from 'stellar-plus/network'
 import { DRHError } from 'stellar-plus/rpc/default-handler/errors'

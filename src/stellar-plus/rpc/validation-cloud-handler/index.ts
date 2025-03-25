@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer'
 
-import { SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
+import { rpc as SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
 import axios from 'axios'
 
 import { RpcHandler } from 'stellar-plus/rpc/types'
