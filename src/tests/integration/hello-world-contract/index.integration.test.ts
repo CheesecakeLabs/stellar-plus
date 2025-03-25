@@ -3,7 +3,7 @@ import { Spec } from '@stellar/stellar-sdk/contract'
 import { DefaultAccountHandler } from 'stellar-plus/account'
 import { ContractEngine } from 'stellar-plus/core/contract-engine'
 import { CustomNet, NetworkConfig } from 'stellar-plus/network'
-import { StellarTestLedger, TestLedgerNetwork } from 'stellar-plus/test/stellar-test-ledger'
+import { StellarTestLedger, SupportedImageVersions, TestLedgerNetwork } from 'stellar-plus/test/stellar-test-ledger'
 import { TransactionInvocation } from 'stellar-plus/types'
 import { contractIdRegex, wasmHashRegex } from 'stellar-plus/utils/regex'
 import { GetNameArgs, GetNameResponse, methods, spec } from 'tests/contracts/hello-world/spec'
@@ -14,6 +14,7 @@ describe('Hello World Contract Use Case: ', () => {
   const stellarTestLedger = new StellarTestLedger({
     logLevel,
     network: TestLedgerNetwork.LOCAL,
+    containerImageVersion: SupportedImageVersions.LASTEST,
   })
 
   let helloWorldSpec: Spec
