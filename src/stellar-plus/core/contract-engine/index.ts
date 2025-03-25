@@ -14,6 +14,7 @@ import { Spec } from '@stellar/stellar-sdk/contract'
 import { CEError } from 'stellar-plus/core/contract-engine/errors'
 import {
   BaseInvocation,
+  ContractConstructor,
   ContractEngineConstructorArgs,
   Options,
   RestoreFootprintArgs,
@@ -315,7 +316,7 @@ export class ContractEngine {
    * @requires - The wasm hash to be set in the contract engine.
    *
    * */
-  public async deploy(args: BaseInvocation): Promise<SorobanTransactionPipelineOutput> {
+  public async deploy(args: BaseInvocation & ContractConstructor<object>): Promise<SorobanTransactionPipelineOutput> {
     this.requireWasmHash()
 
     try {
@@ -323,6 +324,7 @@ export class ContractEngine {
         address: new Address(args.header.source),
         wasmHash: Buffer.from(this.wasmHash!, 'hex'), // Wasm hash verified in requireWasmHash
         salt: generateRandomSalt(),
+        constructorArgs: args.constractArgs,
       } as OperationOptions.CreateCustomContract)
 
       const result = await this.sorobanTransactionPipeline.execute({
