@@ -1,4 +1,4 @@
-import { FeeBumpTransaction, SorobanRpc, Transaction } from '@stellar/stellar-sdk'
+import { FeeBumpTransaction, rpc as SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import { RpcHandler } from 'stellar-plus/rpc/types'
 import { BeltPluginType, GenericPlugin } from 'stellar-plus/utils/pipeline/conveyor-belts/types'

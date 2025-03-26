@@ -1,4 +1,4 @@
-import { SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
+import { rpc as SorobanRpc, Transaction, xdr } from '@stellar/stellar-sdk'
 
 import { AccountHandler } from 'stellar-plus/account'
 import { RpcHandler } from 'stellar-plus/rpc/types'

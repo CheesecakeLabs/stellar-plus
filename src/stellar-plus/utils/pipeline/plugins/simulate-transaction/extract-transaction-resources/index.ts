@@ -1,4 +1,4 @@
-import { SorobanRpc, xdr } from '@stellar/stellar-sdk'
+import { rpc as SorobanRpc, xdr } from '@stellar/stellar-sdk'
 
 import { TransactionResources } from 'stellar-plus/core/contract-engine/types'
 import {
@@ -45,7 +45,7 @@ export class ExtractTransactionResourcesPlugin
 
     const resources: TransactionResources = {
       cpuInstructions: Number(sorobanTransactionData?.resources().instructions()),
-      ram: Number(simulatedTransaction.cost?.memBytes),
+      ram: 0, //Number(simulatedTransaction.cost?.memBytes), //Review during refactor for v1
       minResourceFee: Number(simulatedTransaction.minResourceFee),
       ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
       ledgerWriteBytes: sorobanTransactionData?.resources().writeBytes(),

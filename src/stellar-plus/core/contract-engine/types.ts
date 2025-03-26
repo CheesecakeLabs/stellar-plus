@@ -52,6 +52,10 @@ export type SorobanSimulateArgs<T> = {
   options?: SorobanTransactionPipelineInput['options']
 }
 
+export type ContractConstructor<T> = {
+  constractArgs?: T
+}
+
 export type WrapClassicAssetArgs = BaseInvocation & {
   asset: StellarAsset
 }

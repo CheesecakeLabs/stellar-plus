@@ -1,4 +1,4 @@
-import { SorobanDataBuilder, SorobanRpc, xdr } from '@stellar/stellar-sdk'
+import { SorobanDataBuilder, rpc as SorobanRpc, xdr } from '@stellar/stellar-sdk'
 
 import { extractSorobanResultXdrOpErrorCode } from './result-meta-xdr'
 

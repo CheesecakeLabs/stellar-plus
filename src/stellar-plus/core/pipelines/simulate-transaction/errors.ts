@@ -1,4 +1,4 @@
-import { SorobanRpc, Transaction } from '@stellar/stellar-sdk'
+import { rpc as SorobanRpc, Transaction } from '@stellar/stellar-sdk'
 
 import { StellarPlusError } from 'stellar-plus/error'
 import { ConveyorBeltErrorMeta } from 'stellar-plus/error/helpers/conveyor-belt'

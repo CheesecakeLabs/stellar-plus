@@ -4,3 +4,5 @@ import { ResourceLimits } from '@hyperledger/cactus-test-tooling/dist/lib/main/t
 export { StellarTestLedger, IStellarTestLedgerOptions } from '@hyperledger/cactus-test-tooling'
 
 export { ResourceLimits as TestLedgerResourceLimits, Network as TestLedgerNetwork }
+
+export { SupportedImageVersions } from '@hyperledger/cactus-test-tooling/dist/lib/main/typescript/stellar/supported-image-versions'
