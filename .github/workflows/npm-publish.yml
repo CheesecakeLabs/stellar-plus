@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 16
       - run: npm ci
-      - run: npm test
+      - run: npm run test-unit
       - run: npm run build
       - run: ls -l lib
       - name: Archive production artifacts
