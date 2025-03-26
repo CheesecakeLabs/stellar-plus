@@ -20,7 +20,7 @@ jobs:
       - run: npm run build
       - run: ls -l lib
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: lib
           path: lib
@@ -35,7 +35,7 @@ jobs:
           node-version: 16
           registry-url: https://registry.npmjs.org/
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: lib
           path: lib
