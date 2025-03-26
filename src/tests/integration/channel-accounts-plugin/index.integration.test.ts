@@ -3,7 +3,7 @@ import { DefaultAccountHandler } from 'stellar-plus/account'
 import { ClassicAssetHandler, SACHandler } from 'stellar-plus/asset'
 import { ChannelAccounts } from 'stellar-plus/channel-accounts'
 import { CustomNet, NetworkConfig } from 'stellar-plus/network'
-import { StellarTestLedger, TestLedgerNetwork } from 'stellar-plus/test/stellar-test-ledger'
+import { StellarTestLedger, SupportedImageVersions, TestLedgerNetwork } from 'stellar-plus/test/stellar-test-ledger'
 import { ClassicChannelAccountsPlugin } from 'stellar-plus/utils/pipeline/plugins/classic-transaction/channel-accounts'
 import { SorobanChannelAccountsPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-transaction/channel-accounts'
 import { FeeBumpWrapperPlugin } from 'stellar-plus/utils/pipeline/plugins/submit-transaction/fee-bump'
@@ -15,6 +15,7 @@ describe('Channel Accounts Plugin Use Case: ', () => {
   const stellarTestLedger = new StellarTestLedger({
     logLevel,
     network: TestLedgerNetwork.LOCAL,
+    containerImageVersion: SupportedImageVersions.LASTEST,
   })
 
   let networkConfig: NetworkConfig

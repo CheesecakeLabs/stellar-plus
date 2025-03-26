@@ -1,7 +1,7 @@
 import { DefaultAccountHandler } from 'stellar-plus/account'
 import { SACHandler } from 'stellar-plus/asset'
 import { CustomNet, NetworkConfig } from 'stellar-plus/network'
-import { StellarTestLedger, TestLedgerNetwork } from 'stellar-plus/test/stellar-test-ledger'
+import { StellarTestLedger, SupportedImageVersions, TestLedgerNetwork } from 'stellar-plus/test/stellar-test-ledger'
 import { ProfilerPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-transaction'
 import { LogEntry } from 'stellar-plus/utils/profiler/profiling-handler/types'
 import { simpleTxInvocation } from 'tests/utils'
@@ -11,6 +11,7 @@ describe('Profiler Plugin Use Case: ', () => {
   const stellarTestLedger = new StellarTestLedger({
     logLevel,
     network: TestLedgerNetwork.LOCAL,
+    containerImageVersion: SupportedImageVersions.LASTEST,
   })
 
   let networkConfig: NetworkConfig

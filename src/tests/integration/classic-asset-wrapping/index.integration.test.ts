@@ -1,7 +1,7 @@
 import { DefaultAccountHandler } from 'stellar-plus/account'
 import { SACHandler } from 'stellar-plus/asset'
 import { CustomNet, NetworkConfig } from 'stellar-plus/network'
-import { StellarTestLedger, TestLedgerNetwork } from 'stellar-plus/test/stellar-test-ledger'
+import { StellarTestLedger, SupportedImageVersions, TestLedgerNetwork } from 'stellar-plus/test/stellar-test-ledger'
 import { contractIdRegex } from 'stellar-plus/utils/regex'
 import { simpleTxInvocation } from 'tests/utils'
 
@@ -10,6 +10,7 @@ describe('Classic Asset Wrapping Use Case: ', () => {
   const stellarTestLedger = new StellarTestLedger({
     logLevel,
     network: TestLedgerNetwork.LOCAL,
+    containerImageVersion: SupportedImageVersions.LASTEST,
   })
 
   let networkConfig: NetworkConfig
