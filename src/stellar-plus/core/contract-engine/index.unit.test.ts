@@ -7,6 +7,7 @@ import { StellarPlusError } from 'stellar-plus/error'
 import { TestNet } from 'stellar-plus/network'
 import { DefaultRpcHandler } from 'stellar-plus/rpc'
 import { TransactionInvocation } from 'stellar-plus/types'
+import { loadWasmFile } from 'tests/utils'
 
 import { CEError } from './errors'
 import { SorobanInvokeArgs } from './types'
@@ -56,7 +57,7 @@ describe('ContractEngine', () => {
   })
 
   describe('Intialization', () => {
-    it('should initialize with wasm file', () => {
+    it('should initialize with wasm file and provided spec', () => {
       const contractEngine = new ContractEngine({
         networkConfig: NETWORK_CONFIG,
         contractParameters: {
@@ -90,6 +91,22 @@ describe('ContractEngine', () => {
       })
 
       expect(contractEngine.getContractId()).toEqual(MOCKED_CONTRACT_ID)
+    })
+
+    it('should load the spec from the wasm file', async () => {
+      const helloWorldWasm = await loadWasmFile('./src/tests/contracts/hello-world/hello_world.wasm')
+
+      const contractEngine = new ContractEngine({
+        networkConfig: NETWORK_CONFIG,
+        contractParameters: {
+          wasm: helloWorldWasm,
+        },
+      })
+
+      await contractEngine.loadSpecFromWasm()
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((contractEngine as any).spec).toBeDefined()
     })
   })
 
