@@ -8,8 +8,12 @@ export function processSpecEntryStream(buffer: Buffer) {
   const reader = new cereal.XdrReader(buffer)
   const res: xdr.ScSpecEntry[] = []
   while (!reader.eof) {
-    // @ts-ignore
-    res.push(xdr.ScSpecEntry.read(reader))
+    const entry = xdr.ScSpecEntry.read(reader);
+    if (entry instanceof xdr.ScSpecEntry) {
+      res.push(entry);
+    } else {
+      throw new Error("Failed to read ScSpecEntry from reader");
+    }
   }
   return res
 }
