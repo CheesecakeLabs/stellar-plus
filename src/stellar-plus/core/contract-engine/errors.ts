@@ -20,6 +20,7 @@ export enum ContractEngineErrorCodes {
   CE202 = 'CE202',
   CE203 = 'CE203',
   CE204 = 'CE204',
+  CE205 = 'CE205',
 }
 
 const contractIdAlreadySet = (): StellarPlusError => {
@@ -152,6 +153,16 @@ const missingSpec = (): StellarPlusError => {
   })
 }
 
+const missingSpecInWasm = (): StellarPlusError => {
+  return new StellarPlusError({
+    code: ContractEngineErrorCodes.CE205,
+    message: 'Missing spec in wasm!',
+    source: 'ContractEngine',
+    details:
+      'Missing spec in wasm! The wasm file does not contain the contract spec.Verify the wasm file and make sure the contract spec was compiled correctly.',
+  })
+}
+
 export const CEError = {
   contractIdAlreadySet,
   contractInstanceNotFound,
@@ -165,4 +176,5 @@ export const CEError = {
   missingWasm,
   missingWasmHash,
   missingSpec,
+  missingSpecInWasm,
 }

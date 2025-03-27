@@ -1,6 +1,6 @@
-import { TransactionI } from '@stellar/stellar-sdk'
 import { readFile } from 'fs/promises'
-import { AccountHandler, DefaultAccountHandler } from 'stellar-plus/account'
+
+import { AccountHandler } from 'stellar-plus/account'
 import { FeeBumpHeader, TransactionInvocation } from 'stellar-plus/types'
 
 export const loadWasmFile = async (wasmFilePath: string): Promise<Buffer> => {

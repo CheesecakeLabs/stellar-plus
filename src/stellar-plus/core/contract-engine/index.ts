@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Buffer } from 'buffer'
 
 import {
@@ -44,6 +45,7 @@ import { ExtractInvocationOutputFromSimulationPlugin } from 'stellar-plus/utils/
 import { ExtractContractIdPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-contract-id'
 import { ExtractInvocationOutputPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-invocation-output'
 import { ExtractWasmHashPlugin } from 'stellar-plus/utils/pipeline/plugins/soroban-get-transaction/extract-wasm-hash'
+import { processSpecEntryStream } from 'stellar-plus/utils/wasm/process-spec-entry-stream'
 
 export class ContractEngine {
   private spec?: Spec
@@ -414,6 +416,28 @@ export class ContractEngine {
       keys: [(await this.getContractCodeLedgerEntry()).key],
       ...(args as TransactionInvocation),
     })
+  }
+
+  /**
+   *
+   * @param {void} args - No arguments.
+   *
+   * @returns {Promise<void>} - The output of the invocation.
+   *
+   * @description - Loads the contract specification from the wasm file and stores it in the contract engine.
+   */
+  public async loadSpecFromWasm(): Promise<void> {
+    this.requireWasm()
+
+    const wasmModule = await WebAssembly.compile(this.wasm!)
+    const xdrSections = WebAssembly.Module.customSections(wasmModule, 'contractspecv0')
+    if (xdrSections.length === 0) {
+      throw CEError.missingSpecInWasm()
+    }
+    const bufferSection = Buffer.from(xdrSections[0])
+    const specEntryArray = processSpecEntryStream(bufferSection)
+    const spec = new Spec(specEntryArray)
+    this.spec = spec
   }
 
   //==========================================
