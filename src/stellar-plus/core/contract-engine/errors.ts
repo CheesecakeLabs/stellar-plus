@@ -159,7 +159,7 @@ const missingSpecInWasm = (): StellarPlusError => {
     message: 'Missing spec in wasm!',
     source: 'ContractEngine',
     details:
-      'Missing spec in wasm! The wasm file does not contain the contract spec.Verify the wasm file and make sure the contract spec was compiled correctly.',
+      'Missing spec in wasm! The wasm file does not contain the contract spec. Verify the wasm file and make sure the contract spec was compiled correctly.',
   })
 }
 
