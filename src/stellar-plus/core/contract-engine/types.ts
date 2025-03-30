@@ -53,7 +53,7 @@ export type SorobanSimulateArgs<T> = {
 }
 
 export type ContractConstructor<T> = {
-  constractArgs?: T
+  contractArgs?: T
 }
 
 export type WrapClassicAssetArgs = BaseInvocation & {

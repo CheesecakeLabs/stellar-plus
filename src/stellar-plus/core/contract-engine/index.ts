@@ -322,10 +322,10 @@ export class ContractEngine {
     this.requireWasmHash()
 
     try {
-      if (args.constractArgs) this.requireSpec()
+      if (args.contractArgs) this.requireSpec()
 
-      const encodedArgs = args.constractArgs
-        ? this.spec!.funcArgsToScVals('__constructor', args.constractArgs)
+      const encodedArgs = args.contractArgs
+        ? this.spec!.funcArgsToScVals('__constructor', args.contractArgs)
         : undefined
 
       const deployOperation = Operation.createCustomContract({
