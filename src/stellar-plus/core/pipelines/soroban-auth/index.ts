@@ -204,7 +204,7 @@ export class SorobanAuthPipeline extends ConveyorBelt<
   ): string {
     if (authEntry.credentials().address().address().switch().name === 'scAddressTypeContract') {
       throw PSAError.contractAuthNotSupported(
-        Address.contract(authEntry.credentials().address().address().contractId()).toString(),
+        authEntry.credentials().address().toXDR('base64'),
         extractConveyorBeltErrorMeta(item, this.getMeta(itemId))
       )
     }
