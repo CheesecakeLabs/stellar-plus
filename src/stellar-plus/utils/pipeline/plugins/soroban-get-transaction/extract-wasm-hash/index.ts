@@ -23,9 +23,12 @@ export class ExtractWasmHashPlugin
   ): Promise<SorobanGetTransactionPipelineOutput> {
     const { response, output } = item
 
-    const wasmHash = (response.resultMetaXdr.v3().sorobanMeta()?.returnValue().value() as Buffer).toString(
-      'hex'
-    ) as string
+    let wasmHash: string
+    try {
+      wasmHash = (response.resultMetaXdr.v4().sorobanMeta()?.returnValue()?.value() as Buffer).toString('hex') as string
+    } catch (e) {
+      wasmHash = ''
+    }
 
     const pluginOutput: ContractWasmHashOutput = {
       wasmHash,

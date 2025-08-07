@@ -25,9 +25,15 @@ export class ExtractContractIdPlugin
   ): Promise<SorobanGetTransactionPipelineOutput> {
     const { response, output } = item
 
-    const contractId = Address.fromScAddress(
-      response.resultMetaXdr.v3().sorobanMeta()?.returnValue().address() as xdr.ScAddress
-    ).toString()
+    let contractId: string
+
+    try {
+      contractId = Address.fromScAddress(
+        response.resultMetaXdr.v4().sorobanMeta()?.returnValue()?.address() as xdr.ScAddress
+      ).toString()
+    } catch (e) {
+      contractId = ''
+    }
 
     const pluginOutput: ContractIdOutput = {
       contractId,
