@@ -47,7 +47,7 @@ export class ExtractTransactionResourcesPlugin
       cpuInstructions: Number(sorobanTransactionData?.resources().instructions()),
       ram: 0, //Number(simulatedTransaction.cost?.memBytes), //Review during refactor for v1
       minResourceFee: Number(simulatedTransaction.minResourceFee),
-      ledgerReadBytes: sorobanTransactionData?.resources().readBytes(),
+      ledgerReadBytes: sorobanTransactionData?.resources().diskReadBytes(),
       ledgerWriteBytes: sorobanTransactionData?.resources().writeBytes(),
       ledgerEntryReads: sorobanTransactionData?.resources().footprint().readOnly().length,
       ledgerEntryWrites: sorobanTransactionData?.resources().footprint().readWrite().length,
