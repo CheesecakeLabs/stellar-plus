@@ -32,10 +32,15 @@ export class ExtractInvocationOutputPlugin<OutputType>
   ): Promise<SorobanGetTransactionPipelineOutput> {
     const { response, output }: SorobanGetTransactionPipelineOutput = item as SorobanGetTransactionPipelineOutput
 
-    const value = this.spec.funcResToNative(
-      this.method,
-      response.resultMetaXdr.v3().sorobanMeta()?.returnValue().toXDR('base64') as string
-    ) as unknown
+    let value: unknown
+    try {
+      value = this.spec.funcResToNative(
+        this.method,
+        response.resultMetaXdr.v4().sorobanMeta()?.returnValue()?.toXDR('base64') as string
+      ) as unknown
+    } catch (e) {
+      value = {}
+    }
 
     const pluginOutput: ContractInvocationOutput<string> = {
       value: String(value as OutputType),
